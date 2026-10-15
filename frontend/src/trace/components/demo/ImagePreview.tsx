@@ -32,7 +32,7 @@ export function ImagePreview({
       )}
     >
       <div className="relative">
-        <div className="trace-grid-fine flex max-h-[460px] items-center justify-center bg-[#0a0c10] p-3">
+        <div className="trace-grid-fine flex max-h-[460px] items-center justify-center bg-trace-film p-3">
           <img
             src={image.url}
             alt={`Preview of the selected file ${image.file.name}. Displayed for review only; it has not been analysed.`}
@@ -43,7 +43,7 @@ export function ImagePreview({
         {/* No overlay is drawn on a user's image. The placeholder scenarios
             carry no localisation, and dashed circles on someone's radiograph
             would read as a detection result no matter what the caption said. */}
-        <p className="absolute top-3 left-3 rounded border border-trace-line bg-[#0a0c10]/85 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-trace-dim">
+        <p className="absolute top-3 left-3 rounded border border-trace-line bg-trace-film/85 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-trace-dim">
           Displayed locally · not analysed
         </p>
       </div>

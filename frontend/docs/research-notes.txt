@@ -1,0 +1,919 @@
+================================================================================
+PULMO-TRACE
+Research notes for the written paper
+
+AI-assisted screening for pulmonary tuberculosis from chest radiographs
+Status: frontend prototype. No model trained, no inference engine connected.
+Last updated: October 2026
+================================================================================
+
+HOW TO USE THIS FILE
+
+This is the material that was deliberately kept off the website. The site is
+written for a general audience; this file holds the depth that belongs in the
+paper instead.
+
+Two labels are used throughout and they matter:
+
+  [MOCK]   A number invented to show a reporting format. Not a measurement.
+           Do not carry these into the paper as results.
+  [TODO]   A field that must be filled from a real source before publication.
+
+Every external claim carries a citation key that resolves in section 11.
+
+
+================================================================================
+1. PROJECT METADATA
+================================================================================
+
+Project              PULMO-TRACE
+Domain               Chest X-ray based screening for pulmonary tuberculosis
+System type          Image classification research prototype
+Current stage        Frontend demonstration: interface, input contract,
+                     output format and evaluation framework
+Inference status     Simulated. No model is connected to the build.
+                     The demo selects a fixed placeholder outcome by hashing
+                     the chosen file's name, size and modification time, so
+                     the output is deterministic and has nothing to do with
+                     the pixels.
+Training data        None. No model has been trained for this build.
+Clinical validation  Not established.
+Regulatory status    None. Not a medical device.
+Intended use         Research, teaching and interface review only.
+
+What the prototype demonstrates
+  That a screening result can be presented together with its decision
+  threshold, its error profile, its dependence on population prevalence and
+  its limitations, without the interface becoming unreadable. This is a design
+  claim, and it is the only claim the build supports.
+
+What the prototype does not demonstrate
+  That a model can screen for TB from a chest radiograph. Nothing has been
+  trained and nothing has been measured.
+
+
+================================================================================
+2. CLINICAL AND EPIDEMIOLOGICAL BACKGROUND
+================================================================================
+
+2.1 Burden and the detection gap
+
+  WHO estimates that 10.7 million people fell ill with TB in 2024 (95%
+  uncertainty interval 9.9 to 11.5 million) and that 1.23 million died (95% UI
+  1.13 to 1.33 million). The incidence rate was 131 per 100 000 population per
+  year and the case fatality rate 11.5%. About 8.3 million people were newly
+  diagnosed and officially notified, which is 78% (95% UI 72 to 84%) of the
+  estimated incident cases. The remaining gap is roughly 2.4 million people who
+  were never reached by a diagnosis.  [WHO-GTB-2025]
+
+  The implication for this project: the bottleneck addressed by a screening
+  tool is case finding, not treatment. TB is largely curable; the people who
+  die are disproportionately the people never diagnosed.
+
+2.2 Chest radiography in screening, and the CAD recommendation
+
+  WHO includes chest radiography among the tools for systematic TB screening
+  and triage. Since 2021 WHO has recommended that computer-aided detection
+  (CAD) software may be used in place of a human reader for interpreting
+  digital chest radiographs, for screening and triage of TB disease, among
+  people aged 15 years and older, in populations in which TB screening is
+  recommended.  [WHO-SCREEN-2021]
+
+  Note the scope of that recommendation carefully when citing it:
+    - It applies to people aged 15 and over. Not children.
+    - It applies in populations where screening is already recommended.
+    - It concerns screening and triage. Not diagnosis.
+    - The evidence base was diagnostic accuracy against bacteriological
+      confirmation as the reference standard.
+
+2.3 Radiographic appearance of pulmonary TB
+
+  TB does not present one way. Upper-zone infiltrates, cavitation, nodular
+  shadowing, pleural effusion and miliary patterns all occur. Some people with
+  bacteriologically confirmed TB have a chest radiograph read as normal, and
+  this is more common among people living with HIV.  [WHO-CXR-2016]
+
+2.4 Specificity is the problem, not sensitivity
+
+  The same radiographic findings are produced by pneumonia, lung cancer,
+  fungal infection, healed scarring from previous TB, and other chronic lung
+  disease. Chest radiography is comparatively sensitive and comparatively
+  non-specific for TB. It narrows a differential; it does not resolve one.
+  [WHO-CXR-2016]
+
+2.5 Confirmation is bacteriological
+
+  A TB diagnosis rests on tests for the organism: WHO-recommended rapid
+  molecular tests, culture, or smear microscopy, interpreted alongside the
+  clinical picture. An image-based model sits upstream of all of that. Its
+  output is a reason to test, never a substitute for testing.
+  [WHO-SCREEN-2021]
+
+2.6 The distinction the whole project rests on
+
+  Screening sorts a population into "test further" and "probably not now".
+  Diagnosis concludes what is wrong with one person and carries a treatment
+  decision and accountability. A model that reads an image can participate in
+  the first. It cannot perform the second.
+
+
+================================================================================
+3. RESEARCH QUESTIONS
+================================================================================
+
+All three are open. None has been tested in this project. Each is stated with
+a hypothesis and with evaluation criteria fixed in advance, so that it is later
+possible to notice that the evidence was never gathered.
+
+--------------------------------------------------------------------------------
+RQ1 - DETECTION
+--------------------------------------------------------------------------------
+Question
+  Within a single selected dataset, can an image classifier distinguish
+  radiographs labelled TB-related from those labelled non-TB, at a level that
+  would be useful for triage rather than merely better than chance?
+
+Hypothesis
+  A convolutional backbone pretrained on natural images and fine-tuned on
+  frontal chest radiographs reaches a sensitivity and specificity worth
+  measuring on a held-out split of the same dataset.
+
+Evaluation criteria
+  1. Sensitivity and specificity reported together at a stated decision
+     threshold. Never accuracy alone.
+  2. Patient-level train / validation / test splits, so no person appears on
+     both sides of a split.
+  3. A test split never used for model selection or threshold tuning.
+  4. Confidence intervals on every reported rate, given how few TB-positive
+     cases most public datasets contain.
+
+Current state
+  Open. No model has been trained or evaluated, so there is no result either
+  way.
+
+--------------------------------------------------------------------------------
+RQ2 - GENERALIZATION
+--------------------------------------------------------------------------------
+Question
+  How does performance change when the model is applied to images from a
+  different source, one with different equipment, exposure habits, patient
+  population and disease prevalence, than the one it was trained on?
+
+Hypothesis
+  Performance drops on an external source, and the drop is larger than the
+  usual split-to-split variation. Whether the drop is small enough to tolerate
+  is the actual question.
+
+Evaluation criteria
+  1. At least one external dataset evaluated with the threshold fixed in
+     advance.
+  2. In-domain and external results reported side by side, not separately.
+  3. Calibration assessed on the external set, not only discrimination.
+  4. Positive predictive value recomputed at the prevalence of the intended
+     deployment setting.
+
+Current state
+  Open and untouched. External validation is the part most easily skipped and
+  the part that decides whether a model means anything outside its own
+  dataset.
+
+--------------------------------------------------------------------------------
+RQ3 - INTERPRETABILITY
+--------------------------------------------------------------------------------
+Question
+  Can gradient-based saliency methods help a researcher inspect which image
+  regions drove a prediction, and can that inspection catch a model that is
+  right for the wrong reason?
+
+Hypothesis
+  Saliency maps are useful for finding gross failures, such as a model keying
+  on a laterality marker, a text burn-in or the image border, but they do not
+  establish that the model uses clinically meaningful features.
+
+Evaluation criteria
+  1. Saliency computed from the deployed weights, not drawn by hand.
+  2. Maps reviewed against lesion annotations where those exist.
+  3. Sanity checks applied, for example randomised-weight comparisons.
+  4. Agreement, or disagreement, with a radiologist's reading recorded for a
+     sample of cases.
+
+Current state
+  Open. No saliency map has been computed.
+
+
+================================================================================
+4. DATASET DOCUMENTATION
+================================================================================
+
+4.1 Why this section exists
+
+  A performance figure means nothing without the dataset record behind it. The
+  table below is the record a TB screening study has to produce. This project
+  has not acquired, licensed or evaluated a dataset, so the values are a
+  template. The placeholder is called "Dataset A" rather than named after a
+  real collection on purpose: writing a real dataset's name and size into a
+  mock table is how a mock table quietly becomes a false citation.
+
+4.2 Record template
+
+  Field                        Value
+  ---------------------------  ------------------------------------------------
+  Dataset name                 Dataset A (placeholder)                   [MOCK]
+  Source and version           [TODO] distribution, version, download date
+  Images                       4 800                                     [MOCK]
+  Patients                     3 100                                     [MOCK]
+  Images per patient           1.5 mean, range 1 to 4                    [MOCK]
+  Label definition             TB-related / non-TB, assigned per image   [MOCK]
+                               Note: the label is a dataset annotation, not a
+                               clinical diagnosis of the person.
+  Reference standard           [TODO] bacteriologically confirmed, or read off
+                               the image? This is the single most important
+                               field in the table. See 4.3.
+  Class distribution           3 960 non-TB, 840 TB-related (17.5%)      [MOCK]
+  Modality                     Digital chest radiography, frontal (PA),
+                               grayscale                                 [MOCK]
+  Image size                   512 x 512 px, 8-bit, PNG                  [MOCK]
+  Acquisition conditions       [TODO] equipment, exposure settings, site, year
+  Inclusion criteria           Frontal chest radiograph, age >= 15, label
+                               present                                   [MOCK]
+  Exclusion criteria           Lateral projection, paediatric, duplicates,
+                               corrupt files, burned-in identifiers      [MOCK]
+  Split strategy               Patient-level stratified split, 70/15/15,
+                               fixed seed                                [MOCK]
+  Split sizes                  3 360 train, 720 validation, 720 test     [MOCK]
+  Demographics                 [TODO] age, sex, HIV status, comorbidity.
+                               Without these, subgroup analysis is impossible
+                               rather than merely absent.
+  Licence and usage            [TODO] must be resolved before any image is
+                               used. No image is redistributed by the frontend.
+  Known limitations            Few source sites, unknown demographic spread,
+                               no prospective collection                 [MOCK]
+
+4.3 The reference standard decides what study you are running
+
+  If the TB label was assigned by reading the radiograph, a model trained on
+  it learns to imitate a radiologist, and its ceiling is that radiologist's
+  agreement rate. If the label came from bacteriological confirmation, the
+  model is being asked a harder and more useful question. These two studies
+  look identical in a metrics table and are not the same study. State which
+  one you ran.
+
+4.4 Patient-level splitting is not a detail
+
+  Two radiographs of the same person, one in training and one in test, let a
+  model recognise the person rather than the disease. The result is a high
+  score that collapses on new patients. It is among the most frequently
+  repeated errors in chest-imaging machine learning, and it is undetectable
+  from the metrics alone, which is why the split strategy belongs in the
+  dataset table next to the sample size.  [PITFALLS-2021]
+
+4.5 Candidate public datasets
+
+  None of these has been obtained or evaluated by this project.
+
+  TBX11K
+    Held by      Liu et al., Nankai University
+    Scale        Chest radiographs with TB lesion bounding boxes
+    Status       Candidate. Not obtained, not evaluated. Licence terms to be
+                 confirmed with the authors.
+    Reference    [TBX11K-2020]
+
+  Shenzhen chest X-ray set
+    Held by      Shenzhen No. 3 People's Hospital / US National Library of
+                 Medicine
+    Scale        Several hundred radiographs with TB / normal labels
+    Status       Candidate. Not obtained. Overlaps with other collections, so
+                 duplication must be checked before any pooled evaluation.
+    Reference    [JAEGER-2014]
+
+  Montgomery County chest X-ray set
+    Held by      Montgomery County Health Department / US National Library of
+                 Medicine
+    Scale        Roughly a hundred radiographs with lung field masks
+    Status       Candidate. Not obtained. Small, best used for segmentation or
+                 sanity checks rather than for a performance claim.
+    Reference    [JAEGER-2014]
+
+  A prospective local screening cohort
+    Held by      Not established
+    Status       Does not exist for this project. It is the evaluation that
+                 would actually matter for deployment, and the one that cannot
+                 be assembled from public downloads.
+
+
+================================================================================
+5. METHODOLOGY
+================================================================================
+
+The order is not cosmetic. Splitting before preprocessing, and validation
+before testing, are what keep the final number meaningful.
+
+  Stage 1  DATASET ACQUISITION
+    Obtain a dataset with a documented reference standard and licence terms
+    that permit research use. Record the version and the download date.
+    Output: dataset snapshot, licence record, citation.
+
+  Stage 2  DATA VERIFICATION
+    Check for duplicates, corrupt files, lateral or paediatric images that do
+    not belong, burned-in text, and laterality markers a model could exploit.
+    Output: exclusion log with a count and a reason per excluded image.
+
+  Stage 3  PATIENT-LEVEL SPLITTING
+    Split by person, never by image. See 4.4.
+    Output: train / validation / test manifests with class counts per split.
+
+  Stage 4  IMAGE PREPROCESSING
+    Fix a resize, an intensity normalisation and an augmentation policy, then
+    apply them identically everywhere. Augmentation touches the training split
+    only.
+    Output: a versioned preprocessing specification.
+
+  Stage 5  MODEL TRAINING
+    Train from a pretrained backbone with an explicit class-imbalance
+    strategy, a fixed seed and a logged configuration. Record the full
+    hyperparameter set, not a summary of it.
+    Output: checkpoint, training log, configuration file.
+
+  Stage 6  VALIDATION
+    Use the validation split for model selection and for choosing the
+    operating threshold. Both decisions consume this split, which is why it
+    cannot also serve as the test set.
+    Output: selected checkpoint, chosen threshold, and the sweep behind it.
+
+  Stage 7  INDEPENDENT TESTING
+    Score the frozen model, at the frozen threshold, exactly once, on data
+    untouched until that moment. Preferably from a different source than the
+    training data.
+    Output: test metrics with confidence intervals.
+
+  Stage 8  PERFORMANCE ANALYSIS
+    Report discrimination, calibration, the confusion matrix, subgroup
+    behaviour where labels permit, and a review of the cases the model got
+    wrong.
+    Output: evaluation report and error analysis.
+
+5.1 Validation and testing are not interchangeable
+
+  The validation split picks the checkpoint and sets the threshold. Both of
+  those decisions consume it. Score the model on that same split and the
+  result is optimistic by an unknown amount. An independent test set is scored
+  once, with everything frozen, and once it has been used to make a decision
+  it is a validation set.
+
+5.2 Model configuration
+
+  Placeholder settings for a model that has not been trained. "[TODO]" means
+  undecided, not omitted. Do not silently fill these in.
+
+  Model architecture     DenseNet-121, ImageNet-pretrained, head replaced [MOCK]
+  Input resolution       512 x 512 px, grayscale expanded to 3 channels   [MOCK]
+  Preprocessing          Resize, per-channel normalisation to the
+                         pretraining statistics. No lung-field segmentation
+                         and no histogram equalisation.                   [MOCK]
+  Augmentation           Random resized crop (0.85 to 1.0), horizontal
+                         flip, rotation +/- 7 degrees. Training split only. [MOCK]
+  Optimizer              AdamW, weight decay 1e-4                         [MOCK]
+  Learning rate          3e-4, cosine annealing                           [MOCK]
+  Batch size             16                                               [MOCK]
+  Epochs                 20, checkpoint selected at epoch 13              [MOCK]
+  Loss function          Binary cross-entropy with inverse-frequency class
+                         weights                                          [MOCK]
+  Decision threshold     tau = 0.35, chosen on the validation split.
+                         Deliberately not 0.5: a screening threshold is a
+                         clinical choice, not a library default.          [MOCK]
+  Random seed            42                                               [MOCK]
+  Calibration method     [TODO]
+  Hardware and runtime   [TODO]
+  Inference latency      [TODO]
+
+5.3 Thresholds are a local decision
+
+  WHO guidance on computer-aided detection for TB treats the operating
+  threshold as something to calibrate against the population being screened,
+  rather than a constant shipped with the software. A threshold tuned on one
+  cohort does not transfer to another with different prevalence and a
+  different cost of a missed case.  [WHO-CAD-TOOLKIT]
+
+
+================================================================================
+6. EVALUATION FRAMEWORK
+================================================================================
+
+Each metric answers a different question. Reporting one and omitting the rest
+is how a weak model is made to look strong.
+
+  SENSITIVITY (RECALL)              TP / (TP + FN)
+    Of the people the reference standard calls TB-positive, the share the
+    model flags. A screening tool is judged here first: a missed case leaves
+    someone untreated and infectious.
+    Caveat: rises as the threshold is lowered, at the cost of specificity.
+    Quoting it without the threshold is meaningless.
+
+  SPECIFICITY                       TN / (TN + FP)
+    Of the people the reference standard calls TB-negative, the share the
+    model leaves unflagged. It governs how much unnecessary confirmatory
+    testing the tool creates.
+    Caveat: in a low-prevalence population even 95% specificity can produce
+    more false positives than true positives.
+
+  PRECISION (POSITIVE PREDICTIVE VALUE)     TP / (TP + FP)
+    Of the people the model flags, the share the reference standard confirms.
+    This is the number a clinician implicitly asks about: if it flags, how
+    often is it right?
+    Caveat: depends on prevalence. The same model has a very different PPV in
+    a TB clinic and in a general screening queue.
+
+  F1-SCORE          2 * (precision * recall) / (precision + recall)
+    Harmonic mean of precision and recall, as a single summary for ranking
+    configurations.
+    Caveat: hides the trade-off it averages, and ignores true negatives
+    entirely. Useful for model selection, not for clinical reasoning.
+
+  ROC-AUC                           integral of TPR d(FPR)
+    How well the score separates the two labelled classes across every
+    threshold at once. 0.5 is chance; 1.0 is perfect separation on that data.
+    Caveat: threshold-free, so it says nothing about behaviour at the
+    threshold you would actually deploy, and nothing about calibration.
+
+  CONFUSION MATRIX                  [[TN, FP], [FN, TP]]
+    The four raw counts at one threshold. Every rate above is a ratio of these
+    numbers, which is why the counts should be published alongside the rates.
+    Caveat: only interpretable with the class support stated. Four cells
+    computed over 40 cases are not evidence.
+
+  CALIBRATION                       P(y = 1 | score = s) approx. s
+    Whether a score of 0.8 corresponds to an 80% observed positive rate.
+    Required before any score is described as a probability.
+    Caveat: a model can discriminate well and be badly calibrated.
+    Uncalibrated scores must not be presented as risk.
+
+6.1 Accuracy is not usefulness
+
+  On the mock test split described in section 7, a model that flags nothing at
+  all scores 82.5% accuracy, because 594 of the 720 images are non-TB. It
+  would also miss every case of tuberculosis. High accuracy on an imbalanced
+  dataset is not evidence of clinical value, and on its own it is barely
+  evidence of anything.
+
+
+================================================================================
+7. MOCK EVALUATION DATA  [MOCK THROUGHOUT]
+================================================================================
+
+7.1 What this section is, and is not
+
+  None of this was measured. It is a hand-built example of what a complete
+  evaluation report looks like, built so the reporting layout could be
+  reviewed. Do not carry any figure from this section into the paper as a
+  result.
+
+  Two rules were followed while writing these numbers, because a mock dataset
+  that contradicts itself teaches the wrong things:
+
+    1. Internal consistency. The confusion matrix, the rates, the threshold
+       sweep and the curves all describe the same imagined 720-image test
+       split. Rates are the actual ratios of the counts, the operating points
+       sit on the plotted ROC curve, and the quoted AUC is the trapezoidal
+       area under the points that are drawn.
+    2. Realistic shape. A positive predictive value of 0.38 at 17.5% positive
+       prevalence, falling further at screening prevalence, is what a credible
+       chest X-ray screening model looks like. Numbers in the high nineties
+       would be a nicer demo and a worse education.
+
+7.2 Imagined test split
+
+  Images                720
+  Non-TB reference      594
+  TB-related reference  126
+  Positive prevalence   17.5%
+  Operating threshold   tau = 0.35, chosen on the validation split to favour
+                        sensitivity, as a screening tool should
+
+7.3 Headline metrics at tau = 0.35
+
+  Sensitivity           0.897   113 of 126 TB-labelled images flagged, 13 missed
+  Specificity           0.690   410 of 594 non-TB images unflagged, 184 flagged
+  Precision (PPV)       0.381   113 of 297 flagged images carry the TB label
+  F1-score              0.534
+  ROC-AUC               0.898   trapezoidal area under the plotted points
+  Average precision     0.656   no-skill baseline is 0.175
+
+7.4 Confusion matrix at tau = 0.35
+
+                              Model: not flagged    Model: flagged
+  Reference non-TB                     410               184
+  Reference TB-related                  13               113
+
+  Rows are the reference label, columns are the model output.
+  n = 720 images.
+
+7.5 Threshold sweep
+
+  The same model on the same images. Only the threshold moves. Anyone quoting
+  a single sensitivity figure without its threshold is quoting one row and
+  hiding the other four.
+
+  tau    Sens.   Spec.   Prec.   F1      Flagged   Missed
+  0.20   0.968   0.450   0.272   0.424      449        4
+  0.35   0.897   0.690   0.381   0.534      297       13   <- selected
+  0.50   0.746   0.896   0.603   0.667      156       32
+  0.65   0.548   0.960   0.742   0.630       93       57
+  0.80   0.333   0.980   0.778   0.467       54       84
+
+  "Flagged" is the number of the 720 images sent for confirmatory testing.
+  "Missed" is the number of the 126 TB-labelled images not flagged.
+
+7.6 ROC curve points (FPR, TPR)
+
+  (0.00, 0.000)  (0.01, 0.210)  (0.02, 0.330)  (0.04, 0.550)
+  (0.06, 0.630)  (0.10, 0.740)  (0.15, 0.820)  (0.20, 0.865)
+  (0.26, 0.875)  (0.31, 0.900)  (0.33, 0.910)  (0.42, 0.940)
+  (0.55, 0.965)  (0.70, 0.982)  (0.85, 0.993)  (1.00, 1.000)
+
+  Operating point at tau = 0.35 sits at FPR 0.310, TPR 0.900.
+  Trapezoidal area = 0.898.
+
+7.7 Precision-recall curve points (recall, precision)
+
+  (0.210, 0.817)  (0.330, 0.778)  (0.550, 0.745)  (0.630, 0.690)
+  (0.740, 0.611)  (0.820, 0.537)  (0.865, 0.478)  (0.875, 0.417)
+  (0.900, 0.381)  (0.910, 0.369)  (0.940, 0.322)  (0.965, 0.271)
+  (0.982, 0.229)  (0.993, 0.199)  (1.000, 0.175)
+
+  Average precision = 0.656. The curve meets the no-skill baseline of 0.175
+  at recall 1.0, which is the positive prevalence of the split.
+
+7.8 Prevalence worked example
+
+  Sensitivity held at 0.897 and specificity at 0.690, per 10 000 people
+  screened. The model does not change between these rows. Only the population
+  does.
+
+  Setting                          Prevalence   True pos.   False pos.   PPV
+  This test split                      17.5%        1 570        2 558   0.38
+  Symptomatic clinic attendees          5.0%          449        2 945   0.13
+  Community-wide screening              0.5%           45        3 085   0.014
+
+  This table is the single most useful thing in this section. It is also the
+  reason a model cannot be shipped with a fixed threshold.
+
+7.9 Training curves
+
+  Epoch   Train loss   Val loss   Val ROC-AUC
+    1        0.612       0.588       0.724
+    2        0.498       0.512       0.781
+    3        0.441       0.470       0.812
+    4        0.398       0.441       0.833
+    5        0.363       0.419       0.851
+    6        0.331       0.402       0.866
+    7        0.303       0.390       0.876
+    8        0.278       0.381       0.884
+    9        0.254       0.374       0.892
+   10        0.231       0.369       0.899
+   11        0.210       0.366       0.905
+   12        0.190       0.364       0.909
+   13        0.171       0.364       0.911   <- selected checkpoint
+   14        0.153       0.372       0.910
+   15        0.137       0.381       0.908
+   16        0.121       0.393       0.905
+   17        0.107       0.408       0.901
+   18        0.094       0.425       0.896
+   19        0.082       0.444       0.891
+   20        0.071       0.466       0.886
+
+  Training loss keeps falling while validation loss turns upward after epoch
+  13. That divergence, not the final training loss, is what decides which
+  checkpoint is kept.
+
+7.10 Configuration comparison
+
+  Config   Backbone          Input   Val AUC   Test AUC   Sens. @ 90% spec.
+  A        ResNet-50         224^2    0.874     0.861          0.66
+  B        DenseNet-121      512^2    0.911     0.898          0.74   <- selected
+  C        EfficientNet-B0   384^2    0.902     0.884          0.71
+
+  The gap between validation and test AUC in every row is the cost of having
+  used the validation split to choose. The test column is the only one worth
+  quoting.
+
+7.11 Analyses deliberately absent
+
+  Each of these would change how the numbers above should be read.
+
+  Calibration curve
+    Needs per-image predicted scores paired with reference labels, binned and
+    plotted against the observed positive rate.
+
+  Subgroup performance
+    Needs age, sex, HIV status and comorbidity labels. No public chest X-ray
+    set used in TB research distributes them.
+
+  External validation
+    Needs images from a source that took no part in development, scored at the
+    frozen threshold.
+
+  Reader comparison
+    Needs independent readings of the same images by qualified radiologists,
+    for an agreement analysis.
+
+  Confidence intervals
+    Needs bootstrap resampling over the test split. Required for every rate,
+    and especially so with only 126 positive cases.
+
+
+================================================================================
+8. ERROR ANALYSIS
+================================================================================
+
+Each failure mode is paired with its cost to a person, not only its effect on
+a metric. Three of them produce metrics that look fine while the model is
+broken.
+
+  FALSE NEGATIVES
+    Cost: a person with TB is told nothing was found.
+    Early or minimal disease, miliary patterns, and TB in people living with
+    HIV are all under-represented in public datasets and all harder to see. A
+    model that never sees them in training will not flag them in deployment.
+
+  FALSE POSITIVES
+    Cost: confirmatory testing, travel and anxiety for someone without TB.
+    Pneumonia, healed scarring, malignancy and chronic lung disease produce
+    overlapping appearances. At realistic screening prevalence, false
+    positives will outnumber true positives for most plausible operating
+    points. See 7.8.
+
+  IMAGE QUALITY
+    Cost: an unreliable output presented with the same confidence as a
+    reliable one.
+    Underexposure, rotation, poor inspiration, portable films and photographs
+    of printed films all shift the input distribution. Without a quality gate,
+    the model scores them anyway.
+
+  ACQUISITION SHIFT
+    Cost: performance that silently decays after deployment.
+    Detector hardware, post-processing pipelines and local protocols differ
+    between facilities. A model can learn a site signature instead of a
+    disease signature and look excellent until it moves.
+
+  DATASET LEAKAGE
+    Cost: metrics that are confidently wrong.
+    Duplicate images, or two radiographs of one patient split across train and
+    test, produce high scores that do not transfer. Without patient
+    identifiers this cannot be ruled out, only reported as a risk.
+    [PITFALLS-2021]
+
+  CLASS IMBALANCE
+    Cost: a majority-class model that still reports high accuracy.
+    Public TB sets are heavily skewed toward non-TB images. Accuracy is the
+    wrong summary; per-class recall and the raw counts are the right ones.
+
+  POPULATION SHIFT
+    Cost: a threshold that is wrong for the people it is used on.
+    Age structure, HIV prevalence, prior TB history, and whether screening is
+    symptom-triggered or community-wide all change the right operating point.
+
+8.1 Reading the two error cells
+
+  In the mock matrix at 7.4, 13 missed and 184 false alarms are not
+  interchangeable. The 13 are people who leave with a negative screen and an
+  untreated infection. The 184 are people sent for a test they did not need, a
+  real cost in travel, time and anxiety, but a recoverable one. Where the
+  threshold sits is a judgement about which cost the programme can carry, and
+  it is not a judgement a model can make.
+
+8.2 Failure case studies
+
+  Reserved and deliberately empty. Filling this section requires misclassified
+  images from a real evaluation run, reviewed with a clinician, published with
+  consent and de-identification. A plausible-sounding patient case written for
+  a slide is fabricated clinical material.
+
+
+================================================================================
+9. EXPLAINABILITY
+================================================================================
+
+9.1 What Grad-CAM does
+
+  Grad-CAM and related methods take the gradient of a class score with respect
+  to a late convolutional feature map and project it back onto the image,
+  producing a coarse heatmap of regions the score was sensitive to. For a
+  convolutional classifier like the one specified in 5.2, it is available
+  essentially for free.  [GRADCAM-2017]
+
+9.2 What it is genuinely useful for
+
+  Catching gross failures. A model that keys on a laterality marker, a
+  burned-in timestamp, the image border, or the characteristic post-processing
+  of one hospital's equipment will usually show it in a saliency map, and that
+  discovery is worth more than the metric it invalidates.
+
+9.3 What it does not establish
+
+  It does not show that the highlighted region is a lesion, or that the model
+  used clinically meaningful features. Saliency maps have been shown to look
+  convincing when produced from randomised weights, which means a
+  plausible-looking heatmap is not evidence of anything on its own.
+  [SANITY-2018]
+
+  A saliency map is not a segmentation, not a measurement, and not a
+  diagnosis. It does not say the model found a cavity in the right upper zone;
+  it says the score was sensitive to that part of the image. Those are
+  different statements, and an overlay presented to a clinician without that
+  distinction attached invites the stronger reading every time.
+
+9.4 Review protocol for a real explainability section
+
+  1. Original radiograph, unmodified.
+  2. Model explanation overlay, computed from the deployed weights on that
+     exact image. Never drawn by hand.
+  3. Research interpretation, recording:
+       - region overlap with lesion annotations, where they exist
+       - independent radiologist agreement on a sampled subset
+       - sanity check against randomised model weights
+       - behaviour on images with markers or text burned in
+
+
+================================================================================
+10. GENERALIZATION, LIMITATIONS AND CONCLUSION
+================================================================================
+
+10.1 Topics that stand between a benchmark number and a useful tool
+
+  External validation
+    An evaluation on data from a source that played no part in development.
+    Until that exists, reported performance describes one dataset, not a
+    capability.  [PITFALLS-2021]
+
+  Dataset shift
+    Changes in equipment, exposure habits, patient mix or disease prevalence
+    between development and deployment. All of them move the operating point,
+    and prevalence moves positive predictive value most.
+
+  Demographic representation
+    Performance should be reported per subgroup, by age, sex, HIV status and
+    comorbidity, wherever labels permit. Most public chest X-ray sets ship no
+    demographic fields at all, which makes the analysis impossible rather than
+    unnecessary.
+
+  Calibration
+    Discrimination and calibration are separate properties. A score may rank
+    cases well and still be a poor estimate of risk, and only a calibrated
+    score can be described as a probability.  [WHO-CAD-TOOLKIT]
+
+  Threshold recalibration
+    WHO guidance treats the operating threshold as something to set locally
+    against the population being screened, not a constant shipped with the
+    software.  [WHO-CAD-TOOLKIT]
+
+  Prospective evaluation
+    Retrospective accuracy on archived images and prospective usefulness in a
+    live screening programme are different claims. The second requires
+    measuring what happened to the people screened.
+
+  Workflow integration
+    Who reads the output, how a flag is resolved, what happens when
+    confirmatory testing is unavailable, and who is accountable for a missed
+    case. A model that improves a metric can still make a service worse.
+
+  Privacy and data governance
+    Chest radiographs are health data. Consent, retention, de-identification,
+    cross-border transfer and the right to withdraw all need answers before
+    any image leaves a device. The prototype avoids the question by never
+    transmitting one.
+
+10.2 Retrospective evaluation is not clinical deployment
+
+  These two activities are routinely reported as though a good result in the
+  left column implied readiness for the right. It does not. The left column
+  licenses one thing: a reason to attempt the right.
+
+  Axis                        Retrospective research      Clinical deployment
+  --------------------------  --------------------------  --------------------
+  Question asked              Can the model separate      Does a service using
+                              labels on archived images?  the model find more
+                                                          TB, and harm fewer
+                                                          people?
+  Population                  Whoever is in the dataset   Whoever walks in, at
+                                                          local prevalence
+  Reference standard          Dataset labels, of varying  Bacteriological
+                              origin                      confirmation, where
+                                                          reachable
+  Failure visibility          Visible in the metrics      Often invisible until
+                                                          someone is missed
+  Threshold                   Tuned on held-out data      Must be recalibrated,
+                                                          then monitored
+  A good result licenses      A prospective study         Use in care, under
+                                                          governance, with audit
+
+10.3 Conclusion
+
+  What this prototype demonstrates
+    A complete interface and reporting structure for a chest X-ray screening
+    model: the input contract, the output format, the evaluation framework,
+    and the disclosures that have to travel with a result.
+
+  What it does not demonstrate
+    That a model can screen for TB from a chest radiograph. No model is
+    connected, nothing has been trained, and no measurement has been taken.
+
+  On RQ1, detection
+    Unanswered. Answering it needs a patient-level split, a frozen test set,
+    and sensitivity and specificity reported together with intervals.
+
+  On RQ2, generalization
+    Unanswered, and the hardest of the three. It needs images from a source
+    that took no part in development.
+
+  On RQ3, interpretability
+    Unanswered. The review protocol is written; the saliency maps that belong
+    in it have to come from real model weights.
+
+  What would change the conclusion
+    A trained model, a patient-level split, one external dataset, and a
+    calibration curve. In that order.
+
+  The sentence to leave with
+    A chest radiograph can raise the suspicion of tuberculosis. It cannot
+    confirm it, and neither can a model that reads one. Whatever a future
+    version of this system reports, the useful output is a reason to test
+    somebody, never a conclusion about them.
+
+
+================================================================================
+11. REFERENCES
+================================================================================
+
+[WHO-GTB-2025]
+  Global tuberculosis report 2025. World Health Organization, 2025.
+  https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/tb-reports/global-tuberculosis-report-2025
+  Used for: global burden figures, 2024 estimates.
+
+[WHO-SCREEN-2021]
+  WHO consolidated guidelines on tuberculosis, Module 2: Screening.
+  Systematic screening for tuberculosis disease. World Health Organization,
+  2021.
+  https://www.who.int/publications/i/item/9789240022676
+  Used for: the role of chest radiography and CAD in screening and triage.
+
+[WHO-CXR-2016]
+  Chest radiography in tuberculosis detection. World Health Organization,
+  2016.
+  https://www.who.int/publications/i/item/9789241511506
+  Used for: sensitivity and limited specificity of chest radiography for TB.
+
+[WHO-CAD-TOOLKIT]
+  Calibrating computer-aided detection (CAD) for TB. WHO / TDR.
+  https://tdr.who.int/tuberculosis-research/calibrating-computer-aided-detection-for-TB
+  Used for: why a CAD threshold must be recalibrated locally.
+
+[TBX11K-2020]
+  Liu Y, Wu Y-H, Ban Y, Wang H, Cheng M-M. Rethinking Computer-Aided
+  Tuberculosis Diagnosis. IEEE/CVF CVPR, 2020.
+  https://mmcheng.net/tb/
+  Used for: candidate dataset with TB lesion boxes.
+  Dataset mirror referenced by the project:
+  https://www.kaggle.com/datasets/usmanshams/tbx-11
+
+[JAEGER-2014]
+  Jaeger S, Candemir S, Antani S, Wang Y-XJ, Lu P-X, Thoma G. Two public chest
+  X-ray datasets for computer-aided screening of pulmonary diseases.
+  Quantitative Imaging in Medicine and Surgery, 2014.
+  https://pubmed.ncbi.nlm.nih.gov/25525580/
+  Used for: origin of the Shenzhen and Montgomery collections.
+
+[GRADCAM-2017]
+  Selvaraju RR, Cogswell M, Das A, Vedantam R, Parikh D, Batra D. Grad-CAM:
+  Visual Explanations from Deep Networks via Gradient-based Localization.
+  ICCV, 2017.
+  https://arxiv.org/abs/1610.02391
+
+[SANITY-2018]
+  Adebayo J, Gilmer J, Muelly M, Goodfellow I, Hardt M, Kim B. Sanity Checks
+  for Saliency Maps. NeurIPS, 2018.
+  https://arxiv.org/abs/1810.03292
+  Used for: evidence that a saliency map can look convincing while carrying no
+  information.
+
+[PITFALLS-2021]
+  Roberts M, et al. Common pitfalls and recommendations for using machine
+  learning to detect and prognosticate for COVID-19 using chest radiographs
+  and CT scans. Nature Machine Intelligence, 2021.
+  https://www.nature.com/articles/s42256-021-00307-0
+  Used for: catalogue of methodological failures in chest-imaging ML,
+  including duplicate-patient leakage.
+
+[TRIPOD-AI-2024]
+  Collins GS, et al. TRIPOD+AI statement: updated guidance for reporting
+  clinical prediction models that use regression or machine learning methods.
+  BMJ, 2024.
+  https://www.bmj.com/content/385/bmj-2023-078378
+  Used for: the reporting checklist this document is structured around.
+
+[CODE]
+  Project repository: https://github.com/reylam/ureeka-my-kisah
+
+
+================================================================================
+END OF NOTES
+================================================================================

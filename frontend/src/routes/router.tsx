@@ -1,10 +1,11 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
-import { RequireAuth } from './RequireAuth';
+import { RequireAuth, RequireRole, RoleHome } from './RequireAuth';
 import { RouteError } from './RouteError';
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { RegisterPage } from '@/pages/RegisterPage';
 import { TraceLayout } from '@/trace/components/layout/TraceLayout';
 import { TraceHome } from '@/trace/pages/Home';
 
@@ -16,11 +17,10 @@ import { TraceHome } from '@/trace/pages/Home';
  * Everything else lives under a pathless layout route wrapped in `RequireAuth`,
  * so the application shell and its guard are declared once.
  *
- * The research home and login pages load eagerly because one of them is almost
+ * The public home and login pages load eagerly because one of them is almost
  * always the first paint. Everything else is code-split, so a visitor who only
- * reads the overview never downloads the X-ray viewer, the report layout or the
- * research charts. `AppShell` and `TraceLayout` provide the Suspense
- * boundaries.
+ * reads the overview never downloads the screening demo or the X-ray viewer.
+ * `AppShell` and `TraceLayout` provide the Suspense boundaries.
  *
  * Each app route carries a `crumbs` handle that the top bar reads, so
  * breadcrumbs are declared next to the route rather than reconstructed from
@@ -67,12 +67,51 @@ const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
 
+/* Patient workspace */
+const OnboardingPage = lazy(() =>
+  import('@/pages/OnboardingPage').then((m) => ({ default: m.OnboardingPage })),
+);
+const PatientOverviewPage = lazy(() =>
+  import('@/pages/patient/PatientOverviewPage').then((m) => ({ default: m.PatientOverviewPage })),
+);
+const PatientScreeningsPage = lazy(() =>
+  import('@/pages/patient/PatientScreeningsPage').then((m) => ({
+    default: m.PatientScreeningsPage,
+  })),
+);
+const PatientFollowUpPage = lazy(() =>
+  import('@/pages/patient/PatientFollowUpPage').then((m) => ({ default: m.PatientFollowUpPage })),
+);
+const PatientLearningPage = lazy(() =>
+  import('@/pages/patient/PatientLearningPage').then((m) => ({ default: m.PatientLearningPage })),
+);
+const PatientProfilePage = lazy(() =>
+  import('@/pages/patient/PatientProfilePage').then((m) => ({ default: m.PatientProfilePage })),
+);
+
+/* Administration */
+const AdminOverviewPage = lazy(() =>
+  import('@/pages/admin/AdminOverviewPage').then((m) => ({ default: m.AdminOverviewPage })),
+);
+const AdminUsersPage = lazy(() =>
+  import('@/pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })),
+);
+const AdminFacilitiesPage = lazy(() =>
+  import('@/pages/admin/AdminFacilitiesPage').then((m) => ({ default: m.AdminFacilitiesPage })),
+);
+const AdminScreeningsPage = lazy(() =>
+  import('@/pages/admin/AdminScreeningsPage').then((m) => ({ default: m.AdminScreeningsPage })),
+);
+const AdminAuditPage = lazy(() =>
+  import('@/pages/admin/AdminAuditPage').then((m) => ({ default: m.AdminAuditPage })),
+);
+
 /**
- * PULMO-TRACE, the public research site, owns `/`, `/demo` and `/research`.
+ * PULMO-TRACE, the public site, owns `/`, `/how-it-works` and `/demo`.
  *
- * The demo and research pages are code-split: both are long, and the research
- * page pulls in every chart in the project. A visitor who only reads the home
- * page should not download either.
+ * The explainer and the demo are code-split. The demo carries the upload and
+ * preview code, which a visitor who only reads the home page should not have
+ * to download.
  *
  * The clinical workflow prototype that previously sat at `/` is unchanged and
  * now served from `/platform`; its own routes under `/dashboard`, `/patients`
@@ -81,8 +120,8 @@ const NotFoundPage = lazy(() =>
 const TraceModelDemo = lazy(() =>
   import('@/trace/pages/ModelDemo').then((m) => ({ default: m.TraceModelDemo })),
 );
-const TraceResearch = lazy(() =>
-  import('@/trace/pages/Research').then((m) => ({ default: m.TraceResearch })),
+const TraceHowItWorks = lazy(() =>
+  import('@/trace/pages/HowItWorks').then((m) => ({ default: m.TraceHowItWorks })),
 );
 
 export const router = createBrowserRouter([
@@ -91,8 +130,8 @@ export const router = createBrowserRouter([
     errorElement: <RouteError />,
     children: [
       { path: '/', element: <TraceHome /> },
+      { path: '/how-it-works', element: <TraceHowItWorks /> },
       { path: '/demo', element: <TraceModelDemo /> },
-      { path: '/research', element: <TraceResearch /> },
     ],
   },
   {
@@ -100,16 +139,112 @@ export const router = createBrowserRouter([
     element: <LandingPage />,
     errorElement: <RouteError />,
   },
+  { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
+  { path: '/register', element: <RegisterPage />, errorElement: <RouteError /> },
+
+  // One link for "take me to my workspace", resolved from the role.
+  { path: '/app', element: <RoleHome />, errorElement: <RouteError /> },
+
+  // Onboarding sits outside the shell: it has its own chrome, and a patient
+  // who has not finished it has no navigation to offer yet.
   {
-    path: '/login',
-    element: <LoginPage />,
+    path: '/onboarding',
+    element: (
+      <Suspense fallback={null}>
+        <OnboardingPage />
+      </Suspense>
+    ),
     errorElement: <RouteError />,
   },
+
+  /* ── Patient workspace ─────────────────────────────────────────────────── */
   {
-    // Pathless layout: children resolve against the root.
     element: (
       <RequireAuth>
-        <AppShell />
+        <RequireRole roles={['patient']}>
+          <AppShell />
+        </RequireRole>
+      </RequireAuth>
+    ),
+    errorElement: <RouteError />,
+    children: [
+      { path: 'me', element: <PatientOverviewPage />, handle: { crumbs: [{ label: 'Overview' }] } },
+      {
+        path: 'me/screenings',
+        element: <PatientScreeningsPage />,
+        handle: { crumbs: [{ label: 'My screenings' }] },
+      },
+      {
+        path: 'me/followup',
+        element: <PatientFollowUpPage />,
+        handle: { crumbs: [{ label: 'Follow-up' }] },
+      },
+      {
+        path: 'me/learn',
+        element: <PatientLearningPage />,
+        handle: { crumbs: [{ label: 'Health learning' }] },
+      },
+      {
+        path: 'me/facilities',
+        element: <FacilitiesPage />,
+        handle: { crumbs: [{ label: 'Healthcare facilities' }] },
+      },
+      {
+        path: 'me/profile',
+        element: <PatientProfilePage />,
+        handle: { crumbs: [{ label: 'My profile' }] },
+      },
+    ],
+  },
+
+  /* ── Administration ────────────────────────────────────────────────────── */
+  {
+    element: (
+      <RequireAuth>
+        <RequireRole roles={['admin']}>
+          <AppShell />
+        </RequireRole>
+      </RequireAuth>
+    ),
+    errorElement: <RouteError />,
+    children: [
+      {
+        path: 'admin',
+        element: <AdminOverviewPage />,
+        handle: { crumbs: [{ label: 'Administration' }] },
+      },
+      {
+        path: 'admin/users',
+        element: <AdminUsersPage />,
+        handle: { crumbs: [{ label: 'Administration', to: '/admin' }, { label: 'Accounts' }] },
+      },
+      {
+        path: 'admin/facilities',
+        element: <AdminFacilitiesPage />,
+        handle: { crumbs: [{ label: 'Administration', to: '/admin' }, { label: 'Facilities' }] },
+      },
+      {
+        path: 'admin/screenings',
+        element: <AdminScreeningsPage />,
+        handle: {
+          crumbs: [{ label: 'Administration', to: '/admin' }, { label: 'Screening records' }],
+        },
+      },
+      {
+        path: 'admin/audit',
+        element: <AdminAuditPage />,
+        handle: { crumbs: [{ label: 'Administration', to: '/admin' }, { label: 'Audit log' }] },
+      },
+    ],
+  },
+
+  /* ── Healthcare professional workspace ─────────────────────────────────── */
+  {
+    element: (
+      <RequireAuth>
+        <RequireRole roles={['professional']}>
+          <AppShell />
+        </RequireRole>
       </RequireAuth>
     ),
     errorElement: <RouteError />,

@@ -10,7 +10,7 @@ import { useCallback, useRef, useState } from 'react';
  * 800 × 800 PNG on a canvas, and handed to the normal upload path as a `File`.
  *
  * The result travels through exactly the same validation as a user's own file,
- * which is the point — the sample button exercises the real code path rather
+ * which is the point: the sample button exercises the real code path rather
  * than a shortcut around it.
  */
 export function useSyntheticSample(

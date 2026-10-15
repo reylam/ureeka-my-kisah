@@ -7,11 +7,6 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / (1000 * 1000)).toFixed(1)} MB`;
 }
 
-/** 7140 -> "7 140". Thin spaces, so long counts stay readable in tables. */
-export function formatCount(value: number): string {
-  return value.toLocaleString('en-GB').replace(/,/g, '\u202f');
-}
-
 /** "chest-xray-001.png" -> "chest-xray-001" / "PNG" */
 export function splitFilename(name: string): { base: string; extension: string } {
   const dot = name.lastIndexOf('.');

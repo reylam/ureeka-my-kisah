@@ -1,4 +1,5 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -30,10 +31,15 @@ const variantClasses: Record<ButtonVariant, string> = {
     'disabled:bg-urgent-300 disabled:text-white',
 };
 
+/**
+ * Fully rounded, matching the public site. A pill reads as a control at a
+ * glance on a page otherwise built from square cards and tables, and the extra
+ * horizontal padding keeps the label off the curve.
+ */
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'h-8 px-2.5 text-[13px] gap-1.5 rounded-md',
-  md: 'h-9 px-3.5 text-sm gap-2 rounded-md',
-  lg: 'h-11 px-5 text-sm gap-2 rounded-md',
+  sm: 'h-8 px-3 text-[13px] gap-1.5 rounded-full',
+  md: 'h-9 px-4 text-sm gap-2 rounded-full',
+  lg: 'h-11 px-6 text-sm gap-2 rounded-full',
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -89,3 +95,49 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     </button>
   );
 });
+
+/**
+ * A link that looks like a button.
+ *
+ * Needed because wrapping a `<Link>` inside a `<Button>` produces an anchor
+ * inside a button: invalid HTML, two focus stops, and a control that
+ * announces itself twice. This renders a single anchor and shares the same
+ * variant and size tables, so the two cannot drift apart.
+ */
+export function ButtonLink({
+  to,
+  variant = 'outline',
+  size = 'md',
+  leadingIcon,
+  trailingIcon,
+  fullWidth = false,
+  className,
+  children,
+}: {
+  to: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  leadingIcon?: ReactNode;
+  trailingIcon?: ReactNode;
+  fullWidth?: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        'inline-flex items-center justify-center font-medium whitespace-nowrap',
+        'transition-colors duration-150 select-none',
+        sizeClasses[size],
+        variantClasses[variant],
+        fullWidth && 'w-full',
+        className,
+      )}
+    >
+      {leadingIcon}
+      {children}
+      {trailingIcon}
+    </Link>
+  );
+}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CheckCircle2,
@@ -265,7 +265,7 @@ export function OfflineQueuePage() {
                       : undefined,
                   );
                 }}
-                label="Simulate being offline"
+                label="Work offline"
                 description="Forces the offline behaviour without disconnecting the network, so the queue and draft flow can be demonstrated."
               />
             </div>

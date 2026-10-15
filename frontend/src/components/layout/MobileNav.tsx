@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Logo } from '@/components/ui/Logo';
-import { navSections, allNavItems, type BadgeKey } from './navigation';
+import { navSectionsFor, navItemsFor, type BadgeKey } from './navigation';
+import { useCurrentAccount } from '@/stores/authStore';
 import { useWorkloadCounts } from '@/hooks/useWorkloadCounts';
 import { IconButton } from '@/components/ui/IconButton';
 import { facilities, OPERATING_FACILITY_ID } from '@/data/facilities';
@@ -28,7 +29,8 @@ const badgeTone: Record<BadgeKey, string> = {
 
 export function MobileTabBar() {
   const counts = useWorkloadCounts();
-  const items = allNavItems.filter((item) => item.primaryMobile);
+  const account = useCurrentAccount();
+  const items = navItemsFor(account?.role ?? null).filter((item) => item.primaryMobile);
 
   return (
     <nav
@@ -90,6 +92,8 @@ export function MobileTabBar() {
 
 export function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const counts = useWorkloadCounts();
+  const account = useCurrentAccount();
+  const navSections = navSectionsFor(account?.role ?? null);
   const location = useLocation();
   const facility = facilities.find((f) => f.id === OPERATING_FACILITY_ID);
 
@@ -208,9 +212,6 @@ export function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () 
             <div className="shrink-0 border-t border-white/5 px-4 py-3">
               <p className="text-[11px] leading-relaxed text-obsidian-500">
                 {facility?.name}
-                <span className="mt-0.5 block text-obsidian-600">
-                  Demo prototype · synthetic data
-                </span>
               </p>
             </div>
           </motion.div>

@@ -1,105 +1,103 @@
 import { Link } from 'react-router-dom';
+import { ArrowUpRight } from 'lucide-react';
 import { Container } from '@/trace/components/ui/Container';
-import { TraceWordmark } from './TraceMark';
-import { TraceAnchor } from '@/trace/components/ui/TraceButton';
-import { SOURCES } from '@/trace/data/sources';
-import { PROJECT } from '@/trace/data/research';
+import { TraceFooterMark } from './TraceMark';
 import { NAV_ITEMS } from './Navbar';
+import { PROJECT } from '@/trace/data/content';
+import { cn } from '@/utils/cn';
 
 /**
- * Footer. Carries the disclaimer that matters most, the build status, and
- * links to the sources the site leans on — so a reader who arrives at the
- * bottom of the page leaves with the caveat rather than without it.
+ * Footer.
+ *
+ * Three blocks and a disclaimer. The disclaimer sits above the copyright line
+ * rather than beside it, because it is the most important sentence on the site
+ * and a reader who reaches the bottom of a page should land on it.
+ *
+ * "Paper" is absent from the resources list on purpose. There is no paper, and
+ * a greyed-out "soon" link is a promise the project has not made.
  */
-export function Footer() {
-  const resources = [
-    SOURCES.whoScreening2021,
-    SOURCES.whoCxr2016,
-    SOURCES.whoGtb2025,
-    SOURCES.tripodAi,
-  ];
 
+const RESOURCES: { label: string; href: string; detail: string }[] = [
+  {
+    label: 'GitHub repository',
+    href: 'https://github.com/reylam/ureeka-my-kisah',
+    detail: 'Source code',
+  },
+  {
+    label: 'Sample dataset',
+    href: 'https://www.kaggle.com/datasets/usmanshams/tbx-11',
+    detail: 'Public chest X-ray collection',
+  },
+];
+
+export function Footer() {
   return (
     <footer className="border-t border-trace-line bg-trace-surface">
-      <Container className="py-14">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1.3fr]">
+      <Container className="py-14 sm:py-16">
+        <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr_1fr] lg:gap-12">
           <div>
-            <TraceWordmark />
-            <p className="mt-4 max-w-sm text-[13.5px] leading-6 text-trace-muted">
-              A research prototype for AI-assisted tuberculosis screening from chest radiographs.
-              It exists to make a method, an evaluation framework and a set of limitations
-              inspectable — not to screen anybody.
+            <TraceFooterMark />
+            <p className="mt-5 max-w-sm text-[13.5px] leading-6 text-trace-muted">
+              A research prototype exploring how software could help spot signs of tuberculosis in
+              a chest X-ray, and how a result like that should be explained to the person reading
+              it.
             </p>
           </div>
 
-          <nav aria-label="Footer">
-            <h2 className="trace-label text-trace-dim">Pages</h2>
-            <ul className="mt-4 space-y-2.5">
+          <nav aria-labelledby="footer-nav">
+            <h2 id="footer-nav" className="trace-label text-trace-dim">
+              Navigation
+            </h2>
+            <ul className="mt-4 space-y-3">
               {NAV_ITEMS.map((item) => (
                 <li key={item.to}>
-                  <Link
-                    to={item.to}
-                    className="text-[13.5px] text-trace-muted transition-colors hover:text-trace-text"
-                  >
+                  <Link to={item.to} className={footerLink}>
                     {item.label}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link
-                  to="/research#sources"
-                  className="text-[13.5px] text-trace-muted transition-colors hover:text-trace-text"
-                >
-                  Reference list
+                <Link to="/how-it-works#sources" className={footerLink}>
+                  Sources
                 </Link>
               </li>
             </ul>
           </nav>
 
           <div>
-            <h2 className="trace-label text-trace-dim">Dataset and methodology resources</h2>
-            <ul className="mt-4 space-y-2.5">
-              {resources.map((source) => (
-                <li key={source.id}>
-                  <TraceAnchor href={source.url} className="text-[13.5px]">
-                    {source.label}
-                  </TraceAnchor>
+            <h2 className="trace-label text-trace-dim">Resources</h2>
+            <ul className="mt-4 space-y-3">
+              {RESOURCES.map((resource) => (
+                <li key={resource.href}>
+                  <a
+                    href={resource.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className={cn(footerLink, 'inline-flex items-baseline gap-1.5')}
+                  >
+                    {resource.label}
+                    <ArrowUpRight aria-hidden className="size-3.5 self-center" />
+                  </a>
+                  <span className="mt-0.5 block text-[12px] text-trace-dim">
+                    {resource.detail}
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 border-t border-trace-line pt-6">
-          <p className="max-w-3xl text-[13px] leading-6 text-trace-muted">
-            <span className="font-medium text-trace-text">Research disclaimer.</span>{' '}
-            PULMO-TRACE is a research and educational prototype. It is not a medical device, it has
-            not been clinically validated, and it must not be used to diagnose, rule out or treat
-            tuberculosis. No model is connected to this build: the demo returns a clearly labelled
-            placeholder, and every figure on the research page is mock data. If tuberculosis is a
-            concern for a real person, consult a qualified health professional.
-          </p>
-
-          <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-2 font-mono text-[11px] text-trace-dim">
-            <div className="flex gap-2">
-              <dt className="uppercase tracking-[0.1em]">Version</dt>
-              <dd className="text-trace-muted">{PROJECT.version}</dd>
-            </div>
-            <div className="flex gap-2">
-              <dt className="uppercase tracking-[0.1em]">Stage</dt>
-              <dd className="text-trace-muted">{PROJECT.stage}</dd>
-            </div>
-            <div className="flex gap-2">
-              <dt className="uppercase tracking-[0.1em]">Inference</dt>
-              <dd className="text-trace-muted">Simulated</dd>
-            </div>
-            <div className="flex gap-2">
-              <dt className="uppercase tracking-[0.1em]">Updated</dt>
-              <dd className="text-trace-muted">{PROJECT.updated}</dd>
-            </div>
-          </dl>
+        <div className="mt-12 border-t border-trace-line pt-7">
+          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
+            <p className="text-[12.5px] text-trace-dim">© 2026 PULMO-TRACE</p>
+            <p className="font-mono text-[11px] tracking-[0.06em] text-trace-dim">
+              Updated {PROJECT.updated}
+            </p>
+          </div>
         </div>
       </Container>
     </footer>
   );
 }
+
+const footerLink = 'text-[13.5px] text-trace-muted transition-colors hover:text-trace-text';

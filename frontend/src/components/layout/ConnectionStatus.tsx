@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CloudOff, Wifi, WifiOff } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -103,8 +103,8 @@ export function ConnectionStatus() {
             tone="attention"
             checked={simulatedOffline}
             onChange={setSimulatedOffline}
-            label="Simulate being offline"
-            description="A demo control. Forces the app into its offline behaviour without disconnecting the network, so the queue and draft flow can be shown."
+            label="Work offline"
+            description="Queue everything locally instead of syncing. Useful on a connection that keeps dropping, where repeated failed attempts cost more than waiting."
           />
         </div>
 

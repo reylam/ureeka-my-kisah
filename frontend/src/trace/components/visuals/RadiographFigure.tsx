@@ -43,7 +43,7 @@ export function RadiographFigure({
       )}
     >
       <div className="relative">
-        <div className="trace-grid-fine aspect-square w-full bg-[#0a0c10]">
+        <div className="trace-grid-fine aspect-square w-full bg-trace-film">
           <SampleRadiograph variant={variant} />
         </div>
 
@@ -78,8 +78,8 @@ export function RadiographFigure({
                   cx={region.x * 100}
                   cy={region.y * 100}
                   r={region.r * 100}
-                  fill="rgb(91 159 232 / 0.1)"
-                  stroke="#5b9fe8"
+                  fill="rgb(107 148 194 / 0.1)"
+                  stroke="#6b94c2"
                   strokeWidth={0.4}
                   strokeDasharray="1.6 1.2"
                   vectorEffect="non-scaling-stroke"
@@ -89,7 +89,7 @@ export function RadiographFigure({
                   y={region.y * 100 - region.r * 100 + 2}
                   fontSize={3.2}
                   fontFamily="ui-monospace, monospace"
-                  fill="#82b9f0"
+                  fill="#93b2d1"
                 >
                   {region.label}
                 </text>
@@ -99,7 +99,7 @@ export function RadiographFigure({
         ) : null}
 
         {annotationLabel ? (
-          <p className="absolute right-3 bottom-3 rounded border border-[#2b445f] bg-[#0a0c10]/85 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-trace-accent-soft">
+          <p className="absolute right-3 bottom-3 rounded border border-trace-accent-edge bg-trace-film/85 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-trace-accent-soft">
             {annotationLabel}
           </p>
         ) : null}

@@ -13,12 +13,24 @@ import type { ModelDescriptor } from '@/types/domain';
  * reporting metrics for it would be fabrication.
  */
 export const DEMO_MODEL: ModelDescriptor = {
-  name: 'Demo screening simulator',
-  version: 'demo-0.1.0',
+  name: 'PULMO screening model',
+  version: 'not yet connected',
   backbone: 'densenet121 (label set mirrored from tb-train)',
   labels: ['Healthy', 'Sick-non-TB', 'TB'],
   validation: null,
 };
 
-/** Shown wherever analysis output appears. Kept to one short, unambiguous line. */
-export const SIMULATED_RESULT_NOTICE = 'Simulated AI result, for demonstration only.';
+/**
+ * Shown wherever analysis output appears.
+ *
+ * Reworded away from "simulated, for demonstration only", which read as though
+ * the whole product were a toy. What it must not lose is the fact underneath:
+ * no model is connected to this build, so the output beside this line was not
+ * computed from the image. Dropping that would mean presenting an invented TB
+ * classification as a real one.
+ *
+ * When a real inference service is wired up, this constant goes away and the
+ * class scores stand on their own.
+ */
+export const SIMULATED_RESULT_NOTICE =
+  'Sample output. The screening model is not connected in this build.';

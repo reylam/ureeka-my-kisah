@@ -15,12 +15,12 @@ type Tone = 'caution' | 'info' | 'privacy';
 const TONES: Record<Tone, { icon: typeof Info; frame: string; icons: string }> = {
   caution: {
     icon: ShieldAlert,
-    frame: 'border-[#4a3b1c] bg-trace-flag-surface',
+    frame: 'border-trace-flag-edge bg-trace-flag-surface',
     icons: 'text-trace-flag',
   },
   info: {
     icon: Info,
-    frame: 'border-[#2b445f] bg-trace-accent-surface',
+    frame: 'border-trace-accent-edge bg-trace-accent-surface',
     icons: 'text-trace-accent',
   },
   privacy: {

@@ -13,11 +13,10 @@ import { Container } from '@/trace/components/ui/Container';
  *     and mobile browser chrome match the page instead of flashing white. The
  *     flag is removed on unmount, which is what keeps the light clinical
  *     prototype in the same app unaffected.
- *  2. Handle in-page anchors. React Router does not scroll to a hash target on
- *     a client navigation, so links like /research#dataset would otherwise land
- *     at the top of a very long page.
- *  3. Provide the skip link, since the research page is long enough that
- *     tabbing past the header on every visit is a real cost.
+ *  2. Reset the scroll position on navigation, which React Router leaves to
+ *     the application.
+ *  3. Provide the skip link, since the pages are long enough that tabbing past
+ *     the header on every visit is a real cost.
  */
 export function TraceLayout() {
   const { pathname, hash } = useLocation();
@@ -32,15 +31,16 @@ export function TraceLayout() {
     };
   }, []);
 
+  // React Router leaves scroll position to the application. Navigating to a
+  // route means "start at the top"; the one link that carries a hash, the
+  // footer's link to the sources list, has to be scrolled to by hand.
   useEffect(() => {
     if (!hash) {
       window.scrollTo({ top: 0, behavior: 'auto' });
       return;
     }
-    // Let the route's content commit before looking for the target.
     const id = window.setTimeout(() => {
-      const target = document.getElementById(hash.slice(1));
-      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' });
     }, 0);
     return () => window.clearTimeout(id);
   }, [pathname, hash]);
@@ -49,7 +49,7 @@ export function TraceLayout() {
     <div className="trace-scope flex min-h-screen flex-col bg-trace-bg text-trace-text antialiased">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-trace-accent focus:px-4 focus:py-2 focus:text-[13px] focus:font-medium focus:text-[#06121f]"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-trace-accent focus:px-4 focus:py-2 focus:text-[13px] focus:font-medium focus:text-trace-ink"
       >
         Skip to content
       </a>

@@ -8,18 +8,17 @@ import { cn } from '@/utils/cn';
 /**
  * The result report.
  *
- * Several deliberate choices, each of which took an argument to settle:
+ * Four deliberate choices:
  *
- *  - The header says SIMULATED MODEL OUTPUT — NOT A CLINICAL RESULT, in the
- *    panel itself rather than in a footnote, because screenshots get cropped.
- *  - "Pattern indicated" is amber and "not indicated" is grey. Neither is red
- *    and neither is green: those colours read as "sick" and "healthy", and a
- *    screening output means neither.
- *  - The score is drawn on a track with the threshold marked, so the reader
- *    sees a decision boundary rather than a percentage. It is labelled a
- *    simulated model score every time it appears.
- *  - The "not indicated" outcome gets the same amount of caveat as the other
- *    one. A negative screening result is the easier one to over-read.
+ *  - "Example result, not a medical finding" is printed inside the panel
+ *    rather than in a footnote, because screenshots get cropped.
+ *  - "Flagged" is amber and "nothing stood out" is grey. Neither is red and
+ *    neither is green: those colours read as "sick" and "healthy", and a
+ *    screening result means neither.
+ *  - The score sits on a track with the cut-off marked, so a reader sees a
+ *    line being crossed rather than a percentage.
+ *  - The "nothing stood out" outcome carries just as much caveat as the other
+ *    one. A reassuring result is the easier one to over-read.
  */
 export function SimulatedResultPanel({
   scenario,
@@ -36,41 +35,41 @@ export function SimulatedResultPanel({
   return (
     <section
       aria-labelledby="result-heading"
-      className={cn('overflow-hidden rounded-md border border-[#4a3b1c]', className)}
+      className={cn('overflow-hidden rounded-md border border-trace-flag-edge', className)}
     >
       <h3
         id="result-heading"
-        className="flex items-center gap-2 border-b border-[#4a3b1c] bg-trace-flag-surface px-4 py-2.5 font-mono text-[10.5px] uppercase tracking-[0.1em] text-[#e0b76f]"
+        className="flex items-center gap-2 border-b border-trace-flag-edge bg-trace-flag-surface px-4 py-2.5 font-mono text-[10.5px] uppercase tracking-[0.1em] text-trace-flag-soft"
       >
         <FlaskConical aria-hidden className="size-3.5" />
         {RESULT_DISCLOSURES.panelLabel}
       </h3>
 
       <div className="bg-trace-card">
-        {/* 1 — screening output */}
+        {/* 1. Screening output */}
         <div className="border-b border-trace-line px-4 py-5 sm:px-5">
-          <p className="trace-label text-trace-dim">Screening output</p>
+          <p className="trace-label text-trace-dim">The result</p>
           <p
             className={cn(
-              'mt-2.5 text-[21px] leading-tight font-semibold tracking-[-0.02em]',
+              'mt-2.5 text-[23px] leading-tight font-semibold tracking-[-0.02em]',
               indicated ? 'text-trace-flag' : 'text-trace-neutral',
             )}
           >
-            {indicated ? 'TB-associated pattern indicated' : 'TB-associated pattern not indicated'}
+            {indicated ? 'Flagged for a closer look' : 'Nothing stood out'}
           </p>
-          <p className="mt-2 max-w-2xl text-[13px] leading-6 text-trace-muted">
+          <p className="mt-3 max-w-2xl text-[14px] leading-6 text-trace-muted">
             {indicated
-              ? 'In a real system this would mean: this image resembles those labelled TB-related in the model’s training data, and the person should be referred for confirmatory testing. It would not mean the person has tuberculosis.'
-              : 'In a real system this would mean: this image does not resemble those labelled TB-related in the model’s training data. It would not mean the person is free of tuberculosis — chest radiography misses cases.'}
+              ? 'In a working system this would mean: this picture resembles the ones the software learned to flag, so somebody should look at it and the person should be sent for a test. It would not mean they have tuberculosis.'
+              : 'In a working system this would mean: nothing in this picture resembled the patterns the software learned to flag. It would not mean the person is free of tuberculosis, because chest X-rays do miss cases.'}
           </p>
         </div>
 
-        {/* 2 — score */}
+        {/* 2. Score */}
         <div className="border-b border-trace-line px-4 py-5 sm:px-5">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <p className="trace-label text-trace-dim">{RESULT_DISCLOSURES.scoreLabel}</p>
             <p className="font-mono text-[11px] text-trace-dim">
-              threshold τ = {DEMO_THRESHOLD.toFixed(2)}
+              cut-off {DEMO_THRESHOLD.toFixed(2)}
             </p>
           </div>
 
@@ -94,10 +93,10 @@ export function SimulatedResultPanel({
               style={{ left: `${DEMO_THRESHOLD * 100}%` }}
             />
             <span
-              className="absolute top-0 -translate-x-1/2 font-mono text-[9.5px] text-trace-accent"
+              className="absolute top-0 -translate-x-1/2 font-mono text-[9px] whitespace-nowrap text-trace-accent"
               style={{ left: `${DEMO_THRESHOLD * 100}%` }}
             >
-              τ
+              cut-off
             </span>
           </div>
 
@@ -106,25 +105,25 @@ export function SimulatedResultPanel({
           </p>
 
           {nearThreshold ? (
-            <p className="mt-3 rounded-md border border-[#2b445f] bg-trace-accent-surface px-3 py-2 text-[12.5px] leading-5 text-trace-accent-soft">
-              This score sits within 0.08 of the threshold. Move the threshold slightly and the
-              category flips while the image does not change.
+            <p className="mt-3 rounded-xl border border-trace-accent-edge bg-trace-accent-surface px-3.5 py-2.5 text-[12.5px] leading-5 text-trace-accent-soft">
+              This score sits right on the line. Nudge the cut-off a little and the answer flips,
+              while the picture itself has not changed at all.
             </p>
           ) : null}
         </div>
 
-        {/* 3 + 4 — model status and input record */}
+        {/* 3 and 4. Model status and input record */}
         <dl className="grid gap-x-6 gap-y-4 border-b border-trace-line px-4 py-5 sm:grid-cols-2 sm:px-5">
           <div className="sm:col-span-2">
-            <dt className="trace-label text-trace-dim">Model status</dt>
-            <dd className="mt-1.5 text-[13.5px] text-trace-muted">
-              {RESULT_DISCLOSURES.modelStatus} The outcome shown was selected deterministically from
-              this file’s name, size and modification time — so the same file always yields the same
-              report, and the pixels play no part in it.
+            <dt className="trace-label text-trace-dim">Where this answer came from</dt>
+            <dd className="mt-1.5 text-[13.5px] leading-6 text-trace-muted">
+              {RESULT_DISCLOSURES.modelStatus} The outcome above was picked from the file’s name,
+              size and date, so the same file always gives the same answer and the picture itself
+              played no part in it.
             </dd>
           </div>
           <div className="min-w-0">
-            <dt className="trace-label text-trace-dim">Input image</dt>
+            <dt className="trace-label text-trace-dim">Your file</dt>
             <dd
               title={image.file.name}
               className="mt-1.5 truncate font-mono text-[11.5px] text-trace-muted"
@@ -140,9 +139,9 @@ export function SimulatedResultPanel({
           </div>
         </dl>
 
-        {/* 5 — interpretation */}
+        {/* 5. Interpretation */}
         <div className="border-b border-trace-line px-4 py-5 sm:px-5">
-          <p className="trace-label text-trace-dim">Interpretation</p>
+          <p className="trace-label text-trace-dim">What to make of it</p>
           <p className="mt-2 max-w-2xl text-[13.5px] leading-6 text-trace-muted">
             {RESULT_DISCLOSURES.interpretation}
           </p>
@@ -151,9 +150,9 @@ export function SimulatedResultPanel({
           </p>
         </div>
 
-        {/* 6 — limitations */}
+        {/* 6. Limitations */}
         <div className="border-b border-trace-line px-4 py-5 sm:px-5">
-          <p className="trace-label text-trace-dim">Limitations of a result like this</p>
+          <p className="trace-label text-trace-dim">Where a result like this falls short</p>
           <ul className="mt-3 space-y-2">
             {RESULT_DISCLOSURES.limitations.map((item) => (
               <li
@@ -167,19 +166,19 @@ export function SimulatedResultPanel({
           </ul>
         </div>
 
-        {/* 7 — next step */}
+        {/* 7. Next step */}
         <div className="px-4 py-5 sm:px-5">
-          <p className="trace-label text-trace-dim">Recommended next step</p>
+          <p className="trace-label text-trace-dim">What to do next</p>
           <p className="mt-2.5 flex gap-2.5 text-[13.5px] leading-6 text-trace-text">
             <Stethoscope aria-hidden className="mt-1 size-4 shrink-0 text-trace-accent" />
             <span>{RESULT_DISCLOSURES.nextStep}</span>
           </p>
 
           <Link
-            to="/research#evaluation"
+            to="/how-it-works"
             className="mt-4 inline-flex items-center gap-1.5 text-[13px] text-trace-accent transition-colors hover:text-trace-accent-soft"
           >
-            How a result like this would be evaluated
+            Why a score is not a chance of being ill
             <ArrowUpRight aria-hidden className="size-3.5" />
           </Link>
         </div>

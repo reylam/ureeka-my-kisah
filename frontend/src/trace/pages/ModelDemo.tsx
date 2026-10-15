@@ -10,8 +10,9 @@ import { InferenceStatus } from '@/trace/components/demo/InferenceStatus';
 import { SimulatedResultPanel } from '@/trace/components/demo/SimulatedResultPanel';
 import { OutputGlossary } from '@/trace/components/demo/OutputGlossary';
 import { SampleRadiograph } from '@/components/screening/SampleRadiograph';
+import { Mascot } from '@/trace/components/visuals/Mascot';
 import { MAX_BYTES, MIN_EDGE_PX, useImageUpload } from '@/trace/hooks/useImageUpload';
-import { SCENARIO_COUNT, useSimulatedInference } from '@/trace/hooks/useSimulatedInference';
+import { useSimulatedInference } from '@/trace/hooks/useSimulatedInference';
 import { useSyntheticSample } from '@/trace/hooks/useSyntheticSample';
 
 /**
@@ -21,7 +22,7 @@ import { useSyntheticSample } from '@/trace/hooks/useSyntheticSample';
  * not after the result. A reader who stops halfway down has still been told
  * that nothing here diagnoses anything and that no image leaves the device.
  *
- * All state lives in two hooks — selection and run — and the page wires them
+ * All state lives in two hooks, selection and run, and the page wires them
  * together. Selecting a new image resets the run, so a stale report can never
  * sit under a different picture.
  */
@@ -60,25 +61,26 @@ export function TraceModelDemo() {
       <section className="relative overflow-hidden border-b border-trace-line">
         <div aria-hidden className="trace-grid trace-grid-mask absolute inset-0" />
         <Container className="relative py-14 sm:py-16">
-          <Eyebrow>Interactive research prototype</Eyebrow>
+          <Eyebrow>Screening demo</Eyebrow>
           <h1 className="mt-5 max-w-2xl text-[32px] leading-[1.1] font-semibold tracking-[-0.03em] sm:text-[40px]">
-            Test the TB screening workflow
+            Walk through the whole flow
           </h1>
-          <p className="mt-5 max-w-2xl text-[15.5px] leading-7 text-trace-muted">
-            Upload a chest X-ray to explore the screening interface, review the model output format,
-            and understand what the result can and cannot establish.
+          <p className="mt-5 max-w-2xl text-[16px] leading-7 text-trace-muted">
+            Pick a chest X-ray and see what the screening step would look like: the checks on the
+            image, the result it produces, and the wording that has to come with it. Takes about a
+            minute.
           </p>
 
           <div className="mt-8 grid gap-3 lg:max-w-4xl lg:grid-cols-2">
-            <DisclaimerBanner tone="caution" title="Research use only">
-              This prototype is not intended to diagnose tuberculosis or replace professional
-              medical evaluation. No trained model is connected to this build, and the output below
-              is a labelled placeholder.
+            <DisclaimerBanner tone="caution" title="This cannot tell you if you have TB">
+              It is a demonstration of an interface. No trained model is connected to it, so the
+              result below is a clearly marked stand-in and not a judgement about any image. If you
+              are worried about tuberculosis, see a health professional.
             </DisclaimerBanner>
-            <DisclaimerBanner tone="privacy" title="Image privacy">
-              Images are processed locally in this frontend demonstration — the file is read into
-              browser memory to draw a preview and is never transmitted. Even so, do not upload
-              identifiable patient information.
+            <DisclaimerBanner tone="privacy" title="Your file stays on your device">
+              The image is read by your own browser to draw the preview. Nothing is uploaded, and
+              nothing is stored. Even so, please do not use a file that carries someone’s name or
+              patient number.
             </DisclaimerBanner>
           </div>
         </Container>
@@ -89,10 +91,10 @@ export function TraceModelDemo() {
         <Container>
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
             <SectionHeading
-              eyebrow="Input"
+              eyebrow="What you need"
               title="One chest X-ray image"
               level={3}
-              standfirst="A single frontal radiograph. This prototype does not ask for a lateral view, because requiring a second projection would only make sense if a model needed one — and none is connected."
+              standfirst="A single front-facing chest X-ray, the ordinary kind. Only one picture is needed, and you do not need a side view."
             />
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -114,22 +116,22 @@ export function TraceModelDemo() {
                   'Original file, not a photo of a screen',
                 ]}
               />
-              <div className="rounded-md border border-trace-line bg-trace-card p-4 sm:col-span-2">
-                <p className="trace-label text-trace-dim">No image to hand?</p>
-                <p className="mt-2 text-[13px] leading-6 text-trace-muted">
-                  Generate a synthetic radiograph. It is drawn from SVG primitives, watermarked, and
-                  passes through exactly the same validation as your own file. No real patient image
-                  is bundled with this site.
+              <div className="relative rounded-2xl border border-trace-line bg-trace-card p-5 sm:col-span-2">
+                <p className="trace-label text-trace-dim">No X-ray to hand?</p>
+                <p className="mt-2.5 text-[13.5px] leading-6 text-trace-muted">
+                  Use a drawn one instead. It is generated in code, marked as an illustration, and
+                  goes through exactly the same checks as your own file. No real patient’s X-ray is
+                  included anywhere on this site.
                 </p>
                 <TraceButton
                   variant="secondary"
                   size="sm"
-                  className="mt-3"
+                  className="mt-4"
                   onClick={sample.load}
                   disabled={sample.isBuilding}
                 >
                   <Sparkles aria-hidden className="size-3.5" />
-                  {sample.isBuilding ? 'Preparing…' : 'Use synthetic sample'}
+                  {sample.isBuilding ? 'Preparing…' : 'Use a drawn example'}
                 </TraceButton>
                 {sample.error ? (
                   <p role="alert" className="mt-2 text-[12.5px] text-trace-flag">
@@ -173,33 +175,22 @@ export function TraceModelDemo() {
                   disabled={!canAnalyse}
                   onClick={() => upload.image && inference.run(upload.image.key)}
                 >
-                  Analyze Chest X-ray
+                  Check this X-ray
                   <ArrowRight aria-hidden className="size-4" />
                 </TraceButton>
 
                 {inference.state === 'done' || inference.state === 'error' ? (
                   <TraceButton variant="secondary" onClick={inference.reset}>
                     <RotateCcw aria-hidden className="size-4" />
-                    Reset run
-                  </TraceButton>
-                ) : null}
-
-                {upload.image && inference.state !== 'running' ? (
-                  <TraceButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={inference.simulateFailure}
-                    title="Walks the interface into its error state so it can be reviewed"
-                  >
-                    Simulate a failed run
+                    Start over
                   </TraceButton>
                 ) : null}
               </div>
 
               {!upload.image ? (
                 <p className="text-[12.5px] leading-5 text-trace-dim">
-                  The analyse button stays disabled until a valid image is loaded. There is nothing
-                  to report without one.
+                  The button stays switched off until an image is loaded, since there is nothing to
+                  show without one.
                 </p>
               ) : null}
             </div>
@@ -214,15 +205,17 @@ export function TraceModelDemo() {
                 errorMessage={inference.errorMessage}
               />
 
-              <div className="rounded-md border border-trace-line bg-trace-card px-4 py-4">
-                <p className="trace-label text-trace-dim">How the placeholder is chosen</p>
-                <p className="mt-2 text-[12.5px] leading-6 text-trace-muted">
-                  There are {SCENARIO_COUNT} fixed outcomes. One is selected by hashing the file
-                  name, size and modification time — never the pixels. The same file always produces
-                  the same report, and nothing is random, so a demo can be rehearsed and a reviewer
-                  can reproduce what they saw.
-                </p>
-              </div>
+              {/* Waiting state only. Once there is an image, and certainly once
+                  there is a result, a cartoon face is the wrong note. */}
+              {!upload.image ? (
+                <div className="flex items-center gap-4 rounded-2xl border border-trace-line bg-trace-card p-5">
+                  <Mascot size="sm" />
+                  <p className="text-[13px] leading-6 text-trace-muted">
+                    Nothing loaded yet. Pick an X-ray on the left, or use the drawn example if you
+                    do not have one to hand.
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -252,24 +245,24 @@ export function TraceModelDemo() {
         </Container>
       </SectionBand>
 
-      {/* ── G · research CTA ─────────────────────────────────────────── */}
+      {/* ── G · onward ───────────────────────────────────────────────── */}
       <SectionBand labelledBy="demo-cta-heading">
         <Container width="narrow" className="text-center">
-          <Eyebrow className="justify-center">Methodology</Eyebrow>
+          <Eyebrow className="justify-center">Next</Eyebrow>
           <h2
             id="demo-cta-heading"
             className="mt-5 text-[26px] leading-tight font-semibold tracking-[-0.025em] sm:text-[32px]"
           >
-            Understand the method behind the output
+            Curious how it would actually work?
           </h2>
           <p className="mt-5 text-[15px] leading-7 text-trace-muted">
-            An output format is only as good as the evaluation behind it. The research page sets out
-            the dataset documentation, the training and validation procedure, the metrics, the
-            failure modes, and what has not been measured.
+            The explainer goes through the whole idea in plain language: how software learns to
+            recognise patterns in an X-ray, why a score is not a percentage chance, and where this
+            sits in the path from screening to treatment.
           </p>
-          <TraceLinkButton to="/research" className="mt-8">
+          <TraceLinkButton to="/how-it-works" className="mt-8">
             <BookOpen aria-hidden className="size-4" />
-            Read the Research
+            How it works
           </TraceLinkButton>
         </Container>
       </SectionBand>

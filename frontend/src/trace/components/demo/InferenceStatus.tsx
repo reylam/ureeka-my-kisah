@@ -6,10 +6,10 @@ import { cn } from '@/utils/cn';
  * The run state, named.
  *
  * Six states are reachable and all six are labelled here: waiting for a file,
- * file selected, running, complete, failed, and reset. The stage list is
- * phrased in the conditional ("would resize and normalise") because none of
- * that work is happening, and a progress bar implying otherwise would be the
- * single most misleading element on the page.
+ * file selected, running, complete, failed, and reset. The middle stages are
+ * phrased in the conditional ("would resize") because that work is not
+ * happening, and a progress bar implying otherwise would be the single most
+ * misleading element on the page.
  *
  * `aria-live="polite"` on the status line means a screen reader hears the
  * transitions instead of watching a bar it cannot see.
@@ -104,7 +104,7 @@ export function InferenceStatus({
         {state === 'error' && errorMessage ? (
           <p
             role="alert"
-            className="mt-4 flex items-start gap-2 rounded-md border border-[#4a3b1c] bg-trace-flag-surface px-3.5 py-3 text-[13px] leading-5 text-[#e8cb94]"
+            className="mt-4 flex items-start gap-2 rounded-md border border-trace-flag-edge bg-trace-flag-surface px-3.5 py-3 text-[13px] leading-5 text-trace-flag-soft"
           >
             <AlertTriangle aria-hidden className="mt-px size-4 shrink-0 text-trace-flag" />
             <span>{errorMessage}</span>
@@ -117,8 +117,8 @@ export function InferenceStatus({
 
 function resolveDisplay(state: InferenceState, hasImage: boolean) {
   const neutral = 'border-trace-line bg-trace-raised text-trace-dim';
-  const accent = 'border-[#2b445f] bg-trace-accent-surface text-trace-accent-soft';
-  const flag = 'border-[#4a3b1c] bg-trace-flag-surface text-[#e0b76f]';
+  const accent = 'border-trace-accent-edge bg-trace-accent-surface text-trace-accent-soft';
+  const flag = 'border-trace-flag-edge bg-trace-flag-surface text-trace-flag-soft';
 
   if (state === 'error') {
     return {
@@ -130,35 +130,34 @@ function resolveDisplay(state: InferenceState, hasImage: boolean) {
   }
   if (state === 'running') {
     return {
-      label: 'Processing',
+      label: 'Working',
       tone: accent,
       spinning: true,
       description:
-        'Stepping through the stages a real inference call would pass through. No model is executing.',
+        'Walking through the steps a real screening tool would take. Nothing is examining the picture.',
     };
   }
   if (state === 'done') {
     return {
-      label: 'Complete',
+      label: 'Done',
       tone: accent,
       spinning: false,
       description:
-        'The placeholder report below is assembled. It was selected from the file’s metadata, not computed from its pixels.',
+        'The example result is below. It was picked from the file’s name and size, not worked out from the picture.',
     };
   }
   if (hasImage) {
     return {
-      label: 'Image selected',
+      label: 'Image loaded',
       tone: accent,
       spinning: false,
-      description:
-        'A valid image is loaded and the analyse button is enabled. Nothing has been sent anywhere.',
+      description: 'Your image is loaded and the button is ready. Nothing has been sent anywhere.',
     };
   }
   return {
     label: 'Ready',
     tone: neutral,
     spinning: false,
-    description: 'Waiting for a chest X-ray image. Select or drop a JPG or PNG file to continue.',
+    description: 'Waiting for a chest X-ray. Drop a JPG or PNG file, or browse for one.',
   };
 }

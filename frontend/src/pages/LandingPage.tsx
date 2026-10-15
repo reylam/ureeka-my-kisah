@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -37,7 +37,6 @@ const NAV = [
   { href: '#features', label: 'Features' },
   { href: '#workflow', label: 'Workflow' },
   { href: '#scope', label: 'Scope' },
-  { href: '#stack', label: 'Stack' },
 ];
 
 const FEATURES = [
@@ -54,7 +53,7 @@ const FEATURES = [
   {
     icon: FileSearch,
     title: 'Explainable report',
-    body: 'Compare the original radiograph against an illustrative region overlay, with the model’s class scores, its limitations, the reviewer’s note and a print layout.',
+    body: 'Compare the original radiograph against an illustrative region overlay, with the modelâ€™s class scores, its limitations, the reviewerâ€™s note and a print layout.',
   },
   {
     icon: Building2,
@@ -115,12 +114,12 @@ const OUT_OF_SCOPE = [
 ];
 
 export function LandingPage() {
-  const signedIn = useAuthStore((state) => Boolean(state.userId));
+  const signedIn = useAuthStore((state) => Boolean(state.accountId));
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="min-h-dvh bg-cloud">
-      {/* ── Top bar ── */}
+      {/* â”€â”€ Top bar â”€â”€ */}
       <header className="sticky top-0 z-40 border-b border-white/5 bg-obsidian-950/95 backdrop-blur">
         <div className="on-dark mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
           {/* This overview now lives at /platform; the root is the PULMO-TRACE
@@ -192,7 +191,7 @@ export function LandingPage() {
         ) : null}
       </header>
 
-      {/* ── Hero ── */}
+      {/* â”€â”€ Hero â”€â”€ */}
       <section className="on-dark relative overflow-hidden bg-obsidian-950">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:py-20">
           <div>
@@ -250,7 +249,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ── Safety statement ── */}
+      {/* â”€â”€ Safety statement â”€â”€ */}
       <section className="border-b border-obsidian-200 bg-white">
         <div className="mx-auto flex w-full max-w-6xl items-start gap-3 px-4 py-5 sm:px-6">
           <ShieldAlert aria-hidden className="mt-0.5 size-5 shrink-0 text-attention-700" />
@@ -268,7 +267,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ── Features ── */}
+      {/* â”€â”€ Features â”€â”€ */}
       <section id="features" className="mx-auto w-full max-w-6xl scroll-mt-16 px-4 py-14 sm:px-6">
         <SectionHeading
           overline="Features"
@@ -297,7 +296,7 @@ export function LandingPage() {
         </ul>
       </section>
 
-      {/* ── Workflow ── */}
+      {/* â”€â”€ Workflow â”€â”€ */}
       <section id="workflow" className="scroll-mt-16 border-y border-obsidian-200 bg-white">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6">
           <SectionHeading
@@ -333,7 +332,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ── Scope ── */}
+      {/* â”€â”€ Scope â”€â”€ */}
       <section id="scope" className="mx-auto w-full max-w-6xl scroll-mt-16 px-4 py-14 sm:px-6">
         <SectionHeading
           overline="Scope"
@@ -355,55 +354,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ── Stack ── */}
-      <section id="stack" className="scroll-mt-16 border-t border-obsidian-200 bg-white">
-        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6">
-          <SectionHeading
-            overline="Stack"
-            title="Built to be replaced from the seams"
-            body="The data layer sits behind one async service module, and the screening call already returns the exact response shape a real inference service would send."
-          />
-
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            <StackCard
-              title="Interface"
-              items={['React + TypeScript', 'Vite', 'Tailwind CSS', 'React Router', 'Framer Motion']}
-            />
-            <StackCard
-              title="State and storage"
-              items={[
-                'Zustand with local persistence',
-                'IndexedDB for radiographs',
-                'Service worker for the app shell',
-                'One typed, relational demo dataset',
-              ]}
-            />
-            <StackCard
-              title="Integration points"
-              items={[
-                'Async mock service layer per entity',
-                'Inference contract mirrored from the Python service',
-                'Class labels and lesion boxes already modelled',
-                'No fabricated endpoints',
-              ]}
-            />
-          </div>
-
-          <div className="mt-6 rounded-card border border-obsidian-200 bg-obsidian-50 p-5">
-            <h3 className="text-[13px] font-semibold text-obsidian-950">
-              Connecting a real model later
-            </h3>
-            <p className="mt-1.5 max-w-3xl text-[13px] leading-relaxed text-obsidian-600">
-              The screening service returns a classification across three labels plus optional
-              lesion boxes, matching the training project that accompanies this prototype. Pointing
-              it at a real endpoint means replacing one transport function; the components, stores
-              and report layout stay as they are.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Closing call to action ── */}
+      {/* â”€â”€ Closing call to action â”€â”€ */}
       <section className="on-dark bg-obsidian-950">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-5 px-4 py-12 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -423,15 +374,17 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
+      {/* â”€â”€ Footer â”€â”€ */}
       <footer className="border-t border-obsidian-200 bg-white">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-7 sm:px-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-3">
             <LogoMark className="size-7 shrink-0" />
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-obsidian-950">Sentra TB</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-obsidian-500">
-                Screening and healthcare access prototype. Synthetic data only.
+              <p className="font-mono text-[12.5px] font-medium tracking-[0.11em] text-obsidian-950">
+                PULMO-TRACE
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-obsidian-500">
+                Screening and referral workflow for community health teams.
               </p>
             </div>
           </div>
@@ -463,7 +416,7 @@ export function LandingPage() {
   );
 }
 
-/* ── Local building blocks ─────────────────────────────────────────────────── */
+/* â”€â”€ Local building blocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 function SectionHeading({
   overline,
@@ -537,23 +490,4 @@ function ScopeList({
   );
 }
 
-function StackCard({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div className="rounded-card border border-obsidian-200 bg-white p-5">
-      <h3 className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-        {title}
-      </h3>
-      <ul className="mt-3 space-y-2">
-        {items.map((item) => (
-          <li
-            key={item}
-            className="flex items-start gap-2.5 text-[13px] leading-relaxed text-obsidian-700"
-          >
-            <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ct-400" />
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+

@@ -1,61 +1,59 @@
 /**
- * Placeholder outputs for the demo.
+ * Stand-in results for the demo.
  *
- * No model runs in this build, so the demo cannot produce a prediction. What it
- * does instead is pick one of the scenarios below from a hash of the selected
+ * No model runs in this build, so the demo cannot produce a real answer. What
+ * it does instead is pick one of the outcomes below from a hash of the chosen
  * file's name, size and modification time. That makes the demo:
  *
- *   - deterministic — the same file always yields the same scenario, so a
- *     presenter can rehearse and a reviewer can reproduce what they saw;
- *   - obviously not a prediction — the output depends on file metadata, which
- *     has nothing to do with the pixels, and the UI says so.
+ *   - repeatable: the same file always gives the same outcome, so a demo can
+ *     be rehearsed and anyone can reproduce what they saw;
+ *   - plainly not a prediction: the outcome depends on file details, which
+ *     have nothing to do with the picture, and the result panel says so.
  *
- * The threshold is τ = 0.35, matching the mock evaluation data, so the demo and
- * the research page describe one coherent imaginary system.
+ * The cut-off is 0.35 rather than 0.5, because a screening tool is normally
+ * tuned to catch more cases at the cost of more false alarms.
  */
 
 export const DEMO_THRESHOLD = 0.35;
 
 export interface DemoScenario {
   id: string;
-  /** Above or below DEMO_THRESHOLD. The category is derived, never stored. */
+  /** Above or below DEMO_THRESHOLD. The category is worked out, never stored. */
   score: number;
-  /** Scenario-specific note shown under the interpretation. */
+  /** The line shown under the explanation for this particular outcome. */
   note: string;
 }
 
 /**
- * Note what a scenario does *not* carry: regions, boxes or a heatmap. Drawing
- * any of those on a visitor's own radiograph would read as a detection result
- * regardless of the caption underneath it, so the demo does not draw them at
- * all. The schematic overlay appears only on the synthetic sample figures.
+ * Note what a scenario does not carry: no boxes, no circles, no heatmap.
+ * Drawing any of those on a visitor's own X-ray would read as a real finding
+ * no matter what the caption underneath said, so the demo does not draw them.
  */
-
 export const DEMO_SCENARIOS: DemoScenario[] = [
   {
     id: 'low',
     score: 0.08,
-    note: 'A score this far below the threshold would, in a real system, still not exclude TB. Chest radiography misses cases, particularly early disease and TB in people living with HIV.',
+    note: 'A low score would still not mean someone is in the clear. Chest X-rays miss cases, especially early tuberculosis and TB in people living with HIV.',
   },
   {
     id: 'low-mid',
     score: 0.24,
-    note: 'Below the threshold, but not by much. The same image at τ = 0.20 would have been flagged — which is the whole reason the threshold has to be published alongside the output.',
+    note: 'Below the cut-off, but not by much. Set the cut-off a little lower and this same picture would have been flagged, which is why the cut-off has to be shown alongside the answer.',
   },
   {
     id: 'borderline',
     score: 0.37,
-    note: 'Two hundredths above the threshold. A result this close to the boundary carries almost no information on its own, and an uncalibrated score cannot be read as "37% likely".',
+    note: 'Only just above the cut-off. A result this close to the line carries almost no information on its own, and a score of 0.37 does not mean "37% likely".',
   },
   {
     id: 'mid',
     score: 0.58,
-    note: 'Above the threshold. At the mock evaluation’s operating point, roughly 6 in 10 flags like this one would not be TB — and that proportion worsens in a lower-prevalence population.',
+    note: 'Above the cut-off. In a general population, where tuberculosis is uncommon, most pictures flagged like this one would turn out not to be TB at all.',
   },
   {
     id: 'high',
     score: 0.86,
-    note: 'A high score. It still does not establish TB: confirmation is bacteriological, and a high score from an uncalibrated model is a ranking, not a probability.',
+    note: 'A high score. It still would not mean someone has tuberculosis. That is settled by a laboratory test, not by a picture.',
   },
 ];
 
@@ -69,47 +67,47 @@ export function hashString(input: string): number {
   return hash >>> 0;
 }
 
-/** Pick the scenario for a file. Same file in, same scenario out. */
+/** Pick the outcome for a file. Same file in, same outcome out. */
 export function scenarioForKey(key: string): DemoScenario {
   const scenario = DEMO_SCENARIOS[hashString(key) % DEMO_SCENARIOS.length];
-  // The modulo above cannot exceed the array bounds, but the index signature
-  // does not know that and the project compiles with strict checks on.
+  // The modulo cannot exceed the array bounds, but the index signature does
+  // not know that and the project compiles with strict checks on.
   return scenario ?? DEMO_SCENARIOS[0]!;
 }
 
-/* ─────────────────── fixed copy for the result report ─────────────────── */
+/* ─────────────────── fixed copy for the result panel ─────────────────── */
 
 export const RESULT_DISCLOSURES = {
-  panelLabel: 'Simulated model output — not a clinical result',
-  modelStatus: 'Simulated inference. No model is connected to this build.',
-  scoreLabel: 'Simulated model score',
+  panelLabel: 'Example result · not a medical finding',
+  modelStatus: 'No trained model is connected to this build.',
+  scoreLabel: 'Example score',
   scoreCaution:
-    'This is a placeholder score on a 0–1 scale, not a probability that anyone has tuberculosis. Converting a model score into a probability of disease requires a calibrated model and a known population prevalence; neither exists here.',
+    'This is a stand-in number on a scale from 0 to 1. It is not the chance that anyone has tuberculosis. Turning a score into a real chance of illness needs a tested model and knowledge of how common TB is in that population, and neither exists here.',
   interpretation:
-    'The output above shows how a screening model’s response would be presented. It is a hypothetical response to the file you selected, and it establishes neither the presence nor the absence of tuberculosis.',
+    'What you are looking at is how a screening result would be presented. It is a stand-in response to the file you chose, and it says nothing about whether tuberculosis is present or absent.',
   limitations: [
-    'A real model misses cases. Early, minimal and HIV-associated TB are all harder to see on a radiograph and under-represented in training data.',
-    'A real model raises false alarms. Pneumonia, old scarring, malignancy and other chronic lung disease produce overlapping appearances.',
-    'Image quality changes the answer. Exposure, rotation, projection and equipment all shift the input away from what a model was trained on.',
-    'A score is not a risk. Without calibration against a known population, it cannot be read as a percentage chance of disease.',
+    'A real tool would miss people. Early tuberculosis, and TB in people living with HIV, can be very hard to see on an X-ray.',
+    'A real tool would raise false alarms. Pneumonia, old scarring and other lung conditions can look similar.',
+    'Picture quality changes the answer. Exposure, position and the machine used all shift what the software sees.',
+    'A score is not a risk. Without proper testing, it cannot be read as a percentage chance of being ill.',
   ],
   nextStep:
-    'If tuberculosis is a concern for a real person, the next step is assessment by a qualified health professional. A diagnosis rests on clinical evaluation together with bacteriological testing — a WHO-recommended rapid molecular test, culture or smear microscopy — not on an image alone.',
+    'If tuberculosis is a real concern for a real person, the next step is a health professional. A diagnosis comes from a clinical assessment together with a laboratory test on a sputum sample, never from a picture on its own.',
 } as const;
 
 /* ───────────────────────── output glossary copy ───────────────────────── */
 
 export const OUTPUT_GLOSSARY: { term: string; body: string }[] = [
   {
-    term: 'Model output',
-    body: 'A number the model computes from the pixels, and the category that number falls into once a threshold is applied. It is a property of the model, not of the patient. Move the threshold and the category changes while the image does not.',
+    term: 'What the software computed',
+    body: 'A number worked out from the pixels, and the category that number falls into once a cut-off is applied. It describes the software, not the person. Move the cut-off and the category changes while the picture does not.',
   },
   {
-    term: 'Model confidence',
-    body: 'How a model represents its own certainty — if it represents it at all. A softmax score is not a confidence measure, and a model can be sure and wrong. Reporting confidence honestly requires calibration against held-out data, and often an explicit way to abstain.',
+    term: 'How sure it claims to be',
+    body: 'A high number is not the same as being right. Software can be confident and wrong, and a number only becomes a trustworthy measure of certainty after it has been checked against cases where the real answer was already known.',
   },
   {
-    term: 'Clinical diagnosis',
-    body: 'A conclusion reached by a clinician from history, examination, imaging and confirmatory testing, about one person at one point in time. It carries accountability and a treatment decision. No model output is one of these.',
+    term: 'What is actually wrong',
+    body: 'A conclusion about one person at one moment, reached by a clinician from symptoms, history, imaging and a laboratory test. It carries a treatment decision and someone accountable for it. No piece of software produces one of these.',
   },
 ];

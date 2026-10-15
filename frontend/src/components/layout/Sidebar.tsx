@@ -1,17 +1,20 @@
-import { NavLink } from 'react-router-dom';
-import { ScanLine } from 'lucide-react';
+﻿import { Link, NavLink } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Logo } from '@/components/ui/Logo';
-import { navSections, type BadgeKey } from './navigation';
+import { navSectionsFor, PRIMARY_ACTION, ROLE_ICON, type BadgeKey } from './navigation';
+import { useCurrentAccount } from '@/stores/authStore';
+import { ROLE_LABEL } from '@/lib/permissions';
 import { useWorkloadCounts } from '@/hooks/useWorkloadCounts';
 import { facilities, OPERATING_FACILITY_ID } from '@/data/facilities';
 
 /**
  * Desktop sidebar.
  *
- * Obsidian surface: this is where the brand's black lives. Compact by design:
- * 15rem wide, 32px rows, so the content area keeps the space. The active item
- * is marked by a CT-blue rule plus a lighter background, not by a filled pill.
+ * Obsidian surface: this is where the brand's black lives. Compact by design,
+ * so the content area keeps the space. The active item is a filled pill with a
+ * CT-blue icon, matching the pill navigation on the public site, and the row
+ * shape follows the rounded buttons used everywhere else.
  */
 
 const badgeTone: Record<BadgeKey, 'urgent' | 'attention'> = {
@@ -23,6 +26,11 @@ const badgeTone: Record<BadgeKey, 'urgent' | 'attention'> = {
 
 export function Sidebar({ className }: { className?: string }) {
   const counts = useWorkloadCounts();
+  const account = useCurrentAccount();
+  const role = account?.role ?? null;
+  const navSections = navSectionsFor(role);
+  const primary = role ? PRIMARY_ACTION[role] : null;
+  const RoleIcon = role ? ROLE_ICON[role] : null;
   const facility = facilities.find((f) => f.id === OPERATING_FACILITY_ID);
 
   return (
@@ -32,8 +40,16 @@ export function Sidebar({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="flex h-14 shrink-0 items-center px-4">
+      <div className="shrink-0 px-4 pt-3.5 pb-3">
         <Logo tone="light" />
+        {/* Which workspace you are in. Three roles share this shell, and
+            without a label the only clue is which links happen to be here. */}
+        {role && RoleIcon ? (
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10.5px] font-medium tracking-wide text-obsidian-300 uppercase">
+            <RoleIcon className="size-3" />
+            {ROLE_LABEL[role]}
+          </p>
+        ) : null}
       </div>
 
       <nav aria-label="Main navigation" className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
@@ -57,22 +73,15 @@ export function Sidebar({ className }: { className?: string }) {
                       end={item.to === '/screenings/new'}
                       className={({ isActive }) =>
                         cn(
-                          'group relative flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-[13px] font-medium transition-colors',
+                          'group relative flex items-center gap-2.5 rounded-full px-3 py-2 text-[13px] font-medium transition-colors',
                           isActive
-                            ? 'bg-white/[0.07] text-white'
+                            ? 'bg-white/[0.08] text-white'
                             : 'text-obsidian-300 hover:bg-white/[0.04] hover:text-white',
                         )
                       }
                     >
                       {({ isActive }) => (
                         <>
-                          <span
-                            aria-hidden
-                            className={cn(
-                              'absolute top-1/2 left-0 h-4 w-[2px] -translate-y-1/2 rounded-r bg-ct-400 transition-opacity',
-                              isActive ? 'opacity-100' : 'opacity-0',
-                            )}
-                          />
                           <Icon
                             className={cn(
                               'size-4 shrink-0 transition-colors',
@@ -83,7 +92,7 @@ export function Sidebar({ className }: { className?: string }) {
                           {item.badge && count > 0 ? (
                             <span
                               className={cn(
-                                'inline-flex min-w-[18px] items-center justify-center rounded px-1 text-[10px] font-semibold tabular',
+                                'inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular',
                                 badgeTone[item.badge] === 'urgent'
                                   ? 'bg-urgent-500/20 text-urgent-300'
                                   : 'bg-attention-500/20 text-attention-300',
@@ -103,17 +112,29 @@ export function Sidebar({ className }: { className?: string }) {
         ))}
       </nav>
 
-      <div className="shrink-0 border-t border-white/5 p-2">
-        <NavLink
-          to="/screenings/new"
-          className="flex items-center justify-center gap-2 rounded-md bg-ct-400 px-3 py-2 text-[13px] font-semibold text-obsidian-950 transition-colors hover:bg-ct-300 active:bg-ct-500"
+      <div className="shrink-0 border-t border-white/5 p-3">
+        {primary ? (
+          <NavLink
+            to={primary.to}
+            className="flex items-center justify-center gap-2 rounded-full bg-ct-400 px-4 py-2.5 text-[13px] font-semibold text-obsidian-950 transition-colors hover:bg-ct-300 active:bg-ct-500"
+          >
+            <primary.icon className="size-4" />
+            {primary.label}
+          </NavLink>
+        ) : null}
+
+        {/* Way back out to the public research site, which is the project's
+            front door. Without this the application is a dead end. */}
+        <Link
+          to="/"
+          className="mt-2 flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] text-obsidian-400 transition-colors hover:bg-white/[0.04] hover:text-white"
         >
-          <ScanLine aria-hidden className="size-4" />
-          New Screening
-        </NavLink>
-        <p className="mt-2.5 px-1 text-[11px] leading-relaxed text-obsidian-500">
+          <ArrowLeft aria-hidden className="size-3.5" />
+          Research site
+        </Link>
+
+        <p className="mt-3 px-2 text-[11px] leading-relaxed text-obsidian-500">
           {facility?.name}
-          <span className="mt-0.5 block text-obsidian-600">Demo prototype · synthetic data</span>
         </p>
       </div>
     </div>

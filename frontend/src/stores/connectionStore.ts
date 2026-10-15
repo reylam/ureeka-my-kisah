@@ -6,9 +6,9 @@
  *
  * - `online`: what the browser actually reports (`navigator.onLine` plus the
  *               online/offline events). Real signal.
- * - `simulatedOffline`: a manual switch so the offline workflow can be
- *               demonstrated without unplugging anything. Clearly labelled in
- *               the UI as a demo control.
+ * - `simulatedOffline`: a deliberate choice to work offline, surfaced as
+ *               "Work offline". Useful on a connection that keeps dropping,
+ *               where repeated failed sync attempts cost more than waiting.
  *
  * `isConnected` is the value features should branch on.
  */

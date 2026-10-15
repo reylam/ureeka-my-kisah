@@ -8,7 +8,7 @@ import { cn } from '@/utils/cn';
  *
  * `SourceCitation` is the inline form that sits under a claim. `SourceList` is
  * the full reference list. Both resolve by id from `sources.ts`, so a claim
- * cannot cite a source that does not exist — a missing id is a visible
+ * cannot cite a source that does not exist. A missing id is a visible
  * "unknown source" rather than a silently plausible footnote.
  */
 
@@ -25,7 +25,7 @@ export function SourceCitation({
   if (!source) {
     return (
       <p className={cn('text-xs text-trace-flag', className)}>
-        Unknown source id “{sourceId}” — citation missing.
+        Unknown source id “{sourceId}”. Citation missing.
       </p>
     );
   }
@@ -39,7 +39,7 @@ export function SourceCitation({
         href={source.url}
         target="_blank"
         rel="noreferrer noopener"
-        className="inline-flex items-baseline gap-1 text-trace-accent underline decoration-[#2f4c6d] underline-offset-[3px] transition-colors hover:text-trace-accent-soft"
+        className="inline-flex items-baseline gap-1 text-trace-accent underline decoration-trace-accent-edge underline-offset-[3px] transition-colors hover:text-trace-accent-soft"
       >
         {source.label}
         <ExternalLink aria-hidden className="size-3 self-center" strokeWidth={2} />

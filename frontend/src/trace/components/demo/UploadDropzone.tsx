@@ -58,8 +58,8 @@ export function UploadDropzone({
           'rounded-md border border-dashed transition-colors',
           dragging
             ? 'border-trace-accent bg-trace-accent-surface'
-            : 'border-trace-line bg-trace-card/50 hover:border-[#3a414c]',
-          error && 'border-[#6b4a2a]',
+            : 'border-trace-line bg-trace-card/50 hover:border-trace-hover',
+          error && 'border-trace-flag-edge',
         )}
       >
         <label
@@ -113,7 +113,7 @@ export function UploadDropzone({
         <p
           id={errorId}
           role="alert"
-          className="mt-3 flex items-start gap-2 rounded-md border border-[#4a3b1c] bg-trace-flag-surface px-3.5 py-3 text-[13px] leading-5 text-[#e8cb94]"
+          className="mt-3 flex items-start gap-2 rounded-md border border-trace-flag-edge bg-trace-flag-surface px-3.5 py-3 text-[13px] leading-5 text-trace-flag-soft"
         >
           <AlertTriangle aria-hidden className="mt-px size-4 shrink-0 text-trace-flag" />
           <span>{error.message}</span>

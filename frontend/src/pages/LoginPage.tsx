@@ -5,34 +5,37 @@ import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/forms/Field';
 import { TextInput } from '@/components/forms/Inputs';
-import { DEMO_EMAIL, useAuthStore } from '@/stores/authStore';
-import { DEMO_PASSWORD } from '@/data/users';
-import { facilities, OPERATING_FACILITY_ID } from '@/data/facilities';
+import { useAuthStore } from '@/stores/authStore';
+import { ROLE_HOME } from '@/lib/permissions';
 import { toast } from '@/stores/toastStore';
 
 /**
- * Sign-in screen.
+ * Sign-in.
  *
- * Real validation and error handling, with the session established locally.
- * The fields arrive pre-filled so the prototype can be opened without hunting
- * for credentials, and the form still exercises its own validation paths if
- * you clear them.
+ * The fields start empty; the form exercises its own validation rather than
+ * arriving pre-filled. The sample accounts that used to be listed down the
+ * side are in `docs/accounts.md` now, which is the right home for credentials
+ * nobody needs to see mid-task.
+ *
+ * On success the destination comes from the role, not from a constant, so a
+ * patient does not land on the clinical dashboard.
  */
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const signIn = useAuthStore((state) => state.signIn);
-  const alreadySignedIn = useAuthStore((state) => Boolean(state.userId));
+  const alreadySignedIn = useAuthStore((state) => Boolean(state.accountId));
 
-  const [email, setEmail] = useState(DEMO_EMAIL);
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
+  const state = location.state as { from?: string; suspended?: boolean } | null;
+  const from = state?.from;
 
-  if (alreadySignedIn) return <Navigate to={from} replace />;
+  if (alreadySignedIn) return <Navigate to={from ?? '/app'} replace />;
 
   const validate = () => {
     const next: typeof errors = {};
@@ -41,7 +44,6 @@ export function LoginPage() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed))
       next.email = 'That does not look like an email address.';
     if (!password) next.password = 'Enter your password.';
-    else if (password.length < 6) next.password = 'Passwords are at least 6 characters.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -52,8 +54,8 @@ export function LoginPage() {
 
     setSubmitting(true);
     setErrors({});
-    // Brief pause so the pending state is visible. No request is made.
-    await new Promise((resolve) => window.setTimeout(resolve, 450));
+    // Brief pause so the pending state is visible while there is no request.
+    await new Promise((resolve) => window.setTimeout(resolve, 350));
 
     const result = signIn(email, password);
     setSubmitting(false);
@@ -63,34 +65,31 @@ export function LoginPage() {
       return;
     }
 
-    toast.success('Signed in.', 'All records in this prototype are synthetic.');
-    navigate(from, { replace: true });
+    toast.success(`Welcome back, ${result.account.name.split(' ')[0]}.`);
+    navigate(from ?? ROLE_HOME[result.account.role], { replace: true });
   };
-
-  const facility = facilities.find((f) => f.id === OPERATING_FACILITY_ID);
 
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
-      {/* Brand panel. The obsidian surface carries the identity. */}
-      <div className="on-dark relative flex shrink-0 flex-col justify-between bg-obsidian-950 px-6 py-7 sm:px-10 lg:w-[28rem] lg:py-10">
+      {/* Brand panel */}
+      <div className="on-dark relative flex shrink-0 flex-col justify-between bg-obsidian-950 px-6 py-7 sm:px-10 lg:w-[26rem] lg:py-10">
         <Link to="/" className="inline-flex w-fit">
           <Logo tone="light" />
         </Link>
 
         <div className="mt-8 lg:mt-0">
           <h1 className="max-w-sm text-xl leading-snug font-semibold text-white lg:text-2xl">
-            Preliminary TB screening for remote community health teams
+            Sign in to PULMO
           </h1>
           <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-obsidian-300">
-            Record a screening, review the chest radiograph, raise a referral and keep track of who
-            still needs contacting, on a connection that comes and goes.
+            Patients, health workers and administrators each see a different workspace.
           </p>
 
           <ul className="mt-6 space-y-2.5 text-[13px] text-obsidian-300">
             {[
-              'Works offline; records are stored on the device until a sync runs',
-              'Screening output always routed to a human reviewer',
-              'Referral and follow-up tracking in one register',
+              'Browsing TB information and the facility directory needs no account',
+              'Signing up creates a patient account',
+              'Your records are only ever seen by you and your care team',
             ].map((item) => (
               <li key={item} className="flex items-start gap-2.5">
                 <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ct-400" />
@@ -100,10 +99,6 @@ export function LoginPage() {
           </ul>
         </div>
 
-        <p className="mt-8 text-[11px] leading-relaxed text-obsidian-500 lg:mt-0">
-          Prototype for evaluation. Not a medical device and not for clinical use. Every patient,
-          facility and result is synthetic.
-        </p>
       </div>
 
       {/* Form panel */}
@@ -114,13 +109,29 @@ export function LoginPage() {
             className="inline-flex items-center gap-1.5 text-[13px] text-obsidian-500 transition-colors hover:text-obsidian-900"
           >
             <ArrowLeft aria-hidden className="size-3.5" />
-            Back to overview
+            Back to PULMO
           </Link>
 
           <h2 className="mt-5 text-lg font-semibold text-obsidian-950">Sign in</h2>
           <p className="mt-1 text-[13px] text-obsidian-500">
-            {facility?.name} · {facility?.region}
+            New here?{' '}
+            <Link
+              to="/register"
+              className="font-medium text-ct-700 underline underline-offset-2 hover:text-ct-800"
+            >
+              Create a patient account
+            </Link>
           </p>
+
+          {state?.suspended ? (
+            <div
+              role="alert"
+              className="mt-4 flex items-start gap-2.5 rounded-xl border border-attention-300 bg-attention-50 px-3 py-2.5 text-[13px] text-attention-800"
+            >
+              <ShieldAlert aria-hidden className="mt-px size-4 shrink-0" />
+              <span>That account is suspended. An administrator has to reactivate it.</span>
+            </div>
+          ) : null}
 
           <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
             <Field label="Email address" error={errors.email ?? null} required>
@@ -134,7 +145,7 @@ export function LoginPage() {
                   describedBy={describedBy}
                   invalid={invalid}
                   leadingIcon={<Mail />}
-                  placeholder="name@facility.id"
+                  placeholder="you@example.com"
                 />
               )}
             </Field>
@@ -157,7 +168,7 @@ export function LoginPage() {
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute top-1/2 right-2 flex size-7 -translate-y-1/2 items-center justify-center rounded text-obsidian-400 transition-colors hover:bg-obsidian-100 hover:text-obsidian-700"
+                    className="absolute top-1/2 right-2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-obsidian-400 transition-colors hover:bg-obsidian-100 hover:text-obsidian-700"
                   >
                     {showPassword ? (
                       <EyeOff aria-hidden className="size-4" />
@@ -172,7 +183,7 @@ export function LoginPage() {
             {errors.form ? (
               <div
                 role="alert"
-                className="flex items-start gap-2.5 rounded-md border border-urgent-300/70 bg-urgent-50 px-3 py-2.5 text-[13px] text-urgent-800"
+                className="flex items-start gap-2.5 rounded-xl border border-urgent-300/70 bg-urgent-50 px-3 py-2.5 text-[13px] text-urgent-800"
               >
                 <ShieldAlert aria-hidden className="mt-px size-4 shrink-0" />
                 <span>{errors.form}</span>
@@ -190,11 +201,6 @@ export function LoginPage() {
               {submitting ? 'Signing in' : 'Sign in'}
             </Button>
           </form>
-
-          <p className="mt-5 border-t border-obsidian-200 pt-4 text-xs leading-relaxed text-obsidian-500">
-            Credentials are checked on this device only. Nothing is transmitted and no account is
-            created, so this sign-in is not a security boundary.
-          </p>
         </div>
       </div>
     </div>

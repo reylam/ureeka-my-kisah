@@ -1,32 +1,31 @@
 import { useEffect } from 'react';
 import { Hero } from '@/trace/sections/home/Hero';
-import { ClinicalContext } from '@/trace/sections/home/ClinicalContext';
-import { ResearchQuestions } from '@/trace/sections/home/ResearchQuestions';
-import { PipelineSection } from '@/trace/sections/home/PipelineSection';
-import { EvidencePreview } from '@/trace/sections/home/EvidencePreview';
-import { Limitations } from '@/trace/sections/home/Limitations';
+import { WhyItMatters } from '@/trace/sections/home/WhyItMatters';
+import { HowItWorksSection } from '@/trace/sections/home/HowItWorksSection';
+import { CanAndCannot } from '@/trace/sections/home/CanAndCannot';
+import { Limits } from '@/trace/sections/home/Limits';
 import { FinalCta } from '@/trace/sections/home/FinalCta';
 
 /**
  * Home.
  *
- * Problem first, then the questions, then the system, then the evidence, then
- * the limitations. The technology appears third, not first, which is the one
- * structural decision that separates a research site from a product page.
+ * The problem first, then how the thing works, then what a result does and
+ * does not mean, then the limits. The technology turns up third, not first,
+ * which is the one structural decision that stops this reading as a product
+ * pitch.
  */
 export function TraceHome() {
   useEffect(() => {
-    document.title = 'PULMO-TRACE · AI-assisted TB screening research';
+    document.title = 'PULMO-TRACE · See Beyond the Scan';
   }, []);
 
   return (
     <>
       <Hero />
-      <ClinicalContext />
-      <ResearchQuestions />
-      <PipelineSection />
-      <EvidencePreview />
-      <Limitations />
+      <WhyItMatters />
+      <HowItWorksSection />
+      <CanAndCannot />
+      <Limits />
       <FinalCta />
     </>
   );

@@ -7,19 +7,19 @@ import { cn } from '@/utils/cn';
  *
  * Redrawn rather than used as an image for three reasons: the PNG has an
  * opaque white background, which would sit as a white tile on a near-black
- * page; it is 320 kB for a 24 px mark; and as SVG the glyph inherits
- * `currentColor`, so the same component serves the header, the footer and the
+ * page; it is 320 kB for a 28 px mark; and as SVG the glyph inherits
+ * `currentColor`, so one component serves the header, the footer and the
  * mobile menu without a second asset.
  *
- * The lungs are a mask, not white fill — they are genuine negative space, so
+ * The lungs are a mask, not white fill. They are genuine negative space, so
  * whatever surface the mark sits on shows through them.
  */
 export function TraceMark({ className }: { className?: string }) {
   const maskId = `trace-mark-${useId().replace(/[:]/g, '')}`;
 
   return (
-    <svg viewBox="0 0 24 24" aria-hidden className={cn('size-6', className)}>
-      <mask id={maskId}>
+    <svg viewBox="0 0 24 24" aria-hidden className={cn('size-7', className)}>
+      <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
         {/* White keeps, black cuts away. */}
         <rect width="24" height="24" fill="#fff" />
 
@@ -54,17 +54,71 @@ export function TraceMark({ className }: { className?: string }) {
   );
 }
 
-/** Wordmark with the research-edition tag. */
-export function TraceWordmark({ className }: { className?: string }) {
+/**
+ * Brand lockup.
+ *
+ * `compact` collapses the tagline and settles the wordmark down into the
+ * vertical centre. The header passes it the scroll state, so the lockup is the
+ * one thing on the page that animates on scroll.
+ */
+export function TraceWordmark({
+  compact = false,
+  className,
+}: {
+  compact?: boolean;
+  className?: string;
+}) {
   return (
-    <span className={cn('flex items-center gap-2.5', className)}>
-      <TraceMark className="size-7 text-trace-accent" />
-      <span className="flex flex-col leading-none">
-        <span className="font-mono text-[13.5px] font-medium tracking-[0.1em] text-trace-text">
-          PULMO-TRACE
+    <span className={cn('flex items-center gap-3', className)}>
+      <TraceMark
+        className={cn(
+          'shrink-0 text-trace-accent transition-all duration-300 ease-out',
+          compact ? 'size-7 translate-y-0' : 'size-9 -translate-y-[3px]',
+        )}
+      />
+
+      <span className="flex min-w-0 flex-col justify-center">
+        <span
+          className={cn(
+            'font-mono font-medium tracking-[0.13em] text-trace-text',
+            'transition-all duration-300 ease-out',
+            compact ? 'translate-y-0 text-[13px]' : 'translate-y-[1px] text-[15px]',
+          )}
+        >
+          PULMO
+          <span className="text-trace-dim">-TRACE</span>
         </span>
-        <span className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.14em] text-trace-dim">
-          Research edition
+
+        {/* Collapsed with max-height rather than a grid-row trick: height
+            interpolation on grid templates is still uneven across browsers,
+            and this has to be smooth on every scroll. */}
+        <span
+          aria-hidden={compact}
+          className={cn(
+            'overflow-hidden text-[11.5px] text-trace-dim',
+            'transition-all duration-300 ease-out',
+            compact ? 'mt-0 max-h-0 -translate-y-1 opacity-0' : 'mt-1 max-h-5 translate-y-0 opacity-100',
+          )}
+        >
+          <span className="block whitespace-nowrap tracking-[0.02em]">See Beyond the Scan</span>
+        </span>
+      </span>
+    </span>
+  );
+}
+
+/** Static lockup for the footer, where there is no scroll state to follow. */
+export function TraceFooterMark({ className }: { className?: string }) {
+  return (
+    <span className={cn('flex items-center gap-3', className)}>
+      <TraceMark className="size-8 shrink-0 text-trace-accent" />
+      <span className="flex flex-col">
+        <span className="font-mono text-[15px] font-medium tracking-[0.13em] text-trace-text">
+          PULMO
+          <span className="text-trace-dim">-TRACE</span>
+        </span>
+        <span className="mt-1 text-[11.5px] tracking-[0.02em] text-trace-dim">
+          See Beyond the Scan
         </span>
       </span>
     </span>

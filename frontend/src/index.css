@@ -246,7 +246,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PULMO-TRACE — research edition tokens
+   PULMO-TRACE design tokens
 
    The research site is a separate, dark, editorial surface that sits beside the
    light clinical prototype. Its tokens are namespaced `trace-*` so the two
@@ -264,15 +264,26 @@
   --color-trace-line: #292e37; /* borders */
   --color-trace-line-soft: #1e232b;
 
-  --color-trace-accent: #5b9fe8; /* calm radiographic blue */
-  --color-trace-accent-soft: #82b9f0;
-  --color-trace-accent-surface: #172638;
+  /* Radiographic blue, deliberately desaturated. A saturated accent on a
+     near-black page reads as a neon product site; this one reads as an
+     instrument. It still clears 6:1 against the page background. */
+  --color-trace-accent: #6b94c2;
+  --color-trace-accent-soft: #93b2d1;
+  --color-trace-accent-surface: #141b24;
+  --color-trace-accent-edge: #2c3b4c;
+  --color-trace-ink: #0a1017; /* text on a filled accent surface */
 
   /* Flags are deliberately not green/red. A screening output is not a verdict
-     of health or disease, and colour must never imply that it is. */
-  --color-trace-flag: #d8a657; /* "pattern indicated" — attention, not alarm */
-  --color-trace-flag-surface: #241d11;
-  --color-trace-neutral: #8d96a3; /* "pattern not indicated" — neutral */
+     of health or disease, and colour must never imply that it is. Muted ochre:
+     attention without alarm. */
+  --color-trace-flag: #c2a06b;
+  --color-trace-flag-soft: #d3bc92;
+  --color-trace-flag-surface: #1b1813;
+  --color-trace-flag-edge: #3a3327;
+
+  --color-trace-neutral: #8d96a3; /* "pattern not indicated": neutral */
+  --color-trace-film: #0a0c10; /* radiograph viewer background */
+  --color-trace-hover: #39404b; /* hairline on hover */
 }
 
 @layer base {
@@ -309,7 +320,7 @@
   }
 
   .trace-scope ::-webkit-scrollbar-thumb {
-    background-color: #343b45;
+    background-color: var(--color-trace-hover);
   }
 }
 
@@ -318,16 +329,16 @@
      never as general page decoration. */
   .trace-grid {
     background-image:
-      linear-gradient(to right, rgb(91 159 232 / 0.055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(91 159 232 / 0.055) 1px, transparent 1px);
-    background-size: 44px 44px;
+      linear-gradient(to right, rgb(107 148 194 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(107 148 194 / 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
   }
 
   .trace-grid-fine {
     background-image:
-      linear-gradient(to right, rgb(91 159 232 / 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(91 159 232 / 0.05) 1px, transparent 1px);
-    background-size: 22px 22px;
+      linear-gradient(to right, rgb(107 148 194 / 0.038) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(107 148 194 / 0.038) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   /* Fades the grid out so it reads as a surface rather than a pattern swatch. */

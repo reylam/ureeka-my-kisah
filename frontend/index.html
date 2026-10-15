@@ -8,8 +8,11 @@
       name="description"
       content="PULMO-TRACE is a research prototype for AI-assisted tuberculosis screening from chest X-rays. Research and educational use only, not for clinical diagnosis. No model is connected to this build; the demo output is simulated and all research figures are mock data."
     />
-    <link rel="icon" type="image/png" href="/icons/logo.png" />
-    <link rel="alternate icon" type="image/svg+xml" href="/icons/mark.svg" />
+    <!-- SVG first: browsers that support it prefer it, and it stays sharp at
+         every size. The PNG is the fallback for those that do not. -->
+    <link rel="icon" type="image/svg+xml" href="/icons/mark.svg" />
+    <link rel="alternate icon" type="image/png" sizes="512x512" href="/icons/logo.png" />
+    <link rel="apple-touch-icon" href="/icons/logo.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>PULMO-TRACE · AI-assisted TB screening research</title>
   </head>

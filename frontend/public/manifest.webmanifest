@@ -1,15 +1,21 @@
 {
-  "name": "Sentra TB · Screening & Healthcare Access (Prototype)",
-  "short_name": "Sentra TB",
-  "description": "Demonstration prototype for preliminary tuberculosis screening and healthcare access. All data is synthetic.",
+  "name": "PULMO-TRACE · AI-assisted TB screening research prototype",
+  "short_name": "PULMO-TRACE",
+  "description": "Research prototype for AI-assisted tuberculosis screening from chest X-rays. Research and educational use only, not for clinical diagnosis. All data is synthetic.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#F5F6F8",
-  "theme_color": "#111318",
+  "background_color": "#08090B",
+  "theme_color": "#08090B",
   "categories": ["health", "medical", "productivity"],
   "icons": [
+    {
+      "src": "/icons/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icons/mark.svg",
       "sizes": "any",

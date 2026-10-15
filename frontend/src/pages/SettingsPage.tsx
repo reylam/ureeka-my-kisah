@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2,
@@ -19,8 +19,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Notice } from '@/components/ui/Notice';
 import { ConfirmDialog } from '@/components/ui/Dialog';
-import { Select, Toggle } from '@/components/forms/Inputs';
-import { Field } from '@/components/forms/Field';
+import { Toggle } from '@/components/forms/Inputs';
 import { FacilityInfoBadge } from '@/components/ui/StatusBadge';
 import { useAuthStore, useCurrentUser } from '@/stores/authStore';
 import { useConnectionStore } from '@/stores/connectionStore';
@@ -29,7 +28,6 @@ import { toast } from '@/stores/toastStore';
 import { clearImages, getStorageUsage } from '@/services/imageStore';
 import { unregisterServiceWorker } from '@/utils/registerServiceWorker';
 import { facilities, OPERATING_FACILITY_ID } from '@/data/facilities';
-import { users } from '@/data/users';
 import { DEMO_MODEL } from '@/data/model';
 import { facilityServiceLabel, facilityTypeLabel, userRoleLabel } from '@/utils/labels';
 import { formatBytes, pluralise } from '@/utils/format';
@@ -47,7 +45,6 @@ import { formatDate } from '@/utils/date';
 export function SettingsPage() {
   const navigate = useNavigate();
   const user = useCurrentUser();
-  const switchUser = useAuthStore((state) => state.switchUser);
   const signOut = useAuthStore((state) => state.signOut);
 
   const simulatedOffline = useConnectionStore((state) => state.simulatedOffline);
@@ -173,36 +170,6 @@ export function SettingsPage() {
             <DetailRow label="Phone">{user?.phone ?? 'None on file'}</DetailRow>
           </dl>
 
-          <div className="rounded-md border border-obsidian-200 bg-obsidian-50 px-3.5 py-3">
-            <Field
-              label="Act as a different role"
-              hint="Review permissions differ by role. Switching here is a prototype convenience, not a real feature."
-            >
-              {({ id }) => (
-                <Select
-                  id={id}
-                  value={user?.id ?? ''}
-                  onChange={(event) => {
-                    switchUser(event.target.value);
-                    const next = users.find((item) => item.id === event.target.value);
-                    toast.info(
-                      `Now acting as ${next?.name ?? 'another user'}.`,
-                      next?.canReview
-                        ? 'This role can sign off clinical reviews.'
-                        : 'This role cannot sign off clinical reviews.',
-                    );
-                  }}
-                >
-                  {users.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.name} ({userRoleLabel[option.role]})
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-          </div>
-
           <Notice tone="demo" compact>
             Profile details come from the local dataset. Editing them here would not reach any
             remote system, so the fields are read-only.
@@ -290,7 +257,7 @@ export function SettingsPage() {
                 setSimulatedOffline(value);
                 toast.info(value ? 'Offline mode simulated.' : 'Offline simulation switched off.');
               }}
-              label="Simulate being offline"
+              label="Work offline"
               description="Forces the offline behaviour without disconnecting the network."
             />
           </div>
@@ -328,7 +295,7 @@ export function SettingsPage() {
                 Radiographs (IndexedDB)
               </p>
               <p className="mt-2 text-lg leading-none font-semibold text-obsidian-950 tabular">
-                {usageLoading ? '…' : usage ? formatBytes(usage.bytes) : 'Unavailable'}
+                {usageLoading ? 'â€¦' : usage ? formatBytes(usage.bytes) : 'Unavailable'}
               </p>
               <p className="mt-1.5 text-xs text-obsidian-500">
                 {usageLoading
@@ -376,8 +343,8 @@ export function SettingsPage() {
       <Card className="border-urgent-300/70">
         <CardHeader
           icon={<RotateCcw />}
-          title="Reset demo data"
-          description="Restores the seeded dataset and removes everything created during this session."
+          title="Reset all records"
+          description="Restores the starting dataset and removes everything created since."
         />
         <CardBody className="space-y-3">
           <p className="text-[13px] leading-relaxed text-obsidian-600">
@@ -390,7 +357,7 @@ export function SettingsPage() {
             leadingIcon={<Trash2 className="size-4" />}
             onClick={() => setResetOpen(true)}
           >
-            Reset demo data
+            Reset all records
           </Button>
         </CardBody>
       </Card>

@@ -49,7 +49,7 @@ export function SectionHeading({
   align?: 'left' | 'center';
   level?: 2 | 3;
   className?: string;
-  /** Trailing slot, e.g. a link or a provenance badge. */
+  /** Trailing slot, e.g. a link or a small label. */
   children?: ReactNode;
 }) {
   const Tag = level === 2 ? 'h2' : 'h3';

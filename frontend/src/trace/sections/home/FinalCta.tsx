@@ -1,9 +1,16 @@
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 import { Container } from '@/trace/components/ui/Container';
 import { Eyebrow } from '@/trace/components/ui/SectionHeading';
 import { TraceLinkButton } from '@/trace/components/ui/TraceButton';
+import { Mascot } from '@/trace/components/visuals/Mascot';
 
-/** Closing call to action. One line, two destinations, no persuasion. */
+/**
+ * Closing call to action. One line, two destinations, no persuasion.
+ *
+ * The mascot appears here rather than in the hero: the hero already has the
+ * radiograph figure carrying it, and two large images competing at the top of
+ * the page would weaken both.
+ */
 export function FinalCta() {
   return (
     <section
@@ -12,26 +19,26 @@ export function FinalCta() {
     >
       <div aria-hidden className="trace-grid trace-grid-mask absolute inset-0" />
       <Container className="relative py-20 text-center sm:py-24">
-        <Eyebrow className="justify-center">Next</Eyebrow>
+        <Mascot size="lg" className="mb-8" />
+        <Eyebrow className="justify-center">Have a look</Eyebrow>
         <h2
           id="final-cta-heading"
-          className="mx-auto mt-5 max-w-2xl text-[28px] leading-[1.15] font-semibold tracking-[-0.025em] sm:text-[38px]"
+          className="mx-auto mt-5 max-w-2xl text-[30px] leading-[1.12] font-semibold tracking-[-0.03em] sm:text-[40px]"
         >
-          Inspect the model. Examine the evidence.
+          Try it yourself, then decide what you think.
         </h2>
-        <p className="mx-auto mt-5 max-w-xl text-[15px] leading-7 text-trace-muted">
-          The demo shows what a screening output should look like and what it cannot establish. The
-          research page shows the method, the evaluation framework, and everything still missing
-          from it.
+        <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-7 text-trace-muted">
+          The demo walks through the whole screening flow with a clearly labelled stand-in result.
+          It takes about a minute, and nothing you choose leaves your device.
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <div className="mt-9 flex flex-wrap justify-center gap-3">
           <TraceLinkButton to="/demo">
-            Open Model Demo
-            <ArrowRight aria-hidden className="size-4" />
+            <Play aria-hidden className="size-4" />
+            Open the screening demo
           </TraceLinkButton>
-          <TraceLinkButton to="/research" variant="secondary">
-            <BookOpen aria-hidden className="size-4" />
-            Read Research
+          <TraceLinkButton to="/how-it-works" variant="secondary">
+            How it works
+            <ArrowRight aria-hidden className="size-4" />
           </TraceLinkButton>
         </div>
       </Container>

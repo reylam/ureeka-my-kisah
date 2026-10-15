@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DEMO_SCENARIOS, scenarioForKey, type DemoScenario } from '@/trace/data/demoResults';
+import { scenarioForKey, type DemoScenario } from '@/trace/data/demoResults';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
 /**
@@ -11,9 +11,9 @@ import { usePrefersReducedMotion } from './usePrefersReducedMotion';
  * says. The stage labels describe work that is *not* happening, so they are
  * phrased as "would preprocess", and the panel header says "simulated".
  *
- * The failure path is reachable on purpose, through `simulateFailure`, which
- * the demo exposes as a visible control. An interface whose error state has
- * never been looked at has not been reviewed.
+ * The error state is still part of the machine, and `InferenceStatus` renders
+ * it, so a real transport failure has somewhere to land once this is pointed
+ * at a service. It is simply not reachable from the interface today.
  */
 
 export type InferenceState = 'idle' | 'ready' | 'running' | 'done' | 'error';
@@ -25,18 +25,18 @@ export interface InferenceStage {
 }
 
 export const STAGES: InferenceStage[] = [
-  { id: 'validate', label: 'Validating input', detail: 'File type, size and pixel dimensions' },
+  { id: 'validate', label: 'Checking the file', detail: 'Type, size and dimensions of the image' },
   {
     id: 'preprocess',
-    label: 'Preprocessing (simulated)',
-    detail: 'Would resize and normalise to the model input specification',
+    label: 'Preparing the picture',
+    detail: 'Would resize and even out the brightness before anything looks at it',
   },
   {
     id: 'infer',
-    label: 'Inference (simulated)',
-    detail: 'No model is loaded — a placeholder is selected instead',
+    label: 'Looking for patterns',
+    detail: 'Not happening: no trained model is connected, so a stand-in is used',
   },
-  { id: 'report', label: 'Assembling report', detail: 'Output, disclosures and limitations' },
+  { id: 'report', label: 'Writing up the result', detail: 'The answer, with its warnings' },
 ];
 
 interface UseSimulatedInference {
@@ -47,7 +47,6 @@ interface UseSimulatedInference {
   result: DemoScenario | null;
   errorMessage: string | null;
   run: (key: string) => void;
-  simulateFailure: () => void;
   reset: () => void;
 }
 
@@ -106,31 +105,8 @@ export function useSimulatedInference(): UseSimulatedInference {
     [clearTimers, prefersReducedMotion],
   );
 
-  /**
-   * Walks into the failure state so it can be inspected. A real client would
-   * land here on a network error, a rejected upload or a model-server timeout.
-   */
-  const simulateFailure = useCallback(() => {
-    clearTimers();
-    setResult(null);
-    setStageIndex(1);
-    setState('running');
-    const step = prefersReducedMotion ? 60 : STAGE_MS;
-    timers.current.push(
-      window.setTimeout(() => {
-        setState('error');
-        setErrorMessage(
-          'The inference request did not complete. In this build there is no inference service to reach, so this is a deliberate demonstration of the failure state rather than a real fault.',
-        );
-      }, step * 2),
-    );
-  }, [clearTimers, prefersReducedMotion]);
-
   const progress =
     state === 'done' ? 1 : state === 'running' ? stageIndex / STAGES.length : 0;
 
-  return { state, progress, stageIndex, result, errorMessage, run, simulateFailure, reset };
+  return { state, progress, stageIndex, result, errorMessage, run, reset };
 }
-
-/** Exposed for the "how many placeholder outcomes exist" disclosure. */
-export const SCENARIO_COUNT = DEMO_SCENARIOS.length;
