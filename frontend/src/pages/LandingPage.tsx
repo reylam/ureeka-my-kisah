@@ -123,7 +123,9 @@ export function LandingPage() {
       {/* ── Top bar ── */}
       <header className="sticky top-0 z-40 border-b border-white/5 bg-obsidian-950/95 backdrop-blur">
         <div className="on-dark mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
-          <Link to="/" className="shrink-0">
+          {/* This overview now lives at /platform; the root is the PULMO-TRACE
+              research site, so the wordmark links back here rather than away. */}
+          <Link to="/platform" className="shrink-0">
             <Logo tone="light" />
           </Link>
 
@@ -194,10 +196,7 @@ export function LandingPage() {
       <section className="on-dark relative overflow-hidden bg-obsidian-950">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:py-20">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-medium tracking-wide text-ct-300 uppercase">
-              Frontend prototype
-            </p>
-            <h1 className="mt-5 max-w-xl text-3xl leading-[1.15] font-semibold text-white sm:text-4xl">
+            <h1 className="max-w-xl text-3xl leading-[1.15] font-semibold text-white sm:text-4xl">
               TB screening and healthcare access for remote community health teams
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-obsidian-300 sm:text-[15px]">

@@ -5,19 +5,22 @@ import { RequireAuth } from './RequireAuth';
 import { RouteError } from './RouteError';
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { TraceLayout } from '@/trace/components/layout/TraceLayout';
+import { TraceHome } from '@/trace/pages/Home';
 
 /**
  * Route table.
  *
- * Two public routes sit at the top: the overview at `/`, which explains the
- * project without requiring an account, and the sign-in screen. Everything
- * else lives under a pathless layout route wrapped in `RequireAuth`, so the
- * application shell and its guard are declared once.
+ * Three groups. The PULMO-TRACE research site is public and sits at the root.
+ * The clinical prototype's own overview and sign-in screens are public too.
+ * Everything else lives under a pathless layout route wrapped in `RequireAuth`,
+ * so the application shell and its guard are declared once.
  *
- * The landing and login pages load eagerly because one of them is always the
- * first paint. The application screens are code-split so a visitor who only
+ * The research home and login pages load eagerly because one of them is almost
+ * always the first paint. Everything else is code-split, so a visitor who only
  * reads the overview never downloads the X-ray viewer, the report layout or the
- * animation library. `AppShell` provides the Suspense boundary.
+ * research charts. `AppShell` and `TraceLayout` provide the Suspense
+ * boundaries.
  *
  * Each app route carries a `crumbs` handle that the top bar reads, so
  * breadcrumbs are declared next to the route rather than reconstructed from
@@ -64,9 +67,36 @@ const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
 
+/**
+ * PULMO-TRACE, the public research site, owns `/`, `/demo` and `/research`.
+ *
+ * The demo and research pages are code-split: both are long, and the research
+ * page pulls in every chart in the project. A visitor who only reads the home
+ * page should not download either.
+ *
+ * The clinical workflow prototype that previously sat at `/` is unchanged and
+ * now served from `/platform`; its own routes under `/dashboard`, `/patients`
+ * and so on are untouched.
+ */
+const TraceModelDemo = lazy(() =>
+  import('@/trace/pages/ModelDemo').then((m) => ({ default: m.TraceModelDemo })),
+);
+const TraceResearch = lazy(() =>
+  import('@/trace/pages/Research').then((m) => ({ default: m.TraceResearch })),
+);
+
 export const router = createBrowserRouter([
   {
-    path: '/',
+    element: <TraceLayout />,
+    errorElement: <RouteError />,
+    children: [
+      { path: '/', element: <TraceHome /> },
+      { path: '/demo', element: <TraceModelDemo /> },
+      { path: '/research', element: <TraceResearch /> },
+    ],
+  },
+  {
+    path: '/platform',
     element: <LandingPage />,
     errorElement: <RouteError />,
   },
