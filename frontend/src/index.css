@@ -1,0 +1,246 @@
+@import 'tailwindcss';
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Design tokens: "Obsidian Black & Calm Radiology Blue"
+
+   Brand identity lives in near-black (obsidian/graphite): sidebar, strong
+   typography, primary buttons. Calm CT blue is a *signature accent*, reserved
+   for active navigation, focus rings, links, and radiology visualisations.
+
+   Status colours are deliberately independent of the brand blue so clinical
+   and operational states stay distinguishable. Every status is paired with an
+   icon and a text label in the UI, never colour alone.
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Obsidian: brand + chrome */
+  --color-obsidian-50: #f6f7f8;
+  --color-obsidian-100: #eceef1;
+  --color-obsidian-200: #d6d9df;
+  --color-obsidian-300: #b1b7c2;
+  --color-obsidian-400: #858d9c;
+  --color-obsidian-500: #67707f;
+  --color-obsidian-600: #4d5564;
+  --color-obsidian-700: #3a414e;
+  --color-obsidian-800: #252a33; /* Graphite */
+  --color-obsidian-900: #1a1e25;
+  --color-obsidian-950: #111318; /* Obsidian Black, primary */
+
+  /* Calm CT blue: secondary / radiology accent */
+  --color-ct-50: #f4f8fc;
+  --color-ct-100: #eaf2fa; /* Ice Blue */
+  --color-ct-200: #d3e4f5;
+  --color-ct-300: #a8c8eb; /* Mist Blue */
+  --color-ct-400: #8db8e8; /* Calm CT Blue, secondary */
+  --color-ct-500: #6a9fd8;
+  --color-ct-600: #4b80ba;
+  --color-ct-700: #35608c; /* passes AA on white for body text */
+  --color-ct-800: #2a4c6f;
+  --color-ct-900: #1f3a53;
+
+  /* Neutral surfaces */
+  --color-cloud: #f5f6f8; /* Cloud White, app background */
+  --color-ice: #eaf2fa;
+
+  /* Semantic status: attention / urgent / complete / inert */
+  --color-attention-50: #fffbeb;
+  --color-attention-100: #fef3c7;
+  --color-attention-300: #fcd34d;
+  --color-attention-500: #f59e0b;
+  --color-attention-700: #b45309;
+  --color-attention-800: #92400e;
+
+  --color-urgent-50: #fef2f2;
+  --color-urgent-100: #fee2e2;
+  --color-urgent-300: #fca5a5;
+  --color-urgent-500: #ef4444;
+  --color-urgent-700: #b91c1c;
+  --color-urgent-800: #991b1b;
+
+  --color-complete-50: #f0fdf4;
+  --color-complete-100: #dcfce7;
+  --color-complete-300: #86efac;
+  --color-complete-500: #22c55e;
+  --color-complete-700: #15803d;
+  --color-complete-800: #166534;
+
+  /* Typography */
+  --font-sans:
+    'Inter var', 'Inter', ui-sans-serif, system-ui, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, 'SFMono-Regular', 'Cascadia Mono', 'Segoe UI Mono', Menlo,
+    Consolas, monospace;
+
+  /* Restrained elevation: thin borders do most of the work */
+  --shadow-card: 0 1px 2px 0 rgb(17 19 24 / 0.04);
+  --shadow-raised: 0 1px 3px 0 rgb(17 19 24 / 0.06), 0 1px 2px -1px rgb(17 19 24 / 0.08);
+  --shadow-overlay: 0 10px 32px -8px rgb(17 19 24 / 0.22), 0 2px 8px -2px rgb(17 19 24 / 0.1);
+
+  --radius-card: 0.5rem;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-obsidian-200);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-cloud);
+    color: var(--color-obsidian-900);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv05' 1, 'ss01' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Numeric data should align in columns */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--color-obsidian-950);
+    text-wrap: balance;
+  }
+
+  /* One consistent, clearly visible focus treatment across the whole product */
+  :focus-visible {
+    outline: 2px solid var(--color-ct-500);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Dark chrome (sidebar, X-ray viewer) needs a lighter ring to stay visible */
+  .on-dark :focus-visible {
+    outline-color: var(--color-ct-400);
+  }
+
+  ::selection {
+    background-color: var(--color-ct-200);
+    color: var(--color-obsidian-950);
+  }
+
+  /* Restrained scrollbars that match the chrome */
+  @supports selector(::-webkit-scrollbar) {
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--color-obsidian-300);
+      border: 3px solid transparent;
+      border-radius: 9999px;
+      background-clip: content-box;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-obsidian-400);
+    }
+    .on-dark ::-webkit-scrollbar-thumb {
+      background-color: var(--color-obsidian-700);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Subtle radiology-inspired texture for dark viewer surfaces. Decorative
+     only, and intentionally low-contrast so it never competes with an image. */
+  .viewer-grid {
+    background-color: var(--color-obsidian-950);
+    background-image:
+      linear-gradient(to right, rgb(141 184 232 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(141 184 232 / 0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .skeleton {
+    background-color: var(--color-obsidian-200);
+    animation: pulse-soft 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Print: used by the Explainable AI Report. Chrome is dropped entirely so the
+   printed sheet reads like a clinical document rather than a screenshot.
+   ─────────────────────────────────────────────────────────────────────────── */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 14mm 16mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  [data-print='hide'] {
+    display: none !important;
+  }
+
+  [data-print='root'] {
+    position: static !important;
+    overflow: visible !important;
+    display: block !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  [data-print='break-before'] {
+    break-before: page;
+  }
+
+  [data-print='avoid-break'] {
+    break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: '';
+  }
+}
