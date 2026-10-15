@@ -21,9 +21,26 @@ export async function get(ctx) {
 async function saveStep(ctx, column, value, step) {
   const existing = await currentRow(ctx);
   if (existing?.completed_at) {
-    // Editing after completion goes through "reopen", so the wizard and the
-    // route guard stay in step with what the record says.
-    throw ApiError.conflict('Onboarding is already complete. Reopen it to make changes.');
+    // After completion only the contact details can be edited in place (the
+    // profile page). Anything else goes through "reopen", so the wizard and
+    // the route guard stay in step with what the record says.
+    if (column !== 'personal') {
+      throw ApiError.conflict('Onboarding is already complete. Reopen it to make changes.');
+    }
+    unwrap(await ctx.db.from('patient_onboarding').update({ personal: value }).eq('profile_id', ctx.userId));
+    unwrap(await ctx.db.from('profiles').update({ full_name: value.fullName }).eq('id', ctx.userId));
+    unwrap(
+      await ctx.db
+        .from('patient_profiles')
+        .update({
+          name: value.fullName,
+          phone: value.phone || null,
+          sex: value.sex,
+          birth_date: value.birthDate,
+        })
+        .eq('profile_id', ctx.userId),
+    );
+    return get(ctx);
   }
 
   if (existing) {
