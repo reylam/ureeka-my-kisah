@@ -1,8 +1,8 @@
 {
-  "name": "pulmo-backend",
+  "name": "parupintas-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "PULMO API: Express + Supabase (Postgres, Auth, RLS, Storage)",
+  "description": "PARUPINTAS API: Express + Supabase (Postgres, Auth, RLS, Storage)",
   "type": "module",
   "main": "server.js",
   "engines": {

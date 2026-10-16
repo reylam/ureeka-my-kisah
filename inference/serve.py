@@ -1,4 +1,4 @@
-"""PULMO screening model service.
+"""PARUPINTAS screening model service.
 
 Runs the distilled MobileNetV3-Small chest X-ray classifier
 (``model/tb_student_ptq_int8.pt.zip``) behind one HTTP endpoint, which is what
@@ -116,7 +116,7 @@ def preprocess(raw: bytes) -> torch.Tensor:
 MODEL = load_model(MODEL_PATH)
 MODEL_VERSION = f"ptq-int8-{_file_digest(MODEL_PATH)}"
 
-app = FastAPI(title="PULMO screening model", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="PARUPINTAS screening model", docs_url=None, redoc_url=None, openapi_url=None)
 
 
 def require_key(authorization: str | None = Header(default=None)) -> None:

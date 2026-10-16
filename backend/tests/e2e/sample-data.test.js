@@ -15,13 +15,13 @@ import { ANON_KEY, SERVICE_KEY, stackAvailable, startStack, userToken } from './
 const skip = stackAvailable ? false : 'PostgREST binary not found (run `npm run e2e:setup`)';
 
 const WHO = {
-  siti: ['a0000000-0000-4000-8000-000000000001', 'patient@pulmo.test'],
-  doctor: ['a0000000-0000-4000-8000-000000000002', 'doctor@pulmo.test'],
-  chw: ['a0000000-0000-4000-8000-000000000003', 'chw@pulmo.test'],
-  admin: ['a0000000-0000-4000-8000-000000000004', 'admin@pulmo.test'],
-  nurse: ['a0000000-0000-4000-8000-000000000005', 'nurse@pulmo.test'],
-  dewi: ['a0000000-0000-4000-8000-000000000006', 'patient2@pulmo.test'],
-  bernadus: ['a0000000-0000-4000-8000-000000000007', 'newpatient@pulmo.test'],
+  siti: ['a0000000-0000-4000-8000-000000000001', 'patient@parupintas.test'],
+  doctor: ['a0000000-0000-4000-8000-000000000002', 'doctor@parupintas.test'],
+  chw: ['a0000000-0000-4000-8000-000000000003', 'chw@parupintas.test'],
+  admin: ['a0000000-0000-4000-8000-000000000004', 'admin@parupintas.test'],
+  nurse: ['a0000000-0000-4000-8000-000000000005', 'nurse@parupintas.test'],
+  dewi: ['a0000000-0000-4000-8000-000000000006', 'patient2@parupintas.test'],
+  bernadus: ['a0000000-0000-4000-8000-000000000007', 'newpatient@parupintas.test'],
 };
 const token = (who) => userToken(...WHO[who]);
 

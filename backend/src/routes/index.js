@@ -30,7 +30,7 @@ export function buildRouter({ config, inference }) {
   router.get('/health', (_req, res) =>
     ok(res, {
       status: 'ok',
-      service: 'pulmo-api',
+      service: 'parupintas-api',
       time: new Date().toISOString(),
       // Whether the model step is wired. Reporting it here keeps the frontend
       // from guessing.

@@ -78,7 +78,7 @@ export function SettingsPage() {
       let bytes = 0;
       for (let i = 0; i < window.localStorage.length; i += 1) {
         const key = window.localStorage.key(i);
-        if (key?.startsWith('pulmo.outbox.v1')) {
+        if (key?.startsWith('parupintas.outbox.v1')) {
           bytes += new Blob([window.localStorage.getItem(key) ?? '']).size;
         }
       }

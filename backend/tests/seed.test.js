@@ -33,10 +33,10 @@ describe('development seed, base data', () => {
   test('creates the four documented sign-ins with the right roles', async () => {
     const accounts = await rows(`select email, role, status from profiles order by email`);
     assert.deepEqual(accounts, [
-      { email: 'admin@pulmo.test', role: 'admin', status: 'active' },
-      { email: 'chw@pulmo.test', role: 'professional', status: 'active' },
-      { email: 'doctor@pulmo.test', role: 'professional', status: 'active' },
-      { email: 'patient@pulmo.test', role: 'patient', status: 'active' },
+      { email: 'admin@parupintas.test', role: 'admin', status: 'active' },
+      { email: 'chw@parupintas.test', role: 'professional', status: 'active' },
+      { email: 'doctor@parupintas.test', role: 'professional', status: 'active' },
+      { email: 'patient@parupintas.test', role: 'patient', status: 'active' },
     ]);
   });
 
@@ -53,9 +53,9 @@ describe('development seed, base data', () => {
        join profiles p on p.id = s.profile_id order by p.email`,
     );
     assert.deepEqual(staff, [
-      { email: 'admin@pulmo.test', clinical_role: 'coordinator', can_review: false },
-      { email: 'chw@pulmo.test', clinical_role: 'chw', can_review: false },
-      { email: 'doctor@pulmo.test', clinical_role: 'physician', can_review: true },
+      { email: 'admin@parupintas.test', clinical_role: 'coordinator', can_review: false },
+      { email: 'chw@parupintas.test', clinical_role: 'chw', can_review: false },
+      { email: 'doctor@parupintas.test', clinical_role: 'physician', can_review: true },
     ]);
   });
 
@@ -114,9 +114,9 @@ describe('development seed, with sample records', () => {
   test('adds a nurse at a second facility, a second patient, and one mid-onboarding', async () => {
     const accounts = await rows(`select email, role from profiles where id >= 'a0000000-0000-4000-8000-000000000005' order by email`);
     assert.deepEqual(accounts, [
-      { email: 'newpatient@pulmo.test', role: 'patient' },
-      { email: 'nurse@pulmo.test', role: 'professional' },
-      { email: 'patient2@pulmo.test', role: 'patient' },
+      { email: 'newpatient@parupintas.test', role: 'patient' },
+      { email: 'nurse@parupintas.test', role: 'professional' },
+      { email: 'patient2@parupintas.test', role: 'patient' },
     ]);
     const unfinished = await rows(`select step, completed_at from patient_onboarding where profile_id = 'a0000000-0000-4000-8000-000000000007'`);
     assert.deepEqual(unfinished, [{ step: 1, completed_at: null }]);

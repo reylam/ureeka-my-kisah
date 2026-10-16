@@ -1,4 +1,4 @@
-/** Shared types for the PULMO-TRACE site. */
+/** Shared types for the PARUPINTAS site. */
 
 export interface Source {
   id: string;

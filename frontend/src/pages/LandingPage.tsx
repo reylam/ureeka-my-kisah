@@ -382,7 +382,7 @@ export function LandingPage() {
             <LogoMark className="size-7 shrink-0" />
             <div className="min-w-0">
               <p className="font-mono text-[12.5px] font-medium tracking-[0.11em] text-obsidian-950">
-                PULMO-TRACE
+                PARUPINTAS
               </p>
               <p className="mt-1 text-xs leading-relaxed text-obsidian-500">
                 Alur screening dan referral untuk tim kesehatan komunitas.

@@ -12,10 +12,10 @@ Browsing the public side needs no account at all: the home page, the
 
 | Role | Email | Password | What they can do |
 | --- | --- | --- | --- |
-| Patient | `patient@pulmo.test` | `Patient123!` | Own screening history, follow-up schedule, health profile and the learning centre |
-| Healthcare professional | `doctor@pulmo.test` | `Doctor123!` | Assigned patients, the review queue, referrals and follow-ups |
-| Healthcare professional (CHW) | `chw@pulmo.test` | `Worker123!` | Field worker without review sign-off, to show how `canReview` differs within the role |
-| Administrator | `admin@pulmo.test` | `Admin123!` | Accounts, roles, the facility directory, record metadata and the audit log |
+| Patient | `patient@parupintas.test` | `Patient123!` | Own screening history, follow-up schedule, health profile and the learning centre |
+| Healthcare professional | `doctor@parupintas.test` | `Doctor123!` | Assigned patients, the review queue, referrals and follow-ups |
+| Healthcare professional (CHW) | `chw@parupintas.test` | `Worker123!` | Field worker without review sign-off, to show how `canReview` differs within the role |
+| Administrator | `admin@parupintas.test` | `Admin123!` | Accounts, roles, the facility directory, record metadata and the audit log |
 
 The second half of `seed.sql` (sample records) adds three more sign-ins, plus
 screenings, reviews, referrals, follow-ups and notes for the sample patients. It
@@ -23,9 +23,9 @@ never contains model output or X-ray images.
 
 | Role | Email | Password | Notes |
 | --- | --- | --- | --- |
-| Healthcare professional (nurse) | `nurse@pulmo.test` | `Nurse123!` | At RSUD Lembor Tengah, so sees only that facility's patient; shows facility scoping |
-| Patient | `patient2@pulmo.test` | `Patient123!` | Onboarded, placed at RSUD Lembor Tengah, has read three articles |
-| Patient | `newpatient@pulmo.test` | `Patient123!` | Stopped after the first onboarding step; resumes the wizard on sign-in |
+| Healthcare professional (nurse) | `nurse@parupintas.test` | `Nurse123!` | At RSUD Lembor Tengah, so sees only that facility's patient; shows facility scoping |
+| Patient | `patient2@parupintas.test` | `Patient123!` | Onboarded, placed at RSUD Lembor Tengah, has read three articles |
+| Patient | `newpatient@parupintas.test` | `Patient123!` | Stopped after the first onboarding step; resumes the wizard on sign-in |
 
 ## Where each role lands
 

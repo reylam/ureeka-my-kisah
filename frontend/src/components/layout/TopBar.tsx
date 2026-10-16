@@ -40,7 +40,7 @@ export function TopBar({ onOpenNav }: { onOpenNav: () => void }) {
 
       {/* `/app` resolves to each role's own home, so this works for a patient
           and an admin as well as a professional. */}
-      <Link to="/app" className="lg:hidden" aria-label="Beranda PULMO">
+      <Link to="/app" className="lg:hidden" aria-label="Beranda PARUPINTAS">
         <LogoMark className="size-7" />
       </Link>
 

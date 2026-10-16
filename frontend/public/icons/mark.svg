@@ -1,7 +1,7 @@
 <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-  <!-- PULMO-TRACE monogram: a P with a pair of lungs and a trachea cut out of
+  <!-- PARUPINTAS monogram: a P with a pair of lungs and a trachea cut out of
        it. The cutouts are a mask, so they stay true negative space. -->
-  <mask id="pulmo" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+  <mask id="parupintas" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
     <rect width="32" height="32" fill="#fff"/>
     <g transform="translate(4 4)">
       <path d="M11.5 6.1c-1.9.2-3.5 1.5-4.3 3.8-.6 1.8-.2 3.4 1.2 4 1.4.5 2.7-.4 3.2-2.5.3-1.6.2-3.8-.1-5.3z" fill="#000"/>
@@ -11,5 +11,5 @@
   </mask>
 
   <rect width="32" height="32" rx="8" fill="#111318"/>
-  <path d="M4.2 3h10A6.3 6.3 0 0 1 14.2 15.6H9.4V21H5.6L4.2 19.6Z" transform="translate(4 4)" fill="#8DB8E8" mask="url(#pulmo)"/>
+  <path d="M4.2 3h10A6.3 6.3 0 0 1 14.2 15.6H9.4V21H5.6L4.2 19.6Z" transform="translate(4 4)" fill="#8DB8E8" mask="url(#parupintas)"/>
 </svg>

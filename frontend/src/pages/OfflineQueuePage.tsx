@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CheckCircle2,
@@ -311,7 +311,7 @@ export function OfflineQueuePage() {
               <Meaning
                 icon={<CloudUpload />}
                 term="Sinkronisasi"
-                detail="Sync mengirim setiap screening dalam antrean ke server PULMO dan meng-upload X-ray-nya, lalu menghapus salinan di perangkat ini."
+                detail="Sync mengirim setiap screening dalam antrean ke server PARUPINTAS dan meng-upload X-ray-nya, lalu menghapus salinan di perangkat ini."
                 available
               />
               <Meaning

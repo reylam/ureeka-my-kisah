@@ -16,7 +16,7 @@ export const supabase: SupabaseClient | null = isAuthConfigured
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: false,
-        storageKey: 'pulmo.auth',
+        storageKey: 'parupintas.auth',
       },
     })
   : null;

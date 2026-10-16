@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   Building2,
@@ -223,7 +223,7 @@ export function PatientOverviewPage() {
       </Card>
 
       <Notice tone="attention" compact>
-        PULMO tidak mendiagnosis tuberkulosis. Semua yang ada di sini untuk membantu kamu
+        PARUPINTAS tidak mendiagnosis tuberkulosis. Semua yang ada di sini untuk membantu kamu
         memantau dan memutuskan perlu tes atau tidak. Kalau merasa tidak enak badan, temui tenaga
         kesehatan, jangan menunggu ada perubahan di halaman ini.
       </Notice>

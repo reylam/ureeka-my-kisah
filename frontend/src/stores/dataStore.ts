@@ -231,7 +231,7 @@ const isDeviceImage = (key: string | null | undefined): key is string =>
 
 /* ── Outbox persistence ───────────────────────────────────────────────────── */
 
-const OUTBOX_KEY = 'pulmo.outbox.v1';
+const OUTBOX_KEY = 'parupintas.outbox.v1';
 
 interface OutboxSnapshot {
   queue: SyncQueueItem[];

@@ -12,7 +12,7 @@ import { TraceHome } from '@/trace/pages/Home';
 /**
  * Route table.
  *
- * Three groups. The PULMO-TRACE research site is public and sits at the root.
+ * Three groups. The PARUPINTAS research site is public and sits at the root.
  * The clinical prototype's own overview and sign-in screens are public too.
  * Everything else lives under a pathless layout route wrapped in `RequireAuth`,
  * so the application shell and its guard are declared once.
@@ -107,7 +107,7 @@ const AdminAuditPage = lazy(() =>
 );
 
 /**
- * PULMO-TRACE, the public site, owns `/`, `/how-it-works` and `/demo`.
+ * PARUPINTAS, the public site, owns `/`, `/how-it-works` and `/demo`.
  *
  * The explainer and the demo are code-split. The demo carries the upload and
  * preview code, which a visitor who only reads the home page should not have

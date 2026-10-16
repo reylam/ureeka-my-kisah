@@ -36,10 +36,10 @@ const ID = {
   lembor: 'f0000000-0000-4000-8000-000000000004',
 };
 const EMAIL = {
-  patient: 'patient@pulmo.test',
-  doctor: 'doctor@pulmo.test',
-  chw: 'chw@pulmo.test',
-  admin: 'admin@pulmo.test',
+  patient: 'patient@parupintas.test',
+  doctor: 'doctor@parupintas.test',
+  chw: 'chw@parupintas.test',
+  admin: 'admin@parupintas.test',
 };
 const token = (who) => userToken(ID[who], EMAIL[who]);
 
@@ -707,7 +707,7 @@ describe('the remaining endpoints', { skip }, () => {
     const res = await api('GET', `/accounts/${ID.doctor}`, { token: token('admin') });
     assert.equal(res.status, 200);
     assertShape(res.json.data, 'account', 'account');
-    assert.equal(res.json.data.email, 'doctor@pulmo.test');
+    assert.equal(res.json.data.email, 'doctor@parupintas.test');
     assert.equal((await api('GET', `/accounts/${ID.doctor}`, { token: token('doctor') })).status, 403);
   });
 

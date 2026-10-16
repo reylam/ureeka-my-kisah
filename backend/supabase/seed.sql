@@ -1,7 +1,7 @@
 -- DEVELOPMENT SEED DATA. Never run this against a production project.
 --
 -- Everything below is synthetic, and it is kept apart from real operational
--- records in two ways: the e-mail domain `pulmo.test` (not routable), and the
+-- records in two ways: the e-mail domain `parupintas.test` (not routable), and the
 -- fixed `…-4000-8000-…` UUID ranges, which `supabase db reset` recreates on
 -- every run.
 --
@@ -108,10 +108,10 @@ declare
 begin
   for rec in
     select * from (values
-      ('a0000000-0000-4000-8000-000000000001'::uuid, 'patient@pulmo.test', 'Patient123!', 'Siti Rahmawati'),
-      ('a0000000-0000-4000-8000-000000000002'::uuid, 'doctor@pulmo.test',  'Doctor123!',  'dr. Hanif Ramadhan'),
-      ('a0000000-0000-4000-8000-000000000003'::uuid, 'chw@pulmo.test',     'Worker123!',  'Ayu Lestari'),
-      ('a0000000-0000-4000-8000-000000000004'::uuid, 'admin@pulmo.test',   'Admin123!',   'Rina Hartati')
+      ('a0000000-0000-4000-8000-000000000001'::uuid, 'patient@parupintas.test', 'Patient123!', 'Siti Rahmawati'),
+      ('a0000000-0000-4000-8000-000000000002'::uuid, 'doctor@parupintas.test',  'Doctor123!',  'dr. Hanif Ramadhan'),
+      ('a0000000-0000-4000-8000-000000000003'::uuid, 'chw@parupintas.test',     'Worker123!',  'Ayu Lestari'),
+      ('a0000000-0000-4000-8000-000000000004'::uuid, 'admin@parupintas.test',   'Admin123!',   'Rina Hartati')
     ) as t(id, email, password, full_name)
   loop
     if not exists (select 1 from auth.users where id = rec.id) then
@@ -190,9 +190,9 @@ select setval('public.patient_mrn_seq', greatest((select last_value from public.
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- ── More sign-ins ───────────────────────────────────────────────────────────
---   nurse@pulmo.test        Nurse123!    nurse at RSUD Lembor Tengah (a second facility)
---   patient2@pulmo.test     Patient123!  onboarded, placed at RSUD Lembor Tengah
---   newpatient@pulmo.test   Patient123!  stopped halfway through onboarding
+--   nurse@parupintas.test        Nurse123!    nurse at RSUD Lembor Tengah (a second facility)
+--   patient2@parupintas.test     Patient123!  onboarded, placed at RSUD Lembor Tengah
+--   newpatient@parupintas.test   Patient123!  stopped halfway through onboarding
 
 do $$
 declare
@@ -200,9 +200,9 @@ declare
 begin
   for rec in
     select * from (values
-      ('a0000000-0000-4000-8000-000000000005'::uuid, 'nurse@pulmo.test',      'Nurse123!',   'Ns. Fransiska Nggeok'),
-      ('a0000000-0000-4000-8000-000000000006'::uuid, 'patient2@pulmo.test',   'Patient123!', 'Dewi Anggraeni'),
-      ('a0000000-0000-4000-8000-000000000007'::uuid, 'newpatient@pulmo.test', 'Patient123!', 'Bernadus Lasar')
+      ('a0000000-0000-4000-8000-000000000005'::uuid, 'nurse@parupintas.test',      'Nurse123!',   'Ns. Fransiska Nggeok'),
+      ('a0000000-0000-4000-8000-000000000006'::uuid, 'patient2@parupintas.test',   'Patient123!', 'Dewi Anggraeni'),
+      ('a0000000-0000-4000-8000-000000000007'::uuid, 'newpatient@parupintas.test', 'Patient123!', 'Bernadus Lasar')
     ) as t(id, email, password, full_name)
   loop
     if not exists (select 1 from auth.users where id = rec.id) then

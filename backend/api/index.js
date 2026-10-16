@@ -19,7 +19,7 @@ try {
 
   app = express();
   app.get('/', (_req, res) =>
-    res.json({ name: 'PULMO API', status: 'ok', health: '/api/v1/health' }),
+    res.json({ name: 'PARUPINTAS API', status: 'ok', health: '/api/v1/health' }),
   );
   app.use(api);
 } catch (error) {

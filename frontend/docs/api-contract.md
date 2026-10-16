@@ -1,4 +1,4 @@
-# PULMO API contract
+# PARUPINTAS API contract
 
 What the frontend expects when you connect a backend. Written against the
 frontend as it stands, so every endpoint here corresponds to something the

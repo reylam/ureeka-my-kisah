@@ -2,7 +2,7 @@ import { env } from './env';
 import { supabase } from './supabase';
 
 /**
- * The single HTTP client for the PULMO backend.
+ * The single HTTP client for the PARUPINTAS backend.
  *
  * - Attaches the current Supabase access token to every request.
  * - Unwraps the `{ success, data, meta }` envelope and turns failures into

@@ -75,7 +75,7 @@ export function RegisterPage() {
 
     // Straight into the session and the dashboard. Asking someone to sign in
     // again, or to answer a questionnaire first, is a pointless extra step.
-    toast.success('Akun berhasil dibuat.', 'Selamat datang di PULMO.');
+    toast.success('Akun berhasil dibuat.', 'Selamat datang di PARUPINTAS.');
     navigate('/app', { replace: true });
   };
 
@@ -253,7 +253,7 @@ export function RegisterPage() {
           </form>
 
           <p className="mt-5 border-t border-obsidian-200 pt-4 text-xs leading-relaxed text-obsidian-500">
-            Password kamu diperiksa dan disimpan oleh layanan autentikasi. PULMO tidak akan
+            Password kamu diperiksa dan disimpan oleh layanan autentikasi. PARUPINTAS tidak akan
             melihatnya lagi setelah form ini dikirim.
           </p>
         </div>

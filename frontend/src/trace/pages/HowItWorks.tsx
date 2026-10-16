@@ -21,7 +21,7 @@ import { SOURCE_LIST } from '@/trace/data/sources';
  */
 export function TraceHowItWorks() {
   useEffect(() => {
-    document.title = 'Cara kerja · PULMO-TRACE';
+    document.title = 'Cara kerja · PARUPINTAS';
   }, []);
 
   return (

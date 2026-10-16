@@ -1,5 +1,5 @@
 ================================================================================
-PULMO - FRONTEND OVERVIEW
+PARUPINTAS - FRONTEND OVERVIEW
 What the frontend is, how it is built, and every feature it carries.
 ================================================================================
 
@@ -12,12 +12,12 @@ not a plan. Where something is a sample or not yet wired, it says so.
 0. THE ONE-PARAGRAPH VERSION
 --------------------------------------------------------------------------------
 
-PULMO is a web app for AI-assisted tuberculosis screening from chest X-rays,
+PARUPINTAS is a web app for AI-assisted tuberculosis screening from chest X-rays,
 aimed at remote Indonesian community health settings. The frontend is a single
 React application that serves two things at once: a public, marketing-and-
 education site (brand name PARUPINTAS) that anyone can browse, and a private,
 role-gated clinical application behind sign-in. Identity is handled by Supabase
-Auth; records come from a PULMO backend through one HTTP client. Four roles
+Auth; records come from a PARUPINTAS backend through one HTTP client. Four roles
 (visitor, patient, healthcare professional, administrator) each see a different
 workspace. The screening model itself is not asserted to be live: any analysis
 shown is labelled as a sample unless a real model is connected.
@@ -71,7 +71,7 @@ Scripts (package.json)
   npm run typecheck  types only, no emit
 
 Environment (.env, copied from .env.example; only VITE_ vars reach the browser)
-  VITE_API_BASE_URL       PULMO backend base, e.g. http://localhost:4000/api/v1
+  VITE_API_BASE_URL       PARUPINTAS backend base, e.g. http://localhost:4000/api/v1
   VITE_SUPABASE_URL       Supabase project URL
   VITE_SUPABASE_ANON_KEY  Supabase PUBLIC anon key (never the service-role key)
   If the Supabase vars are missing, sign-in and sign-up say so plainly instead
@@ -544,7 +544,7 @@ Tokens and helpers
 
 ================================================================================
 NOTE
-  This describes the frontend only. The backend and database (PULMO API +
+  This describes the frontend only. The backend and database (PARUPINTAS API +
   Supabase) are separate. Where the Supabase env vars are not set, auth-
   dependent features announce that they are not configured rather than failing
   silently.

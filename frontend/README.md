@@ -1,6 +1,6 @@
-# PULMO Frontend
+# PARUPINTAS Frontend
 
-Antarmuka web PULMO: skrining TB berbantuan AI dari rontgen dada untuk layanan kesehatan di daerah
+Antarmuka web PARUPINTAS: skrining TB berbantuan AI dari rontgen dada untuk layanan kesehatan di daerah
 terpencil Indonesia. Satu aplikasi React melayani dua hal sekaligus:
 
 - **Situs publik (PARUPINTAS)** di `/`, `/how-it-works`, dan `/demo`. Bisa dibuka siapa saja tanpa akun.
@@ -23,7 +23,7 @@ Gambaran produk ada di [README utama](../README.md). Dokumen backend ada di
 | Styling | Tailwind CSS 4, font Inter (self-hosted) |
 | State | Zustand |
 | Auth | Supabase Auth, dipanggil langsung dari browser |
-| Data | Backend PULMO lewat satu HTTP client (`src/lib/apiClient.ts`) |
+| Data | Backend PARUPINTAS lewat satu HTTP client (`src/lib/apiClient.ts`) |
 | Offline | Service worker untuk app shell, IndexedDB untuk outbox dan rontgen |
 
 ---
@@ -73,9 +73,9 @@ lengkap dan kata sandinya ada di [`docs/accounts.md`](docs/accounts.md). Contoh:
 
 | Peran | Email | Landing |
 | --- | --- | --- |
-| Pasien | `patient@pulmo.test` | `/me` |
-| Tenaga kesehatan | `doctor@pulmo.test` | `/dashboard` |
-| Administrator | `admin@pulmo.test` | `/admin` |
+| Pasien | `patient@parupintas.test` | `/me` |
+| Tenaga kesehatan | `doctor@parupintas.test` | `/dashboard` |
+| Administrator | `admin@parupintas.test` | `/admin` |
 
 Pendaftaran lewat `/register` selalu menghasilkan **pasien**. Akun tenaga kesehatan dan admin dibuat
 dengan mempromosikan akun yang ada dari halaman Akun admin, atau dengan `npm run provision` di

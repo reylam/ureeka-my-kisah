@@ -246,7 +246,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PULMO-TRACE design tokens
+   PARUPINTAS design tokens
 
    The research site is a separate, light, editorial surface that sits beside the
    clinical prototype. Its tokens are namespaced `trace-*` so the two
@@ -288,8 +288,8 @@
 @layer base {
   /* The scroll container needs the page background too, otherwise overscroll
      and the mobile address bar flash. Set by the research layout. */
-  html[data-site='pulmo-trace'],
-  html[data-site='pulmo-trace'] body {
+  html[data-site='parupintas'],
+  html[data-site='parupintas'] body {
     background-color: var(--color-trace-bg);
     color: var(--color-trace-text);
   }

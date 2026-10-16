@@ -1,11 +1,11 @@
 /**
- * Run PULMO locally WITHOUT Docker or the Supabase CLI.
+ * Run PARUPINTAS locally WITHOUT Docker or the Supabase CLI.
  *
  *   npm run e2e:setup      # once: downloads the PostgREST binary
- *   npm run dev:local      # starts the database, REST API, auth stand-in and the PULMO API
+ *   npm run dev:local      # starts the database, REST API, auth stand-in and the PARUPINTAS API
  *
  * What you get: the real migrations and seed in an in-process Postgres (PGlite),
- * the real PostgREST in front of it, and the real PULMO backend. The sign-in
+ * the real PostgREST in front of it, and the real PARUPINTAS backend. The sign-in
  * service and file storage are small stand-ins (see tests/e2e/stack.js), which
  * is why this is a DEVELOPMENT convenience only:
  *
@@ -45,10 +45,10 @@ const config = loadConfig({
 const app = createApp({ config });
 const server = app.listen(API_PORT, '127.0.0.1', () => {
   console.log(`
-PULMO local stack is running (development only, data resets on restart)
+PARUPINTAS local stack is running (development only, data resets on restart)
 
   database + REST + auth : ${stack.url}
-  PULMO API              : http://127.0.0.1:${API_PORT}/api/v1
+  PARUPINTAS API              : http://127.0.0.1:${API_PORT}/api/v1
   model                  : ${config.inference.url ?? 'not connected (set INFERENCE_SERVICE_URL to use tb_ai.serve)'}
 
 Put this in frontend/.env, then run \`npm run dev\` in frontend/:
@@ -58,8 +58,8 @@ Put this in frontend/.env, then run \`npm run dev\` in frontend/:
   VITE_SUPABASE_ANON_KEY=${ANON_KEY}
 
 Sample sign-ins (frontend/docs/accounts.md):
-  patient@pulmo.test / Patient123!    doctor@pulmo.test / Doctor123!
-  chw@pulmo.test / Worker123!         admin@pulmo.test / Admin123!
+  patient@parupintas.test / Patient123!    doctor@parupintas.test / Doctor123!
+  chw@parupintas.test / Worker123!         admin@parupintas.test / Admin123!
 
 Ctrl+C to stop.
 `);

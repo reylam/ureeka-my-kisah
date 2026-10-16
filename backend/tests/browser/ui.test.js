@@ -91,9 +91,9 @@ describe('sign-in', { skip: skipReason }, () => {
   test('a wrong password shows one generic message and nothing else leaks', async () => {
     const { page, context } = await newSession();
     expected.push(/^400 POST \/auth\/v1\/token/);
-    await signIn(page, 'doctor@pulmo.test', 'wrong-password');
+    await signIn(page, 'doctor@parupintas.test', 'wrong-password');
     await page.getByText('Those credentials do not match an account.').waitFor();
-    await signIn(page, 'nobody@pulmo.test', 'whatever123');
+    await signIn(page, 'nobody@parupintas.test', 'whatever123');
     await page.getByText('Those credentials do not match an account.').waitFor();
     assert.match(page.url(), /\/login/);
     await shot(page, 'login-error');
@@ -118,7 +118,7 @@ describe('healthcare professional journey', { skip: skipReason }, () => {
     // No model is connected, so "analyze" answers 503 on purpose; the UI must handle it.
     expected.push(/^503 POST \/api\/screenings\/[0-9a-f-]+\/analyze/);
     await journey(page, 'doctor', async () => {
-    await signIn(page, 'doctor@pulmo.test', 'Doctor123!');
+    await signIn(page, 'doctor@parupintas.test', 'Doctor123!');
     await page.waitForURL(/\/dashboard/);
     await page.getByText('Screening records').first().waitFor();
     await shot(page, 'doctor-dashboard');
@@ -263,7 +263,7 @@ describe('administrator journey', { skip: skipReason }, () => {
   test('accounts, placing a patient, staff records, facilities, audit, metadata only', async () => {
     const { page, context } = await newSession();
     await journey(page, 'admin', async () => {
-      await signIn(page, 'admin@pulmo.test', 'Admin123!');
+      await signIn(page, 'admin@parupintas.test', 'Admin123!');
       await page.waitForURL(/\/admin$/);
       await page.getByText('Patient accounts').first().waitFor();
       await shot(page, 'admin-overview');
@@ -278,7 +278,7 @@ describe('administrator journey', { skip: skipReason }, () => {
       await page.getByText(/UI Patient placed at the facility/).waitFor();
 
       // A staff record for the community health worker.
-      const chw = page.getByRole('row', { name: /chw@pulmo\.test/ });
+      const chw = page.getByRole('row', { name: /chw@parupintas\.test/ });
       await chw.getByRole('button', { name: 'Edit' }).click();
       await page.getByRole('dialog').getByRole('button', { name: 'Save record' }).click();
       await page.getByText('Staff record saved.').waitFor();
@@ -328,7 +328,7 @@ describe('an existing patient', { skip: skipReason }, () => {
   test('sees their own record and the clinician’s review, edits their profile, tracks learning', async () => {
     const { page, context } = await newSession();
     await journey(page, 'patient', async () => {
-      await signIn(page, 'patient@pulmo.test', 'Patient123!');
+      await signIn(page, 'patient@parupintas.test', 'Patient123!');
       await page.waitForURL(/\/me$/);
       await page.getByText(/Siti/).first().waitFor();
       await shot(page, 'patient-overview');

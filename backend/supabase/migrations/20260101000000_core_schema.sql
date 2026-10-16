@@ -1,4 +1,4 @@
--- PULMO core schema.
+-- PARUPINTAS core schema.
 --
 -- Tables exist only where the frontend docs (frontend/docs/*.md) and the
 -- domain types (frontend/src/types) describe a record that has to be stored.

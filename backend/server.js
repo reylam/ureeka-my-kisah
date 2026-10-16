@@ -15,7 +15,7 @@ const app = createApp({ config });
 const server = app.listen(config.port, () => {
   console.log(
     JSON.stringify({
-      message: 'PULMO API listening',
+      message: 'PARUPINTAS API listening',
       port: config.port,
       env: config.env,
       origins: config.frontendOrigins,

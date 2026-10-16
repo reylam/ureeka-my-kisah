@@ -79,7 +79,7 @@ export function LoginPage() {
 
         <div className="mt-8 flex flex-col items-center text-center lg:mt-0 lg:flex-1 lg:justify-center">
           <h1 className="text-xl leading-snug font-semibold text-obsidian-950 lg:text-2xl">
-            Masuk ke PULMO
+            Masuk ke PARUPINTAS
           </h1>
           <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-obsidian-600">
             Pasien, petugas kesehatan, dan administrator masing-masing punya tampilan workspace
@@ -109,7 +109,7 @@ export function LoginPage() {
             className="inline-flex items-center gap-1.5 text-[13px] text-obsidian-500 transition-colors hover:text-obsidian-900"
           >
             <ArrowLeft aria-hidden className="size-3.5" />
-            Kembali ke PULMO
+            Kembali ke PARUPINTAS
           </Link>
 
           <h2 className="mt-5 text-lg font-semibold text-obsidian-950">Masuk</h2>

@@ -78,14 +78,14 @@ const json = (response, status, body) => {
 };
 
 const SEED_PASSWORDS = {
-  'patient@pulmo.test': 'Patient123!',
-  'doctor@pulmo.test': 'Doctor123!',
-  'chw@pulmo.test': 'Worker123!',
-  'admin@pulmo.test': 'Admin123!',
+  'patient@parupintas.test': 'Patient123!',
+  'doctor@parupintas.test': 'Doctor123!',
+  'chw@parupintas.test': 'Worker123!',
+  'admin@parupintas.test': 'Admin123!',
   // Only present when the sample records part of the seed is loaded.
-  'nurse@pulmo.test': 'Nurse123!',
-  'patient2@pulmo.test': 'Patient123!',
-  'newpatient@pulmo.test': 'Patient123!',
+  'nurse@parupintas.test': 'Nurse123!',
+  'patient2@parupintas.test': 'Patient123!',
+  'newpatient@parupintas.test': 'Patient123!',
 };
 
 /**

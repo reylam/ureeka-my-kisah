@@ -1,4 +1,4 @@
-# PULMO backend
+# PARUPINTAS backend
 
 Express API in front of Supabase (Postgres, Auth, Storage). The browser signs in with Supabase Auth and sends its access token to this API; the API queries the database **as that user**, so Row Level Security is the enforcement and the Express checks are a second layer with clearer errors.
 

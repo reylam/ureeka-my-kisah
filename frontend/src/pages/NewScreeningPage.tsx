@@ -416,7 +416,7 @@ export function NewScreeningPage() {
         description={
           draft
             ? 'Melanjutkan draf yang tersimpan. Record tetap memakai referensi aslinya.'
-            : 'Catat pertemuan screening TB dan lampirkan X-ray dada. Data disimpan ke server PULMO, atau ditahan di perangkat ini kalau kamu sedang offline.'
+            : 'Catat pertemuan screening TB dan lampirkan X-ray dada. Data disimpan ke server PARUPINTAS, atau ditahan di perangkat ini kalau kamu sedang offline.'
         }
         actions={
           <Button variant="ghost" onClick={() => navigate(-1)}>

@@ -209,7 +209,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         ok: false,
         message:
           cause instanceof ApiError && cause.status === 0
-            ? 'Berhasil masuk, tapi server PULMO tidak bisa dijangkau.'
+            ? 'Berhasil masuk, tapi server PARUPINTAS tidak bisa dijangkau.'
             : GENERIC_SIGN_IN_ERROR,
       };
     }
@@ -243,7 +243,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       }
       // Supabase Auth limits sign-up e-mails and requests per address. That
       // limit lives in the Auth service, so the browser cannot get past it.
-      // The PULMO API can create the account itself (no e-mail is sent), so
+      // The PARUPINTAS API can create the account itself (no e-mail is sent), so
       // hand the same details to it instead of making the person wait.
       if (error.status === 429 || message.includes('rate limit') || /over_.*_rate_limit/.test(String(error.code))) {
         return registerThroughServer({ name, email, password }, get().signIn);

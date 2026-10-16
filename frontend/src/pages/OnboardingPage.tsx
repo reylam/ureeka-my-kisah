@@ -545,7 +545,7 @@ export function OnboardingPage() {
                 </div>
 
                 <Notice tone="attention" compact>
-                  PULMO tidak mendiagnosis tuberkulosis. Semua yang ditampilkan hanya membantu kamu
+                  PARUPINTAS tidak mendiagnosis tuberkulosis. Semua yang ditampilkan hanya membantu kamu
                   memutuskan perlu tes atau tidak, dan menyimpan record kamu dalam satu tempat.
                 </Notice>
               </CardBody>

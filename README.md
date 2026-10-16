@@ -1,18 +1,18 @@
-# PULMO — Skrining TB Berbantuan AI dari Rontgen Dada
+# PARUPINTAS — Skrining TB Berbantuan AI dari Rontgen Dada
 
 > JOINTS 2026 UGM — Software Development
 
-## Tentang PULMO
+## Tentang PARUPINTAS
 
-PULMO adalah aplikasi web yang membantu petugas kesehatan menapis (skrining) tuberkulosis paru dari citra rontgen dada. Sasarannya layanan kesehatan di daerah terpencil di Indonesia, tempat akses ke pembaca rontgen dan tenaga ahli sering terbatas.
+PARUPINTAS adalah aplikasi web yang membantu petugas kesehatan menapis (skrining) tuberkulosis paru dari citra rontgen dada. Sasarannya layanan kesehatan di daerah terpencil di Indonesia, tempat akses ke pembaca rontgen dan tenaga ahli sering terbatas.
 
-> **PULMO melakukan skrining, bukan diagnosis.** Keluaran model hanyalah sinyal bahwa seorang pasien sebaiknya menjalani tes lanjutan, seperti tes dahak atau tes molekuler. Vonis dan keputusan klinis tetap ada di tangan tenaga kesehatan. Peran model adalah mempercepat penemuan kasus, bukan menggantikan penilaian manusia.
+> **PARUPINTAS melakukan skrining, bukan diagnosis.** Keluaran model hanyalah sinyal bahwa seorang pasien sebaiknya menjalani tes lanjutan, seperti tes dahak atau tes molekuler. Vonis dan keputusan klinis tetap ada di tangan tenaga kesehatan. Peran model adalah mempercepat penemuan kasus, bukan menggantikan penilaian manusia.
 
 ## Masalah yang diselesaikan
 
 Sebagian besar kasus TB yang tidak tertangani justru kasus yang tidak pernah terdeteksi. Di daerah terpencil, keterbatasan tenaga pembaca rontgen membuat banyak pasien tidak sempat ditapis, dan sebagian yang sudah ditapis pun hilang jejak sebelum sampai ke pengobatan.
 
-PULMO menjawab persoalan itu dengan mengangkat skrining sebagai langkah awal yang bisa dikerjakan lebih cepat, lalu merangkai seluruh perjalanan pasien, dari skrining, peninjauan klinis, rujukan, sampai tindak lanjut, dalam satu alur yang terpantau. Pasien pun punya akses sendiri ke riwayat, jadwal, dan materi edukasi TB. Karena jaringan di lapangan kerap tidak stabil, aplikasi tetap bisa dipakai saat offline dan menyinkronkan datanya begitu kembali online.
+PARUPINTAS menjawab persoalan itu dengan mengangkat skrining sebagai langkah awal yang bisa dikerjakan lebih cepat, lalu merangkai seluruh perjalanan pasien, dari skrining, peninjauan klinis, rujukan, sampai tindak lanjut, dalam satu alur yang terpantau. Pasien pun punya akses sendiri ke riwayat, jadwal, dan materi edukasi TB. Karena jaringan di lapangan kerap tidak stabil, aplikasi tetap bisa dipakai saat offline dan menyinkronkan datanya begitu kembali online.
 
 ## Siapa yang memakai
 

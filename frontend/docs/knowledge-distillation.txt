@@ -1,11 +1,11 @@
 ================================================================================
-PULMO - KNOWLEDGE DISTILLATION FOR THE TB CHEST X-RAY MODEL
+PARUPINTAS - KNOWLEDGE DISTILLATION FOR THE TB CHEST X-RAY MODEL
 Teacher/student choices, methods, and how they fit the deployment setting.
 ================================================================================
 
 Scope. This is about knowledge distillation (KD) for the TB chest X-ray
 classifier - the ML side that lives in train/tb-colab/ and train/tb-train/. It
-is NOT about any teacher/student relationship inside the PULMO web app. Keep
+is NOT about any teacher/student relationship inside the PARUPINTAS web app. Keep
 the two apart when reading.
 
 This file records a design discussion and ties it to what is actually in the
@@ -60,10 +60,10 @@ reasons, not a reason to change it.
 
 
 --------------------------------------------------------------------------------
-3. WHY DenseNet121 -> MobileNetV3-Small FITS PULMO
+3. WHY DenseNet121 -> MobileNetV3-Small FITS PARUPINTAS
 --------------------------------------------------------------------------------
 
-PULMO targets TB screening at puskesmas and posyandu in remote areas (NTT, from
+PARUPINTAS targets TB screening at puskesmas and posyandu in remote areas (NTT, from
 the app's seed data). The student is what actually ships to the field, so it
 has to:
 

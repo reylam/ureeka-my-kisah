@@ -13,7 +13,7 @@ import type { ModelDescriptor } from '@/types/domain';
  * reporting metrics for it would be fabrication.
  */
 export const DEMO_MODEL: ModelDescriptor = {
-  name: 'PULMO screening model',
+  name: 'PARUPINTAS screening model',
   version: 'belum terhubung',
   backbone: 'densenet121 (label set mirrored from tb-train)',
   labels: ['Healthy', 'Sick-non-TB', 'TB'],

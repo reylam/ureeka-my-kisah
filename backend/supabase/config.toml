@@ -1,9 +1,9 @@
 # Supabase CLI configuration for local development (`supabase start`).
 # Run it from the `backend/` directory so it picks up supabase/migrations and
-# supabase/seed.sql. Only the settings PULMO depends on are listed; everything
+# supabase/seed.sql. Only the settings PARUPINTAS depends on are listed; everything
 # else keeps the CLI default.
 
-project_id = "pulmo"
+project_id = "parupintas"
 
 [api]
 enabled = true

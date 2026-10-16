@@ -24,7 +24,7 @@ export function TraceLayout() {
   useEffect(() => {
     const root = document.documentElement;
     const previous = root.dataset.site;
-    root.dataset.site = 'pulmo-trace';
+    root.dataset.site = 'parupintas';
     return () => {
       if (previous) root.dataset.site = previous;
       else delete root.dataset.site;
