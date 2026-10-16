@@ -5,7 +5,7 @@ import { SectionHeading } from '@/trace/components/ui/SectionHeading';
 import { StepFlow } from '@/trace/components/ui/StepFlow';
 import { STEPS } from '@/trace/data/content';
 
-/** Four steps from an X-ray to a next step, with the unbuilt ones marked. */
+/** Four steps from an X-ray to a next step, each noting what exists in this build. */
 export function HowItWorksSection() {
   return (
     <SectionBand id="how" labelledBy="how-heading">
@@ -15,7 +15,7 @@ export function HowItWorksSection() {
           index="02"
           eyebrow="Cara kerja"
           title="Empat langkah, dari gambar sampai keputusan"
-          standfirst="Dua dari empat langkah ini sudah berfungsi di prototipe. Dua langkah di tengah, yang butuh model terlatih, belum."
+          standfirst="Keempat langkah ini sudah berfungsi di prototipe, termasuk model terlatih yang berjalan di browser-mu. Yang belum ada adalah pengujian klinis: tidak ada angka akurasi yang diklaim."
         />
 
         <div className="mt-11 rounded-2xl border border-trace-line bg-trace-card p-6 sm:p-8">

@@ -25,8 +25,23 @@ try {
 } catch (error) {
   console.error(error.message);
   app = express();
-  app.use((_req, res) => {
-    res.status(500).json({ error: 'Server misconfigured', detail: error.message });
+  // Without CORS headers the browser hides this message behind a generic
+  // "blocked by CORS policy" error. FRONTEND_ORIGIN is read raw here because
+  // the validated config is exactly what failed to load.
+  const origins = (process.env.FRONTEND_ORIGIN ?? '')
+    .split(',')
+    .map((o) => o.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+  app.use((req, res) => {
+    const origin = req.headers.origin;
+    if (origin && origins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    }
+    if (req.method === 'OPTIONS') return res.status(204).end();
+    return res.status(500).json({ error: 'Server misconfigured', detail: error.message });
   });
 }
 

@@ -3,9 +3,10 @@ import { cn } from '@/utils/cn';
 /**
  * The four-step walkthrough.
  *
- * Every step carries a short note saying whether it exists in this build. Two
- * of the four do not, and a flow chart that draws built and unbuilt steps in
- * identical boxes is a quiet claim that everything works.
+ * Every step carries a short note saying whether it exists in this build. A
+ * note that starts with "Belum dibuat" draws the step as unbuilt; a flow chart
+ * that draws built and unbuilt steps in identical boxes is a quiet claim that
+ * everything works.
  *
  * On a wide screen the steps sit in a row joined by a hairline; on a narrow
  * one they stack with the line running down the left, rather than becoming a

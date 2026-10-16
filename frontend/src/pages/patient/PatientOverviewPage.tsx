@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
-  Building2,
   CalendarClock,
   ClipboardList,
   GraduationCap,
@@ -228,18 +227,6 @@ export function PatientOverviewPage() {
         kesehatan, jangan menunggu ada perubahan di halaman ini.
       </Notice>
 
-      <Card>
-        <CardHeader title="Cari layanan kesehatan" icon={<Building2 />} />
-        <CardBody>
-          <p className="max-w-prose text-[13px] leading-relaxed text-obsidian-600">
-            Direktori ini memuat rumah sakit dan puskesmas beserta layanan, jam operasional, dan
-            kontaknya, jadi kamu bisa tahu mana yang bisa melakukan tes TB.
-          </p>
-          <ButtonLink to="/me/facilities" variant="outline" size="sm" className="mt-3">
-            Lihat fasilitas
-          </ButtonLink>
-        </CardBody>
-      </Card>
     </div>
   );
 }

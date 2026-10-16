@@ -30,9 +30,9 @@ export function FinalCta() {
             Coba sendiri, lalu tentukan pendapatmu.
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-7 text-trace-muted">
-            Demo ini memandu seluruh alur screening dengan hasil placeholder yang diberi label
-            jelas. Butuh sekitar satu menit, dan apa pun yang kamu pilih tidak keluar dari
-            perangkatmu.
+            Demo ini menjalankan model screening langsung di browser-mu dan menampilkan hasilnya
+            lengkap dengan risk point dan peringatannya. Butuh sekitar satu menit, dan gambar yang
+            kamu pilih tidak keluar dari perangkatmu.
           </p>
           <div className="mt-9 flex flex-wrap justify-center gap-3">
             <TraceLinkButton to="/demo">

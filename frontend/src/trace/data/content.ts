@@ -89,13 +89,13 @@ export const STEPS: {
     id: 'look',
     label: 'Mencari pola yang dikenali',
     body: 'Software yang dilatih dengan banyak X-ray berlabel membandingkan apa yang dilihatnya dengan pola yang sudah dipelajari, lalu menghasilkan score yang menunjukkan seberapa mirip keduanya.',
-    note: 'Belum dibuat. Belum ada model yang terhubung ke prototipe ini.',
+    note: 'Sudah dibuat. Model MobileNetV3-Small berjalan langsung di browser-mu. File modelnya (sekitar 6 MB) diunduh saat pertama kali dipakai.',
   },
   {
     id: 'result',
     label: 'Ubah score jadi langkah berikutnya',
-    body: 'Di atas cut-off yang ditetapkan, gambar ditandai untuk tindak lanjut. Di bawahnya, tidak ada tanda. Hasilnya adalah rekomendasi soal tes, bukan kesimpulan tentang orangnya.',
-    note: 'Prototipe menampilkan langkah ini dengan placeholder yang diberi label jelas.',
+    body: 'Dari score itu, gambar ditandai untuk dilihat lebih dekat, dinyatakan tidak ada yang menonjol, atau dinyatakan belum meyakinkan. Hasilnya adalah rekomendasi soal tes, bukan kesimpulan tentang orangnya.',
+    note: 'Sudah dibuat. Hasilnya menampilkan tiga score kelas, satu risk point (0 sampai 100), dan peringatan yang menyertainya.',
   },
 ];
 
@@ -131,8 +131,8 @@ export const LIMITS: { title: string; body: string }[] = [
     body: 'Mesin yang berbeda, eksposur yang berbeda, pasien berdiri sedikit miring. Semuanya mengubah apa yang dilihat software, dan tidak satu pun terlihat di score yang dilaporkan.',
   },
   {
-    title: 'Belum diuji di klinik sungguhan',
-    body: 'Ini prototipe antarmuka. Belum ada model yang dilatih untuknya dan belum ada yang diukur, jadi jangan anggap apa pun di sini sebagai bukti bahwa pendekatan ini berhasil.',
+    title: 'Belum divalidasi di klinik sungguhan',
+    body: 'Modelnya sudah ada dan benar-benar membaca gambarmu, tetapi belum diuji secara klinis. Tidak ada angka sensitivitas atau spesifisitas yang diukur atau diklaim di sini, dan risk point belum dikalibrasi terhadap populasi mana pun, jadi jangan anggap apa pun di sini sebagai bukti bahwa pendekatan ini berhasil.',
   },
 ];
 
@@ -142,12 +142,12 @@ export const FAQ: { question: string; answer: string; sourceId?: string }[] = [
   {
     question: 'Bisakah ini dipakai untuk mengetahui apakah saya menderita tuberkulosis?',
     answer:
-      'Tidak. Ini prototipe antarmuka, dan belum ada model yang terhubung. Bahkan versi final yang sudah diuji dengan benar pun hanya akan menyarankan bahwa seseorang perlu dites. Kalau kamu khawatir soal TB, temui tenaga kesehatan. Batuk terus-menerus lebih dari dua minggu, demam, keringat malam, dan berat badan turun tanpa sebab adalah alasan untuk periksa.',
+      'Tidak. Ini prototipe, dan modelnya belum divalidasi secara klinis. Bahkan versi yang sudah diuji dengan benar pun hanya akan menyarankan bahwa seseorang perlu dites. Kalau kamu khawatir soal TB, temui tenaga kesehatan. Batuk terus-menerus lebih dari dua minggu, demam, keringat malam, dan berat badan turun tanpa sebab adalah alasan untuk periksa.',
   },
   {
     question: 'Sebenarnya score di demo itu artinya apa?',
     answer:
-      'Di prototipe ini, tidak ada artinya. Itu hanya placeholder tetap yang dipilih dari nama dan ukuran file, jadi file yang sama selalu menghasilkan jawaban yang sama dan gambarnya sendiri tidak berperan sama sekali. Di sistem sungguhan, score akan menjadi ukuran seberapa mirip gambar dengan pola yang dipelajari software, dalam skala 0 sampai 1. Itu pun bukan peluang seseorang menderita TB.',
+      'Model menghitung tiga score, satu untuk tiap kelas (sehat, sakit bukan TB, dan TB), langsung dari pikselmu gambar. File yang sama selalu menghasilkan angka yang sama. Risk point hanyalah score TB itu ditulis ulang pada skala 0 sampai 100. Itu ukuran seberapa mirip gambar dengan pola TB yang dipelajari model, bukan peluang seseorang menderita TB, dan belum dikalibrasi terhadap populasi mana pun.',
   },
   {
     question: 'Kenapa score tidak sama dengan persentase peluang?',
@@ -157,7 +157,7 @@ export const FAQ: { question: string; answer: string; sourceId?: string }[] = [
   {
     question: 'Apakah X-ray saya di-upload ke suatu tempat?',
     answer:
-      'Tidak. File yang kamu pilih dibaca oleh browser-mu sendiri untuk menampilkan preview, dan tidak pernah dikirim ke server. Tidak ada yang disimpan dan tidak ada yang keluar dari perangkatmu. Tetap saja, jangan pakai gambar yang memuat nama atau nomor pasien seseorang.',
+      'Tidak. Modelnya berjalan di browser-mu sendiri, jadi file yang kamu pilih dibaca dan dianalisis di perangkatmu dan tidak pernah dikirim ke server. Yang diunduh hanya file model (sekitar 6 MB) saat pertama kali dipakai. Tidak ada yang disimpan dan tidak ada yang keluar dari perangkatmu. Tetap saja, jangan pakai gambar yang memuat nama atau nomor pasien seseorang.',
   },
   {
     question: 'Lalu bagaimana tuberkulosis dikonfirmasi?',
@@ -166,9 +166,9 @@ export const FAQ: { question: string; answer: string; sourceId?: string }[] = [
     sourceId: 'whoScreening2021',
   },
   {
-    question: 'Kenapa antarmukanya dibuat sebelum modelnya?',
+    question: 'Kenapa hasilnya penuh peringatan, padahal modelnya sudah ada?',
     answer:
-      'Karena cara hasil ditampilkan memengaruhi cara hasil itu dipakai. Tools screening yang hanya menampilkan angka mentah mengundang orang membacanya sebagai vonis. Merumuskan kata-kata, peringatan, dan langkah berikutnya dengan tepat adalah pekerjaan tersendiri, dan lebih mudah dilakukan dengan jujur selama belum ada angka akurasi mengesankan yang dipamerkan.',
+      'Karena cara hasil ditampilkan memengaruhi cara hasil itu dipakai. Tools screening yang hanya menampilkan angka mentah mengundang orang membacanya sebagai vonis. Modelnya sudah ada, tetapi belum divalidasi secara klinis dan tidak ada angka akurasi yang bisa diklaim, jadi setiap hasil membawa batasannya sendiri: risk point bukan peluang sakit, dan hasil negatif tidak pernah berarti aman.',
   },
 ];
 
@@ -178,7 +178,9 @@ export const BUILD_STATUS: { label: string; value: string; done: boolean }[] = [
   { label: 'Antarmuka screening', value: 'Sudah dibuat dan berfungsi', done: true },
   { label: 'Pengecekan dan preview gambar', value: 'Sudah dibuat dan berfungsi', done: true },
   { label: 'Format hasil dan peringatan', value: 'Sudah dibuat dan berfungsi', done: true },
-  { label: 'Model terlatih', value: 'Belum dibuat', done: false },
+  { label: 'Model terlatih', value: 'Sudah ada, berjalan di browser', done: true },
+  { label: 'Risk point dan score per kelas', value: 'Sudah dibuat dan berfungsi', done: true },
+  { label: 'Divalidasi secara klinis', value: 'Belum, dan tidak ada angka akurasi yang diklaim', done: false },
   { label: 'Diuji pada pasien sungguhan', value: 'Belum dilakukan', done: false },
   { label: 'Disetujui untuk penggunaan klinis', value: 'Belum, dan belum diajukan', done: false },
 ];

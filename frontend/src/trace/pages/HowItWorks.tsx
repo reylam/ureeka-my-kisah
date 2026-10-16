@@ -100,13 +100,14 @@ export function TraceHowItWorks() {
 
           <DisclaimerBanner
             tone="caution"
-            title="Langkah tiga dan empat adalah celah yang kami akui di proyek ini."
+            title="Modelnya sudah ada, tetapi belum divalidasi secara klinis."
             className="mt-6 max-w-3xl"
           >
-            Langkah tiga butuh model terlatih, dan modelnya belum ada. Langkah empat menampilkan
-            hasil placeholder agar formatnya bisa dinilai. Semua yang ditampilkan demo diberi label
-            jelas sebagai placeholder, dan angka yang muncul berasal dari nama dan ukuran file,
-            bukan dari gambarnya.
+            Langkah tiga dijalankan oleh model terlatih (MobileNetV3-Small) yang berjalan di
+            browser-mu, jadi score di demo benar-benar dihitung dari gambarmu. Namun belum ada
+            pengujian klinis: tidak ada angka sensitivitas atau spesifisitas yang diukur atau
+            diklaim, dan risk point belum dikalibrasi terhadap populasi mana pun. Karena itu setiap
+            hasil tetap datang bersama peringatannya.
           </DisclaimerBanner>
         </Container>
       </SectionBand>

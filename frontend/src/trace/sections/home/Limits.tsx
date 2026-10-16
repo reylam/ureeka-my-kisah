@@ -7,9 +7,10 @@ import { cn } from '@/utils/cn';
 /**
  * Limits, and the build status beside them.
  *
- * The status list is the part that keeps the rest of the site honest: three
- * rows say "built", three say "not built", and the three that are not built
- * are the ones a visitor would otherwise assume were.
+ * The status list is the part that keeps the rest of the site honest: it says
+ * what is built (including the model) and, just as plainly, what is not
+ * (clinical validation, testing on patients, approval), which are the rows a
+ * visitor would otherwise assume were done.
  */
 export function Limits() {
   return (
