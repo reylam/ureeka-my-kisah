@@ -259,6 +259,19 @@ export const facilityDraftBody = strict({
 
 export const facilityPublishBody = strict({ published: z.boolean() });
 
+/* ── Dashboard ───────────────────────────────────────────────────────────── */
+
+export const dashboardQuery = z.object({
+  days: z.coerce.number().int().min(1).max(90).default(21),
+  // IANA zone name from the browser (e.g. Asia/Makassar). Unknown names are
+  // rejected by the database.
+  tz: z
+    .string()
+    .max(64)
+    .regex(/^[A-Za-z][A-Za-z0-9_+\-]*(\/[A-Za-z0-9_+\-]+)*$/, 'Use an IANA time zone name.')
+    .default('UTC'),
+});
+
 /* ── Audit ──────────────────────────────────────────────────────────────── */
 
 export const auditListQuery = paginationSchema.extend({

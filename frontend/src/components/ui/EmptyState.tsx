@@ -92,7 +92,7 @@ export function ErrorState({
       </div>
       <p className="text-sm font-medium text-obsidian-900">{title}</p>
       <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-obsidian-500">
-        {description ?? 'Something went wrong while reading the local demo data.'}
+        {description ?? 'Something went wrong while loading this data.'}
       </p>
       {onRetry ? (
         <Button

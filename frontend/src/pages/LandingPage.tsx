@@ -58,7 +58,7 @@ const FEATURES = [
   {
     icon: Building2,
     title: 'Referral to the right facility',
-    body: 'A sample facility directory with services, travel estimates and how stale each entry is. Destinations are filtered to places that actually offer the test being requested.',
+    body: 'A facility directory with services, travel estimates and how stale each entry is. Destinations are filtered to places that actually offer the test being requested.',
   },
   {
     icon: CalendarClock,
@@ -79,7 +79,7 @@ const WORKFLOW = [
   },
   {
     title: 'Analyse',
-    body: 'The record enters the analysis queue. Output is a class distribution plus any marked regions, always labelled as simulated in this build.',
+    body: 'The record enters the analysis queue. Output is a class distribution plus any marked regions, and it is clearly labelled whenever no model is connected.',
   },
   {
     title: 'Review',
@@ -96,7 +96,7 @@ const WORKFLOW = [
 ];
 
 const IN_SCOPE = [
-  'Complete frontend workflow across all screens, backed by one relational demo dataset',
+  'Complete workflow across all screens, backed by an authenticated API and a Supabase database',
   'Local radiograph upload with type, size and dimension validation',
   'Referral and follow-up state that stays consistent across every page',
   'Offline drafts, a synchronisation queue and conflict review',
@@ -360,8 +360,7 @@ export function LandingPage() {
           <div>
             <h2 className="text-xl font-semibold text-white">Open the application</h2>
             <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-obsidian-300">
-              The dataset is seeded so there is work waiting: records needing review, referrals in
-              progress, overdue follow-ups and a few drafts stuck offline.
+              Sign in to see the records, referrals and follow-ups that belong to your role.
             </p>
           </div>
           <Link

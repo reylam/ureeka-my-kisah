@@ -240,6 +240,23 @@ describe('patient records', () => {
     });
   });
 
+  test('registering returns the new row (insert ... returning, as PostgREST issues it)', async () => {
+    await asUser(db, ids.docA, async (c) => {
+      const [row] = await c.rows(
+        `insert into patient_profiles (name, sex, home_facility_id, created_by) values ('Returned','male',$1,$2) returning id, mrn`,
+        [ids.facA, ids.docA],
+      );
+      assert.match(row.mrn, /^TB-\d{4}-\d{4}$/);
+    });
+    await asUser(db, ids.admin, async (c) => {
+      const [row] = await c.rows(
+        `insert into patient_profiles (name, sex, created_by) values ('Admin Made','female',$1) returning id`,
+        [ids.admin],
+      );
+      assert.ok(row.id);
+    });
+  });
+
   test('a patient cannot register other patients', async () => {
     await asUser(db, ids.patientUser, async (c) => {
       const e = await expectDenied(
@@ -827,6 +844,82 @@ describe('staff directory', () => {
   test('a visitor gets nothing', async () => {
     await asUser(db, ids.patient2User, async (c) => {
       assert.equal((await c.rows('select * from list_staff()')).length, 0);
+    });
+  });
+});
+
+describe('dashboard summary', () => {
+  test('counts exactly the screenings the caller may see', async () => {
+    const [{ n: expectedA }] = await su(
+      `select count(*)::int as n from screenings s join patient_profiles p on p.id = s.patient_id where p.home_facility_id = $1`,
+      [ids.facA],
+    );
+    await asUser(db, ids.docA, async (c) => {
+      const [{ s }] = await c.rows('select dashboard_summary(7) as s');
+      assert.equal(s.totalScreenings, expectedA);
+      assert.ok(s.totalScreenings > 0);
+      assert.equal(s.activity.length, 7);
+      assert.equal(
+        s.activity.reduce((sum, d) => sum + d.total, 0),
+        s.screeningsThisWeek,
+      );
+      assert.equal(s.outcomeBreakdown.length, 3);
+    });
+    await asUser(db, ids.docB, async (c) => {
+      const [{ s }] = await c.rows('select dashboard_summary(7) as s');
+      assert.equal(s.totalScreenings, 0, 'another facility sees none of facility A');
+      assert.equal(s.pendingReferrals, 0);
+    });
+  });
+
+  test('follow-ups are bucketed against today', async () => {
+    const [p] = await su(`select id from patient_profiles where home_facility_id = $1 limit 1`, [ids.facA]);
+    await su(
+      `insert into follow_up_records (patient_id, reason, due_date, created_by) values
+        ($1,'symptom-recheck', current_date - 3, $2),
+        ($1,'symptom-recheck', current_date, $2),
+        ($1,'symptom-recheck', current_date + 5, $2)`,
+      [p.id, ids.docA],
+    );
+    await asUser(db, ids.docA, async (c) => {
+      const [{ s }] = await c.rows('select dashboard_summary() as s');
+      assert.ok(s.overdueFollowUps >= 1);
+      assert.ok(s.dueTodayFollowUps >= 1);
+      assert.ok(s.upcomingFollowUps >= 1);
+    });
+  });
+
+  test('administrators and patients get no clinical figures', async () => {
+    await asUser(db, ids.admin, async (c) => {
+      const [{ s }] = await c.rows('select dashboard_summary() as s');
+      assert.equal(s.flaggedAwaitingReview, 0);
+      assert.equal(s.pendingReferrals, 0);
+      assert.equal(s.overdueFollowUps, 0);
+    });
+    await asUser(db, ids.patient2User, async (c) => {
+      const [{ s }] = await c.rows('select dashboard_summary() as s');
+      assert.equal(s.totalScreenings, 0);
+    });
+  });
+
+  test('buckets days in the requested time zone, and rejects an unknown one', async () => {
+    await asUser(db, ids.docA, async (c) => {
+      const [{ utc }] = await c.rows("select dashboard_summary(3, 'UTC') as utc");
+      const [{ far }] = await c.rows("select dashboard_summary(3, 'Pacific/Kiritimati') as far");
+      assert.equal(utc.activity.length, 3);
+      assert.equal(far.activity.length, 3);
+      // UTC+14 is always at least one calendar day ahead of UTC for part of the day,
+      // and never behind it.
+      assert.ok(far.activity[2].date >= utc.activity[2].date);
+      const e = await expectDenied(c.query("select dashboard_summary(3, 'Not/AZone')"));
+      assert.match(e.message, /time zone/i);
+    });
+  });
+
+  test('anonymous visitors cannot call it', async () => {
+    await asUser(db, null, async (c) => {
+      const e = await expectDenied(c.query('select dashboard_summary()'));
+      assert.match(e.message, /permission denied/i);
     });
   });
 });

@@ -1,0 +1,180 @@
+================================================================================
+PULMO - KNOWLEDGE DISTILLATION FOR THE TB CHEST X-RAY MODEL
+Teacher/student choices, methods, and how they fit the deployment setting.
+================================================================================
+
+Scope. This is about knowledge distillation (KD) for the TB chest X-ray
+classifier - the ML side that lives in train/tb-colab/ and train/tb-train/. It
+is NOT about any teacher/student relationship inside the PULMO web app. Keep
+the two apart when reading.
+
+This file records a design discussion and ties it to what is actually in the
+repo, so later work does not start from a guess.
+
+
+--------------------------------------------------------------------------------
+1. WHAT IS ALREADY IN THE REPO (verified, not assumed)
+--------------------------------------------------------------------------------
+
+The Colab notebook train/tb-colab/TB_TBX11K_Colab.ipynb already contains a full
+KD pipeline. Confirmed from the notebook and train/tb-colab/README.md:
+
+  Cell 7   Train the TEACHER   - DenseNet121, ImageNet transfer -> tb_teacher.pt
+  Cell 8   Train the STUDENT   - MobileNetV3-Small via LogitKD   -> tb_student.pt
+  Cell 9   Teacher vs student comparison (Accuracy / Precision / Recall / F1,
+           macro + per-class, plus parameter counts) -> metrics_comparison.json
+  Cell 10  Deployment: INT8 PTQ (dynamic) + CPU benchmark (size, latency)
+  Cell 11  Optional INT8 QAT (fake-quant fine-tune); skips safely if the
+           quantization backend is unavailable
+  Cell 12  TB lesion detector (Faster R-CNN) -> tb_detector.pt
+  Cell 14  Quick inference test using the student
+
+LogitKD loss as written in the notebook:
+  loss = alpha * KL(student_soft || teacher_soft) * T^2 + (1 - alpha) * CE(student, label)
+  with alpha = 0.7 and T = 4.0.
+
+Why this shape: the design is adapted from a dual-view fundus reference (macula
++ disc, CORAL ordinal heads, Complementarity Shift Distillation). Those do not
+transfer to TB, because TBX11K has one X-ray per patient (single view) and
+nominal classes (not ordinal). So CSD (which needs two views, delta = p_dual -
+p_avg) is replaced by standard logit distillation, and the ordinal heads are
+dropped. The transferable ideas kept: a lightweight student, logit
+distillation, and INT8 CPU deployment.
+
+Saved artefacts named by the notebook: tb_teacher.pt, tb_student.pt,
+tb_student_ptq_int8.pt, tb_student_qat_int8.pt (if the backend supports it),
+tb_detector.pt.
+
+One detail to keep straight: the Colab notebook preprocesses at resize 384,
+while the local train/tb-train/ pipeline uses 512. They are two runs of the
+same task at different input sizes; do not quote one figure for the other.
+
+
+--------------------------------------------------------------------------------
+2. DIRECT ANSWER: THE PAIR YOU ALREADY CHOSE IS THE RIGHT ONE
+--------------------------------------------------------------------------------
+
+DenseNet121 (teacher) -> MobileNetV3-Small (student) via LogitKD is a good fit
+for this case. Keep it as the main baseline. Everything below is options with
+reasons, not a reason to change it.
+
+
+--------------------------------------------------------------------------------
+3. WHY DenseNet121 -> MobileNetV3-Small FITS PULMO
+--------------------------------------------------------------------------------
+
+PULMO targets TB screening at puskesmas and posyandu in remote areas (NTT, from
+the app's seed data). The student is what actually ships to the field, so it
+has to:
+
+  - run on CPU or a cheap phone, not a GPU
+  - be light and fast
+  - be small enough to send over a limited connection
+
+MobileNetV3-Small meets all three. DenseNet121 as the teacher is sensible too:
+strong enough, but not overkill for a dataset the size of TBX11K.
+
+
+--------------------------------------------------------------------------------
+4. TEACHER OPTIONS
+--------------------------------------------------------------------------------
+
+  DenseNet121 (current)
+      The safe default. Proven on chest X-rays, moderate parameter count.
+
+  EfficientNet-B0 / B3
+      A more accurate teacher at lower FLOPS. B3 is stronger but slower to
+      train.
+
+  ConvNeXt-Tiny or ViT-Small
+      Only with a larger dataset and a strong GPU. Transformers need more data;
+      TBX11K is on the small side, so the risk is overfitting.
+
+  Ensemble (DenseNet121 + EfficientNet-B0) as the teacher
+      A classic KD trick: the student learns from the averaged logits of
+      several teachers. Tends to lift the student's accuracy without making the
+      deployed model any larger.
+
+
+--------------------------------------------------------------------------------
+5. STUDENT OPTIONS
+--------------------------------------------------------------------------------
+
+  MobileNetV3-Small (current)
+      Lightest; for phones and weak CPUs.
+
+  MobileNetV3-Large or MobileNetV2
+      One step up, if MobileNetV3-Small drops too much accuracy.
+
+  EfficientNet-B0 as the student
+      If the deployment target has a little more power (e.g. a puskesmas
+      laptop). Still light, but more accurate.
+
+
+--------------------------------------------------------------------------------
+6. KD METHOD OPTIONS BEYOND LogitKD
+--------------------------------------------------------------------------------
+
+LogitKD (what you use) is solid for nominal classes. Alternatives to try:
+
+  Feature-based KD (hint layers, FitNets)
+      The student mimics the teacher's intermediate features, not just the
+      final logits. Helps when the teacher-student gap is large.
+
+  DKD (Decoupled Knowledge Distillation)
+      Separates target-class and non-target-class distillation. Often beats
+      vanilla KD on benchmarks, and the implementation is close to what you
+      already have.
+
+
+--------------------------------------------------------------------------------
+7. RECOMMENDATION
+--------------------------------------------------------------------------------
+
+Keep DenseNet121 -> MobileNetV3-Small + LogitKD as the primary baseline.
+
+If you want one cheap extra experiment, pick ONE of:
+  - an ensemble teacher, or
+  - swapping LogitKD for DKD.
+
+Both aim to raise the student's accuracy without making the deployed model any
+heavier. Measure against the baseline with the same split and report both.
+
+
+--------------------------------------------------------------------------------
+8. IMPORTANT: KEEP research-notes.txt HONEST ONCE THE MODEL IS REAL
+--------------------------------------------------------------------------------
+
+This is not a model-choice point, but it connects directly.
+
+docs/research-notes.txt currently states "No model trained, no model measured"
+and every number in it is tagged [MOCK]. But train/tb-pre-train/ already holds
+tb_cls.pt, tb_cls_eval.json and training logs, and the Colab notebook produces
+tb_teacher.pt / tb_student.pt with a real metrics_comparison.json. Those two
+facts are now in tension.
+
+When the teacher/student models are actually trained and measured:
+
+  - Replace "Current stage: Frontend demonstration, no model trained" and the
+    [MOCK] table in section 7 of research-notes.txt with the real evaluation
+    numbers (teacher and student: Accuracy / Precision / Recall / F1 macro and
+    per-class, plus parameter counts and CPU latency from the INT8 benchmark).
+  - Do not let any [MOCK] figure travel into the paper as a result. The file
+    itself warns about exactly this.
+  - State input size per run (Colab 384 vs local 512) so the numbers are not
+    conflated.
+
+Until then, the frontend's "sample output / model not connected" labelling must
+stay as it is - a real-looking TB classification shown as a finding, when it was
+not measured, is the one thing the whole project is arranged against.
+
+
+================================================================================
+SOURCES IN-REPO
+  train/tb-colab/TB_TBX11K_Colab.ipynb   the KD pipeline (teacher, student,
+                                         LogitKD, PTQ/QAT, comparison)
+  train/tb-colab/README.md               cell-by-cell description + rationale
+  train/tb-pre-train/                    tb_cls.pt, tb_detector.pt, eval JSONs
+  train/tb-train/                        local pipeline (resize 512)
+  frontend/docs/research-notes.txt       the [MOCK] research notes to reconcile
+================================================================================

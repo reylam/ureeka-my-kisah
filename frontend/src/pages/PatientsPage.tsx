@@ -19,7 +19,7 @@ import { useDataStore } from '@/stores/dataStore';
 import { buildPatientRows, type PatientRow } from '@/stores/selectors';
 import { useStoreQuery } from '@/hooks/useStoreQuery';
 import { useTableControls } from '@/hooks/useTableControls';
-import { mockApi } from '@/services/mockApi';
+import { recordsApi } from '@/services/recordsApi';
 import { formatDate } from '@/utils/date';
 import { sexLabel, screeningStatusLabel, followUpStatusLabel } from '@/utils/labels';
 import type { FollowUpStatus, ScreeningStatus } from '@/types/domain';
@@ -54,7 +54,7 @@ export function PatientsPage() {
   const navigate = useNavigate();
 
   const { data: rows, loading, error, refetch } = useStoreQuery<PatientRow[]>(
-    () => mockApi.getPatientRows(),
+    () => recordsApi.getPatientRows(),
     () => {
       const state = useDataStore.getState();
       return buildPatientRows(state.patients, state.screenings, state.referrals, state.followUps);

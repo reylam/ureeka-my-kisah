@@ -196,10 +196,9 @@ export function ReportViewPage() {
             {SCREENING_DISCLAIMER}
           </p>
           <p className="mt-1.5 text-xs leading-relaxed text-obsidian-600">
-            No machine-learning model was run on this radiograph. The output below was produced by a
-            built-in simulator from the symptom data and image-quality rating recorded during
-            screening, so that the screening workflow could be demonstrated. It has no clinical
-            meaning and must not inform patient care.
+            {analysis
+              ? `The output below was produced by ${analysis.model.name} (${analysis.model.version}). It has not been clinically validated here and never replaces the reviewer's read.`
+              : 'No model has analysed this radiograph; there is no model output in this report. The reviewer read the image directly.'}
           </p>
         </div>
 
@@ -337,9 +336,9 @@ export function ReportViewPage() {
             </dl>
           </section>
 
-          {/* Simulated output */}
+          {/* Model output */}
           <section data-print="avoid-break">
-            <SectionTitle>Simulated screening output</SectionTitle>
+            <SectionTitle>Screening model output</SectionTitle>
             {analysis ? (
               <div className="mt-2 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -354,7 +353,7 @@ export function ReportViewPage() {
               </div>
             ) : (
               <p className="mt-2 text-[13px] text-obsidian-600">
-                No output has been generated for this record yet.
+                No model output exists for this record.
               </p>
             )}
           </section>
@@ -398,7 +397,9 @@ export function ReportViewPage() {
                 'A chest radiograph cannot confirm TB on its own. Bacteriological confirmation, by sputum microscopy or a molecular test, is required.',
                 'The absence of a screening alert does not mean the patient is free of TB. Symptoms and clinical judgement take priority.',
                 'Image quality, positioning and exposure materially affect what can be read from a radiograph.',
-                'In this prototype the output is simulated, so it carries no diagnostic weight whatsoever.',
+                analysis
+                  ? 'Model output has no validated performance figures here and carries no diagnostic weight on its own.'
+                  : 'No model output exists for this record, so the assessment rests on the reviewer’s own read of the image.',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-[13px] leading-relaxed">
                   <span
@@ -427,9 +428,13 @@ export function ReportViewPage() {
                 <DetailRow label="Reviewed">{formatDateTime(screening.review.reviewedAt)}</DetailRow>
                 <DetailRow label="Assessment">
                   {screening.review.agreement === 'agrees'
-                    ? 'Consistent with the simulated output'
+                    ? analysis
+                      ? 'Consistent with the screening output'
+                      : 'Reviewed the image, no concern raised'
                     : screening.review.agreement === 'disagrees'
-                      ? 'Not consistent with the simulated output'
+                      ? analysis
+                        ? 'Not consistent with the screening output'
+                        : 'Reviewed the image, concern raised'
                       : 'Could not conclude from this image'}
                 </DetailRow>
                 <DetailRow label="Decision">

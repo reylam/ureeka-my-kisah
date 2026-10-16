@@ -13,10 +13,9 @@ import { AUDIT_LABEL } from './auditLabels';
 /**
  * Administration overview.
  *
- * Every number here is a live count from the stores, not a figure typed into
- * the page. They are small, because the dataset is sample data, and showing
- * them honestly small is better than padding them to look like a platform in
- * production.
+ * Every number here is a live count of what the API returned for an
+ * administrator, not a figure typed into the page. If there is little data the
+ * numbers are small, and that is the correct thing to show.
  */
 export function AdminOverviewPage() {
   const accounts = useAccountStore((state) => state.accounts);

@@ -10,10 +10,10 @@ import { formatBytes } from '@/utils/format';
 /**
  * Chest radiograph upload.
  *
- * The file never leaves the browser: it is read into an object URL for preview
- * and handed to the caller as a Blob for IndexedDB. The "upload" progress bar
- * is labelled as local processing, because calling it an upload when nothing is
- * transmitted would be a lie.
+ * This component only prepares the file: it is read into an object URL for
+ * preview and handed to the caller as a Blob. Nothing is sent from here. The
+ * progress bar is labelled as local processing for that reason; the actual
+ * upload happens when the screening is submitted.
  */
 
 const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp'] as const;
@@ -265,8 +265,9 @@ export function ImageUpload({
       ) : null}
 
       <Notice tone="demo" compact className="mt-3">
-        The radiograph is stored in this browser&rsquo;s IndexedDB on this device only. It is not
-        transmitted, and no model is run against it.
+        The radiograph stays on this device until you submit the screening. It is then uploaded to
+        private storage, where only the treating team can open it. If you are offline it waits on
+        this device until it can be sent.
       </Notice>
     </div>
   );

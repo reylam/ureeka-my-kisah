@@ -54,10 +54,8 @@ export function LoginPage() {
 
     setSubmitting(true);
     setErrors({});
-    // Brief pause so the pending state is visible while there is no request.
-    await new Promise((resolve) => window.setTimeout(resolve, 350));
 
-    const result = signIn(email, password);
+    const result = await signIn(email, password);
     setSubmitting(false);
 
     if (!result.ok) {
@@ -71,14 +69,16 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
-      {/* Brand panel */}
-      <div className="on-dark relative flex shrink-0 flex-col justify-between bg-obsidian-950 px-6 py-7 sm:px-10 lg:w-[26rem] lg:py-10">
+      {/* Brand panel. Logo pinned top-left; the pitch sits centred in the
+          remaining space, since the disclaimer that used to balance the
+          bottom is gone. */}
+      <div className="on-dark relative flex shrink-0 flex-col bg-obsidian-950 px-6 py-7 sm:px-10 lg:w-[26rem] lg:py-10">
         <Link to="/" className="inline-flex w-fit">
           <Logo tone="light" />
         </Link>
 
-        <div className="mt-8 lg:mt-0">
-          <h1 className="max-w-sm text-xl leading-snug font-semibold text-white lg:text-2xl">
+        <div className="mt-8 flex flex-col items-center text-center lg:mt-0 lg:flex-1 lg:justify-center">
+          <h1 className="text-xl leading-snug font-semibold text-white lg:text-2xl">
             Sign in to PULMO
           </h1>
           <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-obsidian-300">
@@ -91,14 +91,13 @@ export function LoginPage() {
               'Signing up creates a patient account',
               'Your records are only ever seen by you and your care team',
             ].map((item) => (
-              <li key={item} className="flex items-start gap-2.5">
+              <li key={item} className="flex items-start gap-2.5 text-left">
                 <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ct-400" />
                 {item}
               </li>
             ))}
           </ul>
         </div>
-
       </div>
 
       {/* Form panel */}
@@ -162,6 +161,7 @@ export function LoginPage() {
                     describedBy={describedBy}
                     invalid={invalid}
                     leadingIcon={<Lock />}
+                    placeholder="********"
                     className="pr-10"
                   />
                   <button

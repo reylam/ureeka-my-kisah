@@ -1,8 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import cors from 'cors';
 import helmet from 'helmet';
-import { rateLimit } from 'express-rate-limit';
-import { failure } from '../utils/response.js';
 
 export function requestId() {
   return (req, res, next) => {
@@ -41,20 +39,3 @@ export function corsPolicy(origins) {
     maxAge: 600,
   });
 }
-
-function limiter({ windowMs, max, code = 'RATE_LIMITED' }) {
-  return rateLimit({
-    windowMs,
-    limit: max,
-    standardHeaders: 'draft-7',
-    legacyHeaders: false,
-    handler: (_req, res) =>
-      failure(res, 429, code, 'Too many requests. Please wait a moment and try again.'),
-  });
-}
-
-export const generalLimiter = (config) => limiter(config.rateLimit);
-
-/** Uploads and model calls are the expensive endpoints; keep them tighter. */
-export const heavyLimiter = (config) =>
-  limiter({ windowMs: config.rateLimit.windowMs, max: config.rateLimit.heavyMax });

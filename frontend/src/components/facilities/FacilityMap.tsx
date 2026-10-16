@@ -45,10 +45,15 @@ export function FacilityMap({
 
   /** Project lat/lng into percentage positions within the plot area. */
   const points = useMemo(() => {
-    if (facilities.length === 0) return [];
+    // Entries without coordinates (new, not yet located) are listed elsewhere
+    // but not plotted: a guessed position would be a wrong one.
+    const located = facilities.filter(
+      (f): f is Facility & { coordinates: { lat: number; lng: number } } => f.coordinates !== null,
+    );
+    if (located.length === 0) return [];
 
-    const lats = facilities.map((f) => f.coordinates.lat);
-    const lngs = facilities.map((f) => f.coordinates.lng);
+    const lats = located.map((f) => f.coordinates.lat);
+    const lngs = located.map((f) => f.coordinates.lng);
     const minLat = Math.min(...lats);
     const maxLat = Math.max(...lats);
     const minLng = Math.min(...lngs);
@@ -58,7 +63,7 @@ export function FacilityMap({
     const lngSpan = maxLng - minLng || 1;
     const usable = 100 - PADDING * 2;
 
-    return facilities.map((facility) => ({
+    return located.map((facility) => ({
       facility,
       // Latitude increases northwards, so it is inverted for screen space.
       top: PADDING + ((maxLat - facility.coordinates.lat) / latSpan) * usable,

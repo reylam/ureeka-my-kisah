@@ -16,8 +16,7 @@ import {
   type FacilityDraft,
   type ManagedFacility,
 } from '@/stores/facilityStore';
-import { useAccountStore } from '@/stores/accountStore';
-import { useCurrentAccount } from '@/stores/authStore';
+import { errorMessage } from '@/lib/apiClient';
 import { facilityServiceLabel, facilityTypeLabel } from '@/utils/labels';
 import type { FacilityService, FacilityType } from '@/types/domain';
 import { DISTRICTS, PROVINCE } from '@/data/geography';
@@ -52,12 +51,10 @@ const EMPTY_DRAFT: FacilityDraft = {
 };
 
 export function AdminFacilitiesPage() {
-  const actor = useCurrentAccount();
   const facilities = useFacilityStore((state) => state.facilities);
   const createFacility = useFacilityStore((state) => state.create);
   const updateFacility = useFacilityStore((state) => state.update);
   const setPublished = useFacilityStore((state) => state.setPublished);
-  const log = useAccountStore((state) => state.log);
 
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<ManagedFacility | null>(null);
@@ -110,29 +107,34 @@ export function AdminFacilitiesPage() {
     return Object.keys(next).length === 0;
   };
 
-  const save = () => {
-    if (!actor || !validate()) return;
+  // The server writes the audit entry for every one of these.
+  const save = async () => {
+    if (!validate()) return;
 
-    if (editing) {
-      updateFacility(editing.id, draft);
-      log(actor, 'facility.updated', draft.name.trim());
-      toast.success('Facility updated.', 'Marked as needing review again.');
-      setEditing(null);
-      return;
+    try {
+      if (editing) {
+        await updateFacility(editing.id, draft);
+        toast.success('Facility updated.', 'Marked as needing review again.');
+        setEditing(null);
+        return;
+      }
+
+      await createFacility(draft);
+      toast.success('Facility added.', 'Publish it once the details have been checked.');
+      setCreating(false);
+    } catch (cause) {
+      toast.error('Could not save the facility.', errorMessage(cause));
     }
-
-    const created = createFacility(draft);
-    log(actor, 'facility.created', created.name, 'Created unpublished.');
-    toast.success('Facility added.', 'Publish it once the details have been checked.');
-    setCreating(false);
   };
 
-  const togglePublished = (facility: ManagedFacility) => {
-    if (!actor) return;
+  const togglePublished = async (facility: ManagedFacility) => {
     const next = !facility.published;
-    setPublished(facility.id, next);
-    log(actor, next ? 'facility.published' : 'facility.unpublished', facility.name);
-    toast.success(next ? 'Published to the directory.' : 'Removed from the directory.');
+    try {
+      await setPublished(facility.id, next);
+      toast.success(next ? 'Published to the directory.' : 'Removed from the directory.');
+    } catch (cause) {
+      toast.error('Could not change publication.', errorMessage(cause));
+    }
   };
 
   const columns: Column<ManagedFacility>[] = [

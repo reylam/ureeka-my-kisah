@@ -30,7 +30,7 @@ import { FollowUpFormDialog } from '@/components/followups/FollowUpFormDialog';
 import { useDataStore } from '@/stores/dataStore';
 import { useStoreQuery } from '@/hooks/useStoreQuery';
 import { useTableControls } from '@/hooks/useTableControls';
-import { mockApi } from '@/services/mockApi';
+import { recordsApi } from '@/services/recordsApi';
 import { facilities } from '@/data/facilities';
 import { users } from '@/data/users';
 import {
@@ -78,7 +78,7 @@ export function ReferralsPage() {
 
   const patients = useDataStore((state) => state.patients);
   const { data: referrals, loading, error, refetch } = useStoreQuery<Referral[]>(
-    () => mockApi.getReferrals(),
+    () => recordsApi.getReferrals(),
     () => useDataStore.getState().referrals,
   );
 

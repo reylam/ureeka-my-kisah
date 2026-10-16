@@ -31,7 +31,8 @@ export function validate({ params, query, body } = {}) {
     }
 
     if (Object.keys(issues).length) return next(ApiError.validation(issues));
-    req.valid = valid;
+    // Merge: the upload route validates params first and the multipart body after multer.
+    req.valid = { ...req.valid, ...valid };
     next();
   };
 }

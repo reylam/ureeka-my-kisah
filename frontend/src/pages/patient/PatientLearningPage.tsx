@@ -16,14 +16,17 @@ import {
 } from '@/data/education';
 import { usePatientRecords } from '@/hooks/usePatientRecords';
 import { useCurrentAccount } from '@/stores/authStore';
+import { api, errorMessage } from '@/lib/apiClient';
+import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 
 /**
  * TB learning centre.
  *
- * Reading progress is stored per account under its own key, not in the account
+ * Reading progress is stored per account in its own table, not in the account
  * record, because it is not clinical information and has no business sitting
- * next to someone's symptoms.
+ * next to someone's symptoms. Only the owner can read it. The articles
+ * themselves are a static module in `data/education.ts`.
  *
  * Progress is shown as a count of articles read and nothing more. No streaks,
  * no scores, no badges to chase: this is health information, and turning it
@@ -31,34 +34,44 @@ import { cn } from '@/utils/cn';
  * rather than reading them.
  */
 
-const STORAGE_KEY = 'pulmo.learning.v1';
-
-function loadProgress(accountId: string): string[] {
-  try {
-    const raw = window.localStorage.getItem(`${STORAGE_KEY}.${accountId}`);
-    return raw ? (JSON.parse(raw) as string[]) : [];
-  } catch {
-    return [];
-  }
-}
-
 export function PatientLearningPage() {
   const account = useCurrentAccount();
   const { stage } = usePatientRecords();
   const [params, setParams] = useSearchParams();
   const openId = params.get('article');
 
-  const [read, setRead] = useState<string[]>(() => (account ? loadProgress(account.id) : []));
+  const [read, setRead] = useState<string[]>([]);
 
+  // Progress lives on the server, so it follows the person to another device.
   useEffect(() => {
-    if (!account) return;
+    if (!account) return undefined;
+    let active = true;
+    api
+      .get<{ read: string[] }>('/me/learning')
+      .then((result) => {
+        if (active) setRead(result.read);
+      })
+      .catch(() => {
+        // Progress is a convenience; the articles still open without it.
+      });
+    return () => {
+      active = false;
+    };
+  }, [account]);
+
+  const toggleRead = async (articleId: string, markAsRead: boolean) => {
+    const previous = read;
+    setRead(markAsRead ? [...read, articleId] : read.filter((id) => id !== articleId));
     try {
-      window.localStorage.setItem(`${STORAGE_KEY}.${account.id}`, JSON.stringify(read));
-    } catch {
-      // Storage can be full or blocked. Losing reading progress is not worth
-      // interrupting anyone over.
+      const result = markAsRead
+        ? await api.put<{ read: string[] }>(`/me/learning/${articleId}`)
+        : await api.delete<{ read: string[] }>(`/me/learning/${articleId}`);
+      if (result?.read) setRead(result.read);
+    } catch (cause) {
+      setRead(previous);
+      toast.error('Could not save your progress.', errorMessage(cause));
     }
-  }, [account, read]);
+  };
 
   const [topic, setTopic] = useState<EducationTopic | 'all'>('all');
   const recommendation = STAGE_RECOMMENDATION[stage];
@@ -121,11 +134,7 @@ export function PatientLearningPage() {
             <Button
               variant={isRead ? 'outline' : 'primary'}
               leadingIcon={isRead ? <Check className="mr-1.5 size-4" /> : undefined}
-              onClick={() =>
-                setRead((current) =>
-                  isRead ? current.filter((id) => id !== article.id) : [...current, article.id],
-                )
-              }
+              onClick={() => void toggleRead(article.id, !isRead)}
             >
               {isRead ? 'Marked as read' : 'Mark as read'}
             </Button>

@@ -83,16 +83,6 @@ export function AdminScreeningsPage() {
       cell: (screening) => <ScreeningStatusBadge status={screening.status} />,
     },
     {
-      id: 'analysis',
-      header: 'Analysis',
-      hideBelow: 'lg',
-      cell: (screening) => (
-        <span className="text-obsidian-600">
-          {screening.analysis ? 'Output recorded' : 'Not yet run'}
-        </span>
-      ),
-    },
-    {
       id: 'sync',
       header: 'Sync',
       align: 'right',

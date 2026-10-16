@@ -19,10 +19,9 @@ import { AUDIT_LABEL } from './auditLabels';
  * the actor, the subject and a timestamp, because an audit line without an
  * actor answers nothing.
  *
- * It does not log reads. Logging every record a clinician opened is a real
- * requirement in a deployed system, and it needs a server to be worth
- * anything: a read log the client writes can be skipped by not running the
- * client.
+ * The log is written by the server, append-only, and also records reads of
+ * patient records and radiographs. A log the client wrote could be skipped by
+ * not running the client; this one cannot.
  */
 export function AdminAuditPage() {
   const audit = useAccountStore((state) => state.audit);
@@ -75,9 +74,9 @@ export function AdminAuditPage() {
       />
 
       <Notice tone="info" compact>
-        Stored on this device with the rest of the sample data, and capped at the most recent 200
-        entries. A deployed system keeps this server-side, append-only, and logs record access as
-        well as changes.
+        Written by the server and append-only: entries cannot be edited or removed. It covers
+        administrative changes and also records when a patient's record or X-ray was opened. This
+        view shows the most recent 200 entries.
       </Notice>
 
       <Card>

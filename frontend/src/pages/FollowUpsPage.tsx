@@ -40,7 +40,7 @@ import { useDataStore } from '@/stores/dataStore';
 import { useStoreQuery } from '@/hooks/useStoreQuery';
 import { useTableControls } from '@/hooks/useTableControls';
 import { followUpBucket } from '@/stores/selectors';
-import { mockApi } from '@/services/mockApi';
+import { recordsApi } from '@/services/recordsApi';
 import { users } from '@/data/users';
 import {
   contactChannelLabel,
@@ -88,7 +88,7 @@ export function FollowUpsPage() {
   const patients = useDataStore((state) => state.patients);
   const referrals = useDataStore((state) => state.referrals);
   const { data: followUps, loading, error, refetch } = useStoreQuery<FollowUp[]>(
-    () => mockApi.getFollowUps(),
+    () => recordsApi.getFollowUps(),
     () => useDataStore.getState().followUps,
   );
 

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Field, Fieldset } from '@/components/forms/Field';
 import { RadioGroup, TextArea } from '@/components/forms/Inputs';
 import { Notice } from '@/components/ui/Notice';
+import { errorMessage } from '@/lib/apiClient';
 import { useCurrentUser } from '@/stores/authStore';
 import { useDataStore } from '@/stores/dataStore';
 import { toast } from '@/stores/toastStore';
@@ -39,7 +40,9 @@ export function ReviewForm({
       ? 'refer'
       : screening.analysis?.outcome === 'inconclusive'
         ? 'repeat-image'
-        : 'no-action',
+        : screening.analysis
+          ? 'no-action'
+          : 'observe',
   );
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -48,11 +51,19 @@ export function ReviewForm({
   /* Already reviewed: show the signed-off record instead of the form. */
   if (screening.review) {
     const reviewer = users.find((u) => u.id === screening.review!.reviewerId);
-    const agreementText: Record<Agreement, string> = {
-      agrees: 'Agreed with the demo output',
-      disagrees: 'Disagreed with the demo output',
-      'needs-more-data': 'Could not conclude without more data',
-    };
+    // Without model output there is nothing to agree with, so the same three
+    // stored values read as the reviewer's own conclusion about the image.
+    const agreementText: Record<Agreement, string> = screening.analysis
+      ? {
+          agrees: 'Agreed with the screening output',
+          disagrees: 'Disagreed with the screening output',
+          'needs-more-data': 'Could not conclude without more data',
+        }
+      : {
+          agrees: 'Reviewed the image, no concern raised',
+          disagrees: 'Reviewed the image, concern raised',
+          'needs-more-data': 'Could not conclude without more data',
+        };
     const decisionText: Record<Decision, string> = {
       refer: 'Refer for diagnostic testing',
       'repeat-image': 'Repeat the radiograph',
@@ -93,12 +104,11 @@ export function ReviewForm({
     );
   }
 
-  /* No analysis yet, nothing to review. */
-  if (!screening.analysis) {
+  /* A draft has not been submitted, so there is nothing to sign off yet. */
+  if (screening.status === 'draft') {
     return (
       <Notice tone="demo" compact>
-        This record has no analysis output yet, so there is nothing to review. It is waiting in the
-        queue.
+        This record is still a draft. Finish and submit it before it can be reviewed.
       </Notice>
     );
   }
@@ -117,9 +127,6 @@ export function ReviewForm({
             </p>
           </div>
         </div>
-        <p className="text-xs text-obsidian-500">
-          To try this step in the demo, switch to a reviewing role from the profile menu.
-        </p>
       </div>
     );
   }
@@ -131,11 +138,16 @@ export function ReviewForm({
     }
     setError(null);
     setSaving(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 350));
-    submitReview(screening.id, { agreement, decision, notes: notes.trim() });
-    setSaving(false);
-    toast.success('Review recorded.', 'The screening record has been signed off.');
-    onReviewed?.();
+    try {
+      await submitReview(screening.id, { agreement, decision, notes: notes.trim() });
+      toast.success('Review recorded.', 'The screening record has been signed off.');
+      onReviewed?.();
+    } catch (cause) {
+      // The server re-checks that this person may sign off and that the record is open.
+      toast.error('The review could not be recorded.', errorMessage(cause));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -148,13 +160,17 @@ export function ReviewForm({
           options={[
             {
               value: 'agrees',
-              label: 'Consistent with the demo output',
-              description: 'What I see matches what the simulator reported.',
+              label: screening.analysis ? 'Consistent with the screening output' : 'No concern on this image',
+              description: screening.analysis
+                ? 'What I see matches what the model reported.'
+                : 'I looked at the image and nothing needs escalating.',
             },
             {
               value: 'disagrees',
-              label: 'Not consistent with the demo output',
-              description: 'My read differs. The record should follow my assessment.',
+              label: screening.analysis ? 'Not consistent with the screening output' : 'Concern on this image',
+              description: screening.analysis
+                ? 'My read differs. The record should follow my assessment.'
+                : 'I see something that needs follow-up.',
             },
             {
               value: 'needs-more-data',

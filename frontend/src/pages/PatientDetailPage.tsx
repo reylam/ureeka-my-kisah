@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -65,16 +66,25 @@ export function PatientDetailPage() {
   const navigate = useNavigate();
 
   const patient = useDataStore((state) => state.patients.find((item) => item.id === patientId));
-  const screenings = useDataStore((state) =>
-    state.screenings.filter((item) => item.patientId === patientId),
+  // useShallow: these selectors build a new array on every call, which zustand 5
+  // would otherwise treat as a changed snapshot and re-render forever.
+  const screenings = useDataStore(
+    useShallow((state) => state.screenings.filter((item) => item.patientId === patientId)),
   );
-  const referrals = useDataStore((state) =>
-    state.referrals.filter((item) => item.patientId === patientId),
+  const referrals = useDataStore(
+    useShallow((state) => state.referrals.filter((item) => item.patientId === patientId)),
   );
-  const followUps = useDataStore((state) =>
-    state.followUps.filter((item) => item.patientId === patientId),
+  const followUps = useDataStore(
+    useShallow((state) => state.followUps.filter((item) => item.patientId === patientId)),
   );
   const addPatientNote = useDataStore((state) => state.addPatientNote);
+  const loadPatient = useDataStore((state) => state.loadPatient);
+
+  // The list holds a summary; opening the record fetches the full one with its
+  // notes. That read is audited by the server.
+  useEffect(() => {
+    if (patientId) void loadPatient(patientId).catch(() => undefined);
+  }, [patientId, loadPatient]);
 
   const [tab, setTab] = useState<TabId>('timeline');
   const [referralOpen, setReferralOpen] = useState(false);
@@ -107,7 +117,7 @@ export function PatientDetailPage() {
         <EmptyState
           icon={<FileSearch />}
           title="Patient record not found"
-          description="This record may have been removed as part of a demo data reset."
+          description="It may not exist, or the patient may belong to a facility you are not assigned to."
           action={
             <Button
               variant="primary"
@@ -128,16 +138,20 @@ export function PatientDetailPage() {
   );
   const latestScreening = sortedScreenings[0];
 
-  const saveNote = () => {
+  const saveNote = async () => {
     if (noteBody.trim().length < 5) {
       setNoteError('Write at least a few words.');
       return;
     }
-    addPatientNote(patient.id, noteBody, 'general');
-    setNoteBody('');
-    setNoteError(null);
-    setNoteOpen(false);
-    toast.success('Note added to the patient timeline.');
+    try {
+      await addPatientNote(patient.id, noteBody, 'general');
+      setNoteBody('');
+      setNoteError(null);
+      setNoteOpen(false);
+      toast.success('Note added to the patient timeline.');
+    } catch (cause) {
+      setNoteError(cause instanceof Error ? cause.message : 'The note could not be saved.');
+    }
   };
 
   return (

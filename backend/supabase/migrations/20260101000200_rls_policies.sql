@@ -60,10 +60,12 @@ grant select on public.profiles to authenticated;
 -- trusted server contexts change them.
 grant update (full_name) on public.profiles to authenticated;
 
+drop policy if exists profiles_select on public.profiles;
 create policy profiles_select on public.profiles
   for select to authenticated
   using (id = auth.uid() or public.is_admin());
 
+drop policy if exists profiles_update_self on public.profiles;
 create policy profiles_update_self on public.profiles
   for update to authenticated
   using (id = auth.uid() and public.current_account_role() is not null)
@@ -76,10 +78,12 @@ alter table public.healthcare_facilities enable row level security;
 grant select on public.healthcare_facilities to anon, authenticated;
 grant insert, update, delete on public.healthcare_facilities to authenticated;
 
+drop policy if exists facilities_select_public on public.healthcare_facilities;
 create policy facilities_select_public on public.healthcare_facilities
   for select to anon
   using (published);
 
+drop policy if exists facilities_select_auth on public.healthcare_facilities;
 create policy facilities_select_auth on public.healthcare_facilities
   for select to authenticated
   using (
@@ -88,15 +92,18 @@ create policy facilities_select_auth on public.healthcare_facilities
     or id = public.staff_facility_id()
   );
 
+drop policy if exists facilities_admin_insert on public.healthcare_facilities;
 create policy facilities_admin_insert on public.healthcare_facilities
   for insert to authenticated
   with check (public.is_admin() and not published);
 
+drop policy if exists facilities_admin_update on public.healthcare_facilities;
 create policy facilities_admin_update on public.healthcare_facilities
   for update to authenticated
   using (public.is_admin())
   with check (public.is_admin());
 
+drop policy if exists facilities_admin_delete on public.healthcare_facilities;
 create policy facilities_admin_delete on public.healthcare_facilities
   for delete to authenticated
   using (public.is_admin());
@@ -108,6 +115,7 @@ alter table public.healthcare_professional_profiles enable row level security;
 -- Written only through admin_upsert_staff_profile / admin_remove_staff_profile.
 grant select on public.healthcare_professional_profiles to authenticated;
 
+drop policy if exists staff_select on public.healthcare_professional_profiles;
 create policy staff_select on public.healthcare_professional_profiles
   for select to authenticated
   using (profile_id = auth.uid() or public.is_admin());
@@ -124,14 +132,22 @@ grant update (name, sex, birth_date, phone, village, district, province,
               home_facility_id, risk_factors, household_contacts)
   on public.patient_profiles to authenticated;
 
+-- "Assigned" is written against the row's own home_facility_id here, not through
+-- is_assigned_to_patient(id). That function looks the patient up by id, and a
+-- function cannot see a row inserted by the very statement that is checking it,
+-- so `insert ... returning` (which is what PostgREST and supabase-js issue)
+-- would fail its own SELECT check. staff_facility_id() is null for anyone who
+-- is not a professional, so the comparison is false for them.
+drop policy if exists patients_select on public.patient_profiles;
 create policy patients_select on public.patient_profiles
   for select to authenticated
   using (
     (profile_id = auth.uid() and public.current_account_role() = 'patient')
     or public.is_admin()
-    or public.is_assigned_to_patient(id)
+    or home_facility_id = public.staff_facility_id()
   );
 
+drop policy if exists patients_insert on public.patient_profiles;
 create policy patients_insert on public.patient_profiles
   for insert to authenticated
   with check (
@@ -142,12 +158,13 @@ create policy patients_insert on public.patient_profiles
     )
   );
 
+drop policy if exists patients_update on public.patient_profiles;
 create policy patients_update on public.patient_profiles
   for update to authenticated
   using (
     (profile_id = auth.uid() and public.current_account_role() = 'patient')
     or public.is_admin()
-    or public.is_assigned_to_patient(id)
+    or home_facility_id = public.staff_facility_id()
   )
   with check (
     (profile_id = auth.uid() and public.current_account_role() = 'patient')
@@ -165,14 +182,17 @@ grant select on public.patient_onboarding to authenticated;
 grant insert (profile_id, step, personal, address, health) on public.patient_onboarding to authenticated;
 grant update (step, personal, address, health) on public.patient_onboarding to authenticated;
 
+drop policy if exists onboarding_select on public.patient_onboarding;
 create policy onboarding_select on public.patient_onboarding
   for select to authenticated
   using (profile_id = auth.uid() and public.current_account_role() = 'patient');
 
+drop policy if exists onboarding_insert on public.patient_onboarding;
 create policy onboarding_insert on public.patient_onboarding
   for insert to authenticated
   with check (profile_id = auth.uid() and public.current_account_role() = 'patient');
 
+drop policy if exists onboarding_update on public.patient_onboarding;
 create policy onboarding_update on public.patient_onboarding
   for update to authenticated
   using (profile_id = auth.uid() and public.current_account_role() = 'patient')
@@ -185,10 +205,12 @@ alter table public.patient_notes enable row level security;
 grant select on public.patient_notes to authenticated;
 grant insert (patient_id, author_id, body, context, context_id) on public.patient_notes to authenticated;
 
+drop policy if exists notes_select on public.patient_notes;
 create policy notes_select on public.patient_notes
   for select to authenticated
   using (public.is_assigned_to_patient(patient_id));
 
+drop policy if exists notes_insert on public.patient_notes;
 create policy notes_insert on public.patient_notes
   for insert to authenticated
   with check (author_id = auth.uid() and public.is_assigned_to_patient(patient_id));
@@ -202,6 +224,7 @@ grant insert (patient_id, facility_id, operator_id, performed_at, status, image_
   on public.screenings to authenticated;
 grant update (status, image_quality) on public.screenings to authenticated;
 
+drop policy if exists screenings_select on public.screenings;
 create policy screenings_select on public.screenings
   for select to authenticated
   using (
@@ -210,6 +233,7 @@ create policy screenings_select on public.screenings
     or public.is_assigned_to_patient(patient_id)
   );
 
+drop policy if exists screenings_insert on public.screenings;
 create policy screenings_insert on public.screenings
   for insert to authenticated
   with check (
@@ -221,11 +245,13 @@ create policy screenings_insert on public.screenings
   );
 
 -- Operators complete their own drafts; everything after is trigger-driven.
+drop policy if exists screenings_update_draft on public.screenings;
 create policy screenings_update_draft on public.screenings
   for update to authenticated
   using (public.is_professional() and operator_id = auth.uid() and status = 'draft')
   with check (operator_id = auth.uid());
 
+drop policy if exists screenings_delete_draft on public.screenings;
 create policy screenings_delete_draft on public.screenings
   for delete to authenticated
   using (public.is_professional() and operator_id = auth.uid() and status = 'draft');
@@ -240,10 +266,12 @@ grant select on public.screening_reports to authenticated;
 grant insert (screening_id, symptoms, vitals) on public.screening_reports to authenticated;
 grant update (symptoms, vitals) on public.screening_reports to authenticated;
 
+drop policy if exists reports_select on public.screening_reports;
 create policy reports_select on public.screening_reports
   for select to authenticated
   using (public.is_assigned_to_patient(public.screening_patient_id(screening_id)));
 
+drop policy if exists reports_insert on public.screening_reports;
 create policy reports_insert on public.screening_reports
   for insert to authenticated
   with check (
@@ -256,6 +284,7 @@ create policy reports_insert on public.screening_reports
     and public.is_professional()
   );
 
+drop policy if exists reports_update on public.screening_reports;
 create policy reports_update on public.screening_reports
   for update to authenticated
   using (
@@ -277,6 +306,7 @@ grant insert (screening_id, reviewer_id, agreement, decision, notes)
 
 -- A patient may read the review of their own screening (the page leads with
 -- what the care team wrote). Administrators cannot.
+drop policy if exists reviews_select on public.screening_reviews;
 create policy reviews_select on public.screening_reviews
   for select to authenticated
   using (
@@ -284,6 +314,7 @@ create policy reviews_select on public.screening_reviews
     or public.is_assigned_to_patient(public.screening_patient_id(screening_id))
   );
 
+drop policy if exists reviews_insert on public.screening_reviews;
 create policy reviews_insert on public.screening_reviews
   for insert to authenticated
   with check (
@@ -304,6 +335,7 @@ grant insert (patient_id, screening_id, from_facility_id, to_facility_id, reason
 grant update (to_facility_id, reason, requested_service, priority, appointment_date, assigned_worker_id)
   on public.referrals to authenticated;
 
+drop policy if exists referrals_select on public.referrals;
 create policy referrals_select on public.referrals
   for select to authenticated
   using (
@@ -311,6 +343,7 @@ create policy referrals_select on public.referrals
     or public.is_assigned_to_patient(patient_id)
   );
 
+drop policy if exists referrals_insert on public.referrals;
 create policy referrals_insert on public.referrals
   for insert to authenticated
   with check (
@@ -321,6 +354,7 @@ create policy referrals_insert on public.referrals
     and public.is_assigned_to_patient(patient_id)
   );
 
+drop policy if exists referrals_update on public.referrals;
 create policy referrals_update on public.referrals
   for update to authenticated
   using (public.is_assigned_to_patient(patient_id))
@@ -330,6 +364,7 @@ alter table public.referral_events enable row level security;
 
 grant select on public.referral_events to authenticated;
 
+drop policy if exists referral_events_select on public.referral_events;
 create policy referral_events_select on public.referral_events
   for select to authenticated
   using (
@@ -350,6 +385,7 @@ grant insert (patient_id, referral_id, screening_id, reason, due_date, assigned_
 grant update (due_date, status, assigned_worker_id, completed_at, unresolved_reason)
   on public.follow_up_records to authenticated;
 
+drop policy if exists follow_ups_select on public.follow_up_records;
 create policy follow_ups_select on public.follow_up_records
   for select to authenticated
   using (
@@ -357,6 +393,7 @@ create policy follow_ups_select on public.follow_up_records
     or public.is_assigned_to_patient(patient_id)
   );
 
+drop policy if exists follow_ups_insert on public.follow_up_records;
 create policy follow_ups_insert on public.follow_up_records
   for insert to authenticated
   with check (
@@ -364,6 +401,7 @@ create policy follow_ups_insert on public.follow_up_records
     and public.is_assigned_to_patient(patient_id)
   );
 
+drop policy if exists follow_ups_update on public.follow_up_records;
 create policy follow_ups_update on public.follow_up_records
   for update to authenticated
   using (public.is_assigned_to_patient(patient_id))
@@ -374,6 +412,7 @@ alter table public.follow_up_attempts enable row level security;
 grant select on public.follow_up_attempts to authenticated;
 grant insert (follow_up_id, actor_id, channel, outcome, note) on public.follow_up_attempts to authenticated;
 
+drop policy if exists follow_up_attempts_select on public.follow_up_attempts;
 create policy follow_up_attempts_select on public.follow_up_attempts
   for select to authenticated
   using (
@@ -384,6 +423,7 @@ create policy follow_up_attempts_select on public.follow_up_attempts
     )
   );
 
+drop policy if exists follow_up_attempts_insert on public.follow_up_attempts;
 create policy follow_up_attempts_insert on public.follow_up_attempts
   for insert to authenticated
   with check (
@@ -400,14 +440,17 @@ alter table public.educational_progress enable row level security;
 
 grant select, insert, delete on public.educational_progress to authenticated;
 
+drop policy if exists progress_select on public.educational_progress;
 create policy progress_select on public.educational_progress
   for select to authenticated
   using (profile_id = auth.uid());
 
+drop policy if exists progress_insert on public.educational_progress;
 create policy progress_insert on public.educational_progress
   for insert to authenticated
   with check (profile_id = auth.uid() and public.current_account_role() is not null);
 
+drop policy if exists progress_delete on public.educational_progress;
 create policy progress_delete on public.educational_progress
   for delete to authenticated
   using (profile_id = auth.uid());
@@ -420,6 +463,7 @@ alter table public.audit_logs enable row level security;
 -- and the security-definer functions; triggers block update/delete for all.
 grant select on public.audit_logs to authenticated;
 
+drop policy if exists audit_select_admin on public.audit_logs;
 create policy audit_select_admin on public.audit_logs
   for select to authenticated
   using (public.is_admin());

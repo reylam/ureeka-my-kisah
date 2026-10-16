@@ -25,7 +25,7 @@ import { FacilityMap } from '@/components/facilities/FacilityMap';
 import { ReferralFormDialog } from '@/components/referrals/ReferralFormDialog';
 import { useStoreQuery } from '@/hooks/useStoreQuery';
 import { useTableControls } from '@/hooks/useTableControls';
-import { mockApi } from '@/services/mockApi';
+import { recordsApi } from '@/services/recordsApi';
 import { facilities as staticFacilities, OPERATING_FACILITY_ID } from '@/data/facilities';
 import { DISTRICTS } from '@/data/geography';
 import { facilityServiceLabel, facilityTypeLabel } from '@/utils/labels';
@@ -71,7 +71,7 @@ export function FacilitiesPage() {
   const [referralFor, setReferralFor] = useState<Facility | null>(null);
 
   const { data: facilities, loading } = useStoreQuery<Facility[]>(
-    () => mockApi.getFacilities(),
+    () => recordsApi.getFacilities(),
     () => staticFacilities,
   );
 

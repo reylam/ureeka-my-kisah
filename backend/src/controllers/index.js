@@ -1,5 +1,6 @@
 import * as accountService from '../services/accountService.js';
 import * as auditService from '../services/auditService.js';
+import * as dashboardService from '../services/dashboardService.js';
 import * as educationService from '../services/educationService.js';
 import * as facilityService from '../services/facilityService.js';
 import * as followUpService from '../services/followUpService.js';
@@ -174,6 +175,10 @@ export const facilities = {
     await facilityService.remove(ctx(req), req.valid.params.id);
     return noContent(res);
   },
+};
+
+export const dashboard = {
+  summary: async (req, res) => ok(res, await dashboardService.summary(ctx(req), req.valid.query)),
 };
 
 export const audit = {

@@ -55,7 +55,7 @@ export function UploadDropzone({
           onSelect(event.dataTransfer.files?.[0]);
         }}
         className={cn(
-          'rounded-md border border-dashed transition-colors',
+          'rounded-2xl border border-dashed transition-colors',
           dragging
             ? 'border-trace-accent bg-trace-accent-surface'
             : 'border-trace-line bg-trace-card/50 hover:border-trace-hover',
@@ -64,33 +64,33 @@ export function UploadDropzone({
       >
         <label
           htmlFor={inputId}
-          className="flex cursor-pointer flex-col items-center px-5 py-10 text-center sm:py-14"
+          className="flex min-h-[18rem] cursor-pointer flex-col items-center justify-center px-5 py-14 text-center sm:min-h-[22rem] sm:py-20"
         >
           <span
             className={cn(
-              'grid size-12 place-items-center rounded-full border',
+              'grid size-16 place-items-center rounded-full border-2 transition-colors sm:size-20',
               dragging
                 ? 'border-trace-accent text-trace-accent'
                 : 'border-trace-line text-trace-dim',
             )}
           >
             {isReading ? (
-              <Loader2 aria-hidden className="size-5 animate-spin" />
+              <Loader2 aria-hidden className="size-7 animate-spin sm:size-8" />
             ) : dragging ? (
-              <ImageUp aria-hidden className="size-5" />
+              <ImageUp aria-hidden className="size-7 sm:size-8" />
             ) : (
-              <UploadCloud aria-hidden className="size-5" />
+              <UploadCloud aria-hidden className="size-7 sm:size-8" />
             )}
           </span>
 
-          <span className="mt-4 text-[15px] font-medium text-trace-text">
+          <span className="mt-6 text-[17px] font-medium text-trace-text sm:text-[18px]">
             {hasImage ? 'Replace the chest X-ray' : 'Drop a chest X-ray here'}
           </span>
-          <span className="mt-1.5 text-[13.5px] text-trace-muted">
+          <span className="mt-2 text-[14px] text-trace-muted">
             or <span className="text-trace-accent underline underline-offset-2">browse your files</span>
           </span>
 
-          <span className="mt-5 font-mono text-[11px] tracking-[0.04em] text-trace-dim">
+          <span className="mt-6 font-mono text-[11.5px] tracking-[0.04em] text-trace-dim">
             JPG · JPEG · PNG · max {MAX_BYTES / 1_000_000} MB · shorter edge ≥ {MIN_EDGE_PX} px
           </span>
 

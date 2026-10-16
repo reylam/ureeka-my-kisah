@@ -13,7 +13,7 @@ import { users, assignableWorkerIds } from '@/data/users';
 import { facilityServiceLabel, facilityTypeLabel, userRoleLabel } from '@/utils/labels';
 import { ageFromBirthDate, dateOffset } from '@/utils/date';
 import { formatDistance, formatTravelTime } from '@/utils/format';
-import { mockApi } from '@/services/mockApi';
+import { recordsApi } from '@/services/recordsApi';
 
 /**
  * Create or edit a referral.
@@ -151,7 +151,7 @@ export function ReferralFormDialog({
     setSaving(true);
     try {
       if (editing && referral) {
-        await mockApi.updateReferral(referral.id, {
+        await recordsApi.updateReferral(referral.id, {
           toFacilityId,
           reason: reason.trim(),
           requestedService,
@@ -161,7 +161,7 @@ export function ReferralFormDialog({
         });
         toast.success(`${referral.code} updated.`);
       } else {
-        const created = await mockApi.createReferral({
+        const created = await recordsApi.createReferral({
           patientId: effectivePatientId,
           screeningId,
           toFacilityId,
@@ -180,6 +180,8 @@ export function ReferralFormDialog({
         );
       }
       onClose();
+    } catch (cause) {
+      toast.error('The referral could not be saved.', cause instanceof Error ? cause.message : undefined);
     } finally {
       setSaving(false);
     }

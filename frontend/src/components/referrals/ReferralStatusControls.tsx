@@ -62,7 +62,7 @@ export function ReferralStatusControls({
 
   const advance = nextStatus(referral.status);
 
-  const applyChange = () => {
+  const applyChange = async () => {
     if (target === referral.status) {
       setError('Pick a status different from the current one.');
       return;
@@ -71,13 +71,15 @@ export function ReferralStatusControls({
       setError('Add a short note explaining the change.');
       return;
     }
-    setReferralStatus(referral.id, target, note.trim());
-    setChangeOpen(false);
-    setNote('');
-    setError(null);
-    toast.success(
-      `${referral.code} set to ${referralStatusLabel[target].toLowerCase()}.`,
-    );
+    try {
+      await setReferralStatus(referral.id, target, note.trim());
+      setChangeOpen(false);
+      setNote('');
+      setError(null);
+      toast.success(`${referral.code} set to ${referralStatusLabel[target].toLowerCase()}.`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The status could not be changed.');
+    }
   };
 
   return (
@@ -96,9 +98,16 @@ export function ReferralStatusControls({
               variant="primary"
               trailingIcon={<ArrowRight className="size-4" />}
               onClick={() => {
-                setReferralStatus(referral.id, advance);
-                toast.success(
-                  `${referral.code} set to ${referralStatusLabel[advance].toLowerCase()}.`,
+                void setReferralStatus(referral.id, advance).then(
+                  () =>
+                    toast.success(
+                      `${referral.code} set to ${referralStatusLabel[advance].toLowerCase()}.`,
+                    ),
+                  (cause: unknown) =>
+                    toast.error(
+                      'The status could not be changed.',
+                      cause instanceof Error ? cause.message : undefined,
+                    ),
                 );
               }}
             >

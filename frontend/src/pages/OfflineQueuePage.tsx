@@ -20,13 +20,13 @@ import { Tabs } from '@/components/ui/Tabs';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Notice } from '@/components/ui/Notice';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { ConfirmDialog, Dialog } from '@/components/ui/Dialog';
+import { ConfirmDialog } from '@/components/ui/Dialog';
 import { SyncStateBadge } from '@/components/ui/StatusBadge';
 import { Toggle } from '@/components/forms/Inputs';
 import { useDataStore } from '@/stores/dataStore';
 import { useConnectionStore, useIsConnected } from '@/stores/connectionStore';
 import { toast } from '@/stores/toastStore';
-import { SKIP_COPY, eligibleForBulkSync, retrySyncItem, runDemoSync } from '@/services/syncService';
+import { SKIP_COPY, eligibleForBulkSync, retrySyncItem, runSync as sendQueue } from '@/services/syncService';
 import { formatBytes, pluralise } from '@/utils/format';
 import { formatDateTime, formatRelative } from '@/utils/date';
 import type { SyncQueueItem, SyncState } from '@/types/domain';
@@ -70,7 +70,6 @@ export function OfflineQueuePage() {
   const queue = useDataStore((state) => state.syncQueue);
   const screenings = useDataStore((state) => state.screenings);
   const lastSyncAt = useDataStore((state) => state.lastSyncAt);
-  const resolveConflict = useDataStore((state) => state.resolveConflict);
   const removeSyncItem = useDataStore((state) => state.removeSyncItem);
   const deleteScreening = useDataStore((state) => state.deleteScreening);
 
@@ -78,7 +77,6 @@ export function OfflineQueuePage() {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [retrying, setRetrying] = useState<string | null>(null);
-  const [conflictItem, setConflictItem] = useState<SyncQueueItem | null>(null);
   const [discarding, setDiscarding] = useState<SyncQueueItem | null>(null);
 
   const counts = useMemo(() => {
@@ -108,7 +106,7 @@ export function OfflineQueuePage() {
     setRunning(true);
     setProgress({ done: 0, total: eligibleForBulkSync(queue).length });
 
-    const result = await runDemoSync((done, total) => setProgress({ done, total }));
+    const result = await sendQueue((done, total) => setProgress({ done, total }));
     setRunning(false);
     setProgress({ done: 0, total: 0 });
 
@@ -129,11 +127,18 @@ export function OfflineQueuePage() {
       return;
     }
 
+    if (result.failed > 0) {
+      toast.error(
+        `${pluralise(result.failed, 'record')} could not be sent.`,
+        'They stay on this device. Open the Failed tab to see why and retry.',
+      );
+      return;
+    }
     toast.success(
-      `${pluralise(result.succeeded, 'record')} marked as synced.`,
+      `${pluralise(result.succeeded, 'record')} sent.`,
       result.skipped.length > 0
         ? `${pluralise(result.skipped.length, 'record')} skipped and left for review.`
-        : 'This is a local state change, not an upload.',
+        : undefined,
     );
   };
 
@@ -146,7 +151,11 @@ export function OfflineQueuePage() {
       toast.error('Cannot retry while offline.');
       return;
     }
-    toast.success(`${item.label} marked as synced.`);
+    if (outcome === 'failed') {
+      toast.error(`${item.label} could not be sent.`, 'See the reason on the record.');
+      return;
+    }
+    toast.success(`${item.label} sent.`);
   };
 
   const discard = async () => {
@@ -164,7 +173,7 @@ export function OfflineQueuePage() {
   const emptyCopy: Record<TabId, { title: string; description: string }> = {
     pending: {
       title: 'Nothing waiting to sync',
-      description: 'Every completed record on this device has been marked as synced.',
+      description: 'Every completed record on this device has been sent.',
     },
     drafts: {
       title: 'No local drafts',
@@ -176,11 +185,11 @@ export function OfflineQueuePage() {
     },
     conflicts: {
       title: 'No conflicts',
-      description: 'A conflict happens when the same record changed in two places.',
+      description: 'Nothing on this device has been changed by someone else in the meantime.',
     },
     synced: {
       title: 'Nothing synced yet',
-      description: 'Records appear here once a demo sync has run.',
+      description: 'Records leave this list as soon as the server has them.',
     },
   };
 
@@ -205,7 +214,7 @@ export function OfflineQueuePage() {
             leadingIcon={<CloudUpload className="size-4" />}
             onClick={() => void runSync()}
           >
-            {running ? 'Running demo sync' : 'Run demo sync'}
+            {running ? 'Syncing' : 'Sync now'}
           </Button>
         }
       />
@@ -218,7 +227,7 @@ export function OfflineQueuePage() {
             title="Connection"
             description={
               connected
-                ? 'A connection is available, so the demo sync can run.'
+                ? 'A connection is available, so queued records can be sent.'
                 : 'No connection. Forms and drafts keep working on this device.'
             }
           />
@@ -237,7 +246,7 @@ export function OfflineQueuePage() {
                   </span>
                 )}
               </DetailRow>
-              <DetailRow label="Last demo sync">
+              <DetailRow label="Last sync">
                 {lastSyncAt ? (
                   <>
                     {formatRelative(lastSyncAt)}
@@ -296,13 +305,13 @@ export function OfflineQueuePage() {
               <Meaning
                 icon={<HardDrive />}
                 term="Local persistence"
-                detail="Records are written to this browser's storage on this device. Radiographs go to IndexedDB, never into the service worker cache."
+                detail="Screenings captured offline are written to this browser's storage. Their radiographs go to IndexedDB, never into the service worker cache, and are removed once the record has been sent."
                 available
               />
               <Meaning
                 icon={<CloudUpload />}
                 term="Synchronisation"
-                detail="In this prototype a sync only changes local record states. Nothing is transmitted and there is no server."
+                detail="Sync sends each queued screening to the PULMO server and uploads its radiograph, then removes the copy on this device."
                 available
               />
               <Meaning
@@ -316,9 +325,9 @@ export function OfflineQueuePage() {
         </Card>
       </div>
 
-      <Notice tone="demo" title="Local storage is not a secured backend">
-        Anyone with access to this device profile can read these records. Clearing demo data from
-        Settings removes them, including stored radiographs.
+      <Notice tone="demo" title="Held on this device until they are sent">
+        Queued records and their radiographs sit in this browser's storage. Anyone with access to
+        this device profile can read them until a sync completes.
       </Notice>
 
       {/* Queue */}
@@ -392,12 +401,6 @@ export function OfflineQueuePage() {
                         </p>
                       ) : null}
 
-                      {item.conflict ? (
-                        <p className="mt-1.5 text-xs leading-relaxed text-urgent-700">
-                          {item.conflict.remoteActor} changed{' '}
-                          <span className="font-medium">{item.conflict.field}</span> elsewhere.
-                        </p>
-                      ) : null}
                     </div>
 
                     <div className="flex shrink-0 flex-wrap gap-1.5">
@@ -430,17 +433,6 @@ export function OfflineQueuePage() {
                         </Button>
                       ) : null}
 
-                      {item.state === 'conflict' ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          leadingIcon={<GitCompareArrows className="size-3.5" />}
-                          onClick={() => setConflictItem(item)}
-                        >
-                          Review conflict
-                        </Button>
-                      ) : null}
-
                       {item.state === 'local-draft' ? (
                         <Button
                           size="sm"
@@ -459,94 +451,6 @@ export function OfflineQueuePage() {
           </ul>
         )}
       </Card>
-
-      {/* Conflict review */}
-      <Dialog
-        open={Boolean(conflictItem)}
-        onClose={() => setConflictItem(null)}
-        title="Resolve a conflict"
-        description={
-          conflictItem
-            ? `${conflictItem.label} changed in two places. Choose which version to keep.`
-            : undefined
-        }
-        footer={
-          conflictItem ? (
-            <>
-              <Button variant="ghost" onClick={() => setConflictItem(null)}>
-                Decide later
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  resolveConflict(conflictItem.id, 'local');
-                  toast.info(
-                    'Keeping the version on this device.',
-                    'The record was re-queued for the next sync.',
-                  );
-                  setConflictItem(null);
-                }}
-              >
-                Keep this device
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  resolveConflict(conflictItem.id, 'remote');
-                  toast.success(
-                    'Keeping the other version.',
-                    'The local edit was discarded and the record marked synced.',
-                  );
-                  setConflictItem(null);
-                }}
-              >
-                Keep the other version
-              </Button>
-            </>
-          ) : null
-        }
-      >
-        {conflictItem?.conflict ? (
-          <div className="space-y-4">
-            <p className="text-[13px] leading-relaxed text-obsidian-600">
-              Both versions changed{' '}
-              <span className="font-medium text-obsidian-900">{conflictItem.conflict.field}</span>.
-              There is no safe automatic answer, so nothing is merged for you.
-            </p>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-md border border-obsidian-200 p-3">
-                <p className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-                  On this device
-                </p>
-                <p className="mt-1.5 text-[13px] font-medium text-obsidian-900">
-                  {conflictItem.conflict.localValue}
-                </p>
-                <p className="mt-1 text-xs text-obsidian-500">
-                  Edited here while offline
-                </p>
-              </div>
-              <div className="rounded-md border border-ct-300 bg-ct-50/60 p-3">
-                <p className="text-[11px] font-semibold tracking-wide text-ct-800 uppercase">
-                  Other version
-                </p>
-                <p className="mt-1.5 text-[13px] font-medium text-obsidian-900">
-                  {conflictItem.conflict.remoteValue}
-                </p>
-                <p className="mt-1 text-xs text-obsidian-500">
-                  {conflictItem.conflict.remoteActor} ·{' '}
-                  {formatRelative(conflictItem.conflict.remoteUpdatedAt)}
-                </p>
-              </div>
-            </div>
-
-            <Notice tone="demo" compact>
-              Both versions are stored locally in this prototype. This models the decision a real
-              sync would force, without any network exchange.
-            </Notice>
-          </div>
-        ) : null}
-      </Dialog>
 
       {/* Discard a draft */}
       <ConfirmDialog

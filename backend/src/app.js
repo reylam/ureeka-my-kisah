@@ -1,7 +1,7 @@
 import express from 'express';
 import { createSupabaseGateway } from './config/supabase.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import { corsPolicy, generalLimiter, requestId, securityHeaders } from './middleware/security.js';
+import { corsPolicy, requestId, securityHeaders } from './middleware/security.js';
 import { buildRouter } from './routes/index.js';
 import { createInferenceClient } from './services/inferenceService.js';
 
@@ -30,7 +30,6 @@ export function createApp({
   app.use(requestId());
   app.use(securityHeaders());
   app.use(corsPolicy(config.frontendOrigins));
-  app.use(generalLimiter(config));
   // Clinical payloads are small JSON documents; images use multipart.
   app.use(express.json({ limit: '100kb' }));
 

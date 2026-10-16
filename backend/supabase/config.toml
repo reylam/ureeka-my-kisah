@@ -1,0 +1,45 @@
+# Supabase CLI configuration for local development (`supabase start`).
+# Run it from the `backend/` directory so it picks up supabase/migrations and
+# supabase/seed.sql. Only the settings PULMO depends on are listed; everything
+# else keeps the CLI default.
+
+project_id = "pulmo"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[storage]
+enabled = true
+file_size_limit = "15MiB"
+
+[auth]
+enabled = true
+# Must match the frontend dev server. In production set this to the real URL.
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+minimum_password_length = 8
+
+[auth.email]
+enable_signup = true
+# Off for local development so a new patient can register and continue straight
+# to onboarding. TURN THIS ON for any shared or production deployment, and
+# configure SMTP; the frontend already handles the "confirm your email" case.
+enable_confirmations = false
+double_confirm_changes = true
+

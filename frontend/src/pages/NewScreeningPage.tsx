@@ -25,13 +25,8 @@ import { useDataStore } from '@/stores/dataStore';
 import { useIsConnected } from '@/stores/connectionStore';
 import { toast } from '@/stores/toastStore';
 import { imageKeyFor, putImage } from '@/services/imageStore';
-import {
-  chooseScenario,
-  fingerprintFile,
-  requestAnalysis,
-  toScreeningAnalysis,
-} from '@/services/screeningService';
-import { mockApi } from '@/services/mockApi';
+import { ApiError, errorMessage } from '@/lib/apiClient';
+import { recordsApi } from '@/services/recordsApi';
 import { createId } from '@/utils/id';
 import { ageFromBirthDate, toISODate, startOfToday } from '@/utils/date';
 import { DISTRICTS, VILLAGES, type District } from '@/data/geography';
@@ -100,9 +95,9 @@ export function NewScreeningPage() {
   const connected = useIsConnected();
 
   const patients = useDataStore((state) => state.patients);
-  const attachAnalysis = useDataStore((state) => state.attachAnalysis);
-  const updateScreening = useDataStore((state) => state.updateScreening);
+  const saveDraft = useDataStore((state) => state.saveDraft);
   const finalizeDraft = useDataStore((state) => state.finalizeDraft);
+  const analyzeScreening = useDataStore((state) => state.analyzeScreening);
 
   /**
    * Resuming a saved draft. The record keeps its original id and queue entry,
@@ -247,7 +242,7 @@ export function NewScreeningPage() {
 
   const resolvePatient = async (): Promise<Patient | null> => {
     if (mode === 'existing') return selectedPatient;
-    return mockApi.createPatient({
+    return recordsApi.createPatient({
       name: newPatient.name,
       sex: newPatient.sex,
       birthDate: newPatient.birthDate,
@@ -266,7 +261,7 @@ export function NewScreeningPage() {
     respiratoryRate: vitals.respiratoryRate ? Number(vitals.respiratoryRate) : null,
   });
 
-  /** Persist the record, then run the demo analysis when a connection exists. */
+  /** Save the record to the server, then ask the screening model when one is connected. */
   const submit = async (asDraft: boolean) => {
     if (!asDraft && !validateStep(3)) {
       setStep(3);
@@ -286,40 +281,30 @@ export function NewScreeningPage() {
         return;
       }
 
-      // Store the radiograph in IndexedDB; only its key goes into the record.
+      // The radiograph is staged in IndexedDB first, then uploaded with the record
+      // (or kept there until the record can be sent, when offline).
       let imageKey: string | null = null;
       if (image) {
         imageKey = imageKeyFor(createId('img'));
         await putImage(imageKey, image.file);
       }
 
+      const draftPatch = {
+        symptoms,
+        vitals: parsedVitals(),
+        imageKey: imageKey ?? draft?.imageKey ?? null,
+        imageMeta: image?.meta ?? draft?.imageMeta ?? null,
+        imageQuality,
+      };
+
       let screening;
       if (draft) {
         // Finish the existing record in place.
-        if (asDraft) {
-          updateScreening(draft.id, {
-            symptoms,
-            vitals: parsedVitals(),
-            imageKey: imageKey ?? draft.imageKey,
-            imageMeta: image?.meta ?? draft.imageMeta,
-            imageQuality,
-          });
-        } else {
-          finalizeDraft(
-            draft.id,
-            {
-              symptoms,
-              vitals: parsedVitals(),
-              imageKey: imageKey ?? draft.imageKey,
-              imageMeta: image?.meta ?? draft.imageMeta,
-              imageQuality,
-            },
-            !connected,
-          );
-        }
-        screening = useDataStore.getState().screenings.find((item) => item.id === draft.id)!;
+        screening = asDraft
+          ? await saveDraft(draft.id, draftPatch)
+          : await finalizeDraft(draft.id, draftPatch, !connected);
       } else {
-        screening = await mockApi.createScreening({
+        screening = await recordsApi.createScreening({
           patientId: patient.id,
           symptoms,
           vitals: parsedVitals(),
@@ -331,67 +316,88 @@ export function NewScreeningPage() {
         });
       }
 
+      // A record still carrying a "local_" id has not reached the server yet.
+      const heldOnDevice = screening.id.startsWith('local_');
+
       if (contextNote.trim()) {
-        useDataStore
-          .getState()
-          .addPatientNote(patient.id, contextNote, 'screening', screening.id);
+        if (heldOnDevice) {
+          toast.attention(
+            'Your context note was not saved.',
+            'Notes need a connection. Add it from the patient record once this screening has been sent.',
+          );
+        } else {
+          try {
+            await useDataStore
+              .getState()
+              .addPatientNote(patient.id, contextNote, 'screening', screening.id);
+          } catch (cause) {
+            toast.error('The screening was saved, but the note was not.', errorMessage(cause));
+          }
+        }
       }
 
       if (asDraft) {
         toast.success(
-          draft ? 'Draft updated on this device.' : 'Saved as a draft on this device.',
-          'Finish it from the offline queue when you are ready.',
+          heldOnDevice
+            ? 'Saved as a draft on this device.'
+            : draft
+              ? 'Draft updated.'
+              : 'Saved as a draft.',
+          heldOnDevice
+            ? 'Finish it from the offline queue when you are ready.'
+            : 'Open it from the screening history to finish it.',
+        );
+        navigate(heldOnDevice ? '/offline' : '/reports?status=draft');
+        return;
+      }
+
+      if (heldOnDevice) {
+        toast.attention(
+          'Record queued on this device.',
+          connected
+            ? 'It could not be sent just now. Retry it from the offline queue.'
+            : 'It will be sent when a connection is available. Image analysis needs a connection.',
         );
         navigate('/offline');
         return;
       }
 
-      if (!connected) {
-        toast.attention(
-          'Record queued on this device.',
-          'Image analysis needs a connection; it stays queued until one is available.',
-        );
-        navigate(`/screenings/${screening.id}`);
-        return;
-      }
-
-      // Demo analysis.
+      // Ask the server to run the screening model. If none is connected the
+      // record is still saved and goes to a clinician without model output.
       setAnalysisProgress(10);
-      const fingerprint = image ? fingerprintFile(image.file) : screening.id;
       const ticker = window.setInterval(() => {
         setAnalysisProgress((value) => (value === null ? null : Math.min(92, value + 11)));
       }, 170);
 
+      let analysed = false;
       try {
-        const response = await requestAnalysis({
-          symptoms,
-          imageQuality,
-          imageFingerprint: fingerprint,
-        });
-        const outcome = chooseScenario({
-          symptoms,
-          imageQuality,
-          imageFingerprint: fingerprint,
-        });
-        attachAnalysis(screening.id, toScreeningAnalysis(response, outcome));
+        await analyzeScreening(screening.id);
+        analysed = true;
         setAnalysisProgress(100);
-      } catch {
-        // Analysis failing must not lose the record. It stays queued instead.
-        updateScreening(screening.id, { status: 'queued' });
-        toast.error(
-          'Analysis could not be completed.',
-          'The screening record was saved and is waiting in the queue.',
-        );
+      } catch (cause) {
+        if (cause instanceof ApiError && cause.code === 'MODEL_NOT_CONNECTED') {
+          toast.info(
+            'Record saved.',
+            'The screening model is not connected, so it goes to a clinician without model output.',
+          );
+        } else {
+          // Analysis failing must not lose the record.
+          toast.error('Analysis could not be completed.', errorMessage(cause));
+        }
       } finally {
         window.clearInterval(ticker);
       }
 
-      toast.custom({
-        tone: 'success',
-        title: 'Screening record created.',
-        description: 'The demo analysis has finished and the record needs a clinical review.',
-      });
+      if (analysed) {
+        toast.custom({
+          tone: 'success',
+          title: 'Screening record created.',
+          description: 'The model has finished and the record needs a clinical review.',
+        });
+      }
       navigate(`/screenings/${screening.id}`);
+    } catch (cause) {
+      toast.error('Could not save the screening.', errorMessage(cause));
     } finally {
       setSubmitting(false);
       setAnalysisProgress(null);
@@ -409,8 +415,8 @@ export function NewScreeningPage() {
         title={draft ? 'Finish saved screening' : 'New screening'}
         description={
           draft
-            ? 'Resuming a draft saved on this device. The record keeps its original reference.'
-            : 'Record a TB screening encounter and attach the chest radiograph. Everything is saved on this device.'
+            ? 'Resuming a saved draft. The record keeps its original reference.'
+            : 'Record a TB screening encounter and attach the chest radiograph. It is saved to the PULMO server, or held on this device if you are offline.'
         }
         actions={
           <Button variant="ghost" onClick={() => navigate(-1)}>
@@ -852,8 +858,8 @@ export function NewScreeningPage() {
             </Fieldset>
 
             <Notice tone="info" compact>
-              Symptoms are part of the clinical record. In this prototype they also drive the demo
-              simulator&rsquo;s output, since no model reads the image.
+              Symptoms are part of the clinical record and are read by the clinician who reviews
+              this screening.
             </Notice>
           </CardBody>
         ) : null}
@@ -944,11 +950,11 @@ export function NewScreeningPage() {
               <div className="rounded-md border border-ct-200 bg-ct-50 px-3.5 py-3">
                 <ProgressBar
                   value={analysisProgress}
-                  label="Running the demo analysis"
+                  label="Running the screening model"
                 />
                 <p className="mt-2 text-xs text-obsidian-600">
-                  The simulator is generating output from the recorded symptoms and image-quality
-                  rating. The radiograph itself is not being read.
+                  The radiograph has been saved and is being sent to the screening model. If no
+                  model is connected, the record goes straight to a clinician for review.
                 </p>
               </div>
             ) : null}

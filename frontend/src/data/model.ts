@@ -29,8 +29,11 @@ export const DEMO_MODEL: ModelDescriptor = {
  * computed from the image. Dropping that would mean presenting an invented TB
  * classification as a real one.
  *
- * When a real inference service is wired up, this constant goes away and the
- * class scores stand on their own.
+ * When a real inference service is connected, the notices switch to
+ * `MODEL_RESULT_NOTICE` (see `components/ui/Notice.tsx`).
  */
 export const SIMULATED_RESULT_NOTICE =
-  'Sample output. The screening model is not connected in this build.';
+  'The screening model is not connected, so no model output is shown.';
+
+/** Shown instead once a model is connected: model output is a screening aid only. */
+export const MODEL_RESULT_NOTICE = 'Screening aid, not a diagnosis.';

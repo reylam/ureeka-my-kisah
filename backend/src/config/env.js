@@ -33,10 +33,6 @@ const schema = z.object({
 
   TRUST_PROXY: boolish.default(false),
 
-  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
-  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(600),
-  RATE_LIMIT_HEAVY_MAX: z.coerce.number().int().positive().default(60),
-
   STORAGE_BUCKET: z.string().min(1).default('screening-images'),
   MAX_UPLOAD_MB: z.coerce.number().positive().max(50).default(15),
   SIGNED_URL_TTL_SECONDS: z.coerce.number().int().min(10).max(3600).default(60),
@@ -45,6 +41,9 @@ const schema = z.object({
   // that the model step did not run. Nothing is ever simulated server-side.
   INFERENCE_SERVICE_URL: z.url().optional().or(z.literal('').transform(() => undefined)),
   INFERENCE_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+  // Sent as a Bearer token to the inference service, which should require it
+  // whenever it is reachable beyond loopback.
+  INFERENCE_API_KEY: z.string().min(16).optional().or(z.literal('').transform(() => undefined)),
 });
 
 export function loadConfig(source = process.env) {
@@ -67,11 +66,6 @@ export function loadConfig(source = process.env) {
     },
     frontendOrigins: env.FRONTEND_ORIGIN,
     trustProxy: env.TRUST_PROXY,
-    rateLimit: {
-      windowMs: env.RATE_LIMIT_WINDOW_MS,
-      max: env.RATE_LIMIT_MAX,
-      heavyMax: env.RATE_LIMIT_HEAVY_MAX,
-    },
     storage: {
       bucket: env.STORAGE_BUCKET,
       maxUploadBytes: Math.floor(env.MAX_UPLOAD_MB * 1024 * 1024),
@@ -80,6 +74,7 @@ export function loadConfig(source = process.env) {
     inference: {
       url: env.INFERENCE_SERVICE_URL ?? null,
       timeoutMs: env.INFERENCE_TIMEOUT_MS,
+      apiKey: env.INFERENCE_API_KEY ?? null,
     },
   };
 }

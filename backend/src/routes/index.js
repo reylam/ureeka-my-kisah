@@ -2,7 +2,6 @@ import { Router } from 'express';
 import * as controllers from '../controllers/index.js';
 import { optionalAuth, requireAuth } from '../middleware/auth.js';
 import { requireCanReview, requireRole, requireStaffRecord } from '../middleware/authorize.js';
-import { heavyLimiter } from '../middleware/security.js';
 import { imageUpload } from '../middleware/upload.js';
 import { validate } from '../middleware/validate.js';
 import * as v from '../validators/schemas.js';
@@ -105,7 +104,6 @@ export function buildRouter({ config, inference }) {
   router.post(
     '/screenings/:id/image',
     ...clinical,
-    heavyLimiter(config),
     validate({ params: v.idParam }),
     imageUpload(config.storage.maxUploadBytes),
     validate({ body: v.imageMetaFields }),
@@ -113,7 +111,7 @@ export function buildRouter({ config, inference }) {
   );
   // Professionals only. An administrator is refused here, by design.
   router.get('/screenings/:id/image', ...clinical, validate(id), screeningsController.imageUrl);
-  router.post('/screenings/:id/analyze', ...clinical, heavyLimiter(config), validate(id), screeningsController.analyze);
+  router.post('/screenings/:id/analyze', ...clinical, validate(id), screeningsController.analyze);
   router.post(
     '/screenings/:id/review',
     ...clinical,
@@ -147,6 +145,10 @@ export function buildRouter({ config, inference }) {
   router.patch('/facilities/:id', ...adminOnly, validate({ ...id, body: v.facilityDraftBody }), controllers.facilities.update);
   router.patch('/facilities/:id/published', ...adminOnly, validate({ ...id, body: v.facilityPublishBody }), controllers.facilities.setPublished);
   router.delete('/facilities/:id', ...adminOnly, validate(id), controllers.facilities.remove);
+
+  /* ── Dashboard (health professionals) ─────────────────────────────────── */
+
+  router.get('/dashboard/summary', ...clinical, validate({ query: v.dashboardQuery }), controllers.dashboard.summary);
 
   /* ── Audit ────────────────────────────────────────────────────────────── */
 

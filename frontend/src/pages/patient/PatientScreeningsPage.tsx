@@ -1,4 +1,4 @@
-import { ClipboardList, FileText } from 'lucide-react';
+import { ClipboardList } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardBody, CardHeader, DetailRow } from '@/components/ui/Card';
 import { ButtonLink } from '@/components/ui/Button';
@@ -94,16 +94,6 @@ export function PatientScreeningsPage() {
                     </Notice>
                   )}
 
-                  {screening.review ? (
-                    <ButtonLink
-                      to={`/screenings/${screening.id}/report`}
-                      variant="outline"
-                      size="sm"
-                      leadingIcon={<FileText className="mr-1.5 size-3.5" />}
-                    >
-                      Open the full report
-                    </ButtonLink>
-                  ) : null}
                 </CardBody>
               </Card>
             );

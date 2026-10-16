@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2,
@@ -8,8 +8,6 @@ import {
   Image as ImageIcon,
   LogOut,
   RefreshCw,
-  RotateCcw,
-  Trash2,
   UserCog,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -50,15 +48,10 @@ export function SettingsPage() {
   const simulatedOffline = useConnectionStore((state) => state.simulatedOffline);
   const setSimulatedOffline = useConnectionStore((state) => state.setSimulatedOffline);
 
-  const resetDemoData = useDataStore((state) => state.resetDemoData);
-  const patients = useDataStore((state) => state.patients);
-  const screenings = useDataStore((state) => state.screenings);
-  const referrals = useDataStore((state) => state.referrals);
-  const followUps = useDataStore((state) => state.followUps);
+  const syncQueue = useDataStore((state) => state.syncQueue);
 
   const [usage, setUsage] = useState<{ count: number; bytes: number } | null>(null);
   const [usageLoading, setUsageLoading] = useState(true);
-  const [resetOpen, setResetOpen] = useState(false);
   const [clearImagesOpen, setClearImagesOpen] = useState(false);
   const [working, setWorking] = useState(false);
 
@@ -79,44 +72,33 @@ export function SettingsPage() {
 
   const facility = facilities.find((item) => item.id === OPERATING_FACILITY_ID);
 
-  /** Rough size of the persisted record metadata in localStorage. */
+  /** Rough size of the offline outbox held in localStorage (records waiting to be sent). */
   const metadataBytes = (() => {
     try {
-      return new Blob([window.localStorage.getItem('sentratb.data.v1') ?? '']).size;
+      let bytes = 0;
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key?.startsWith('pulmo.outbox.v1')) {
+          bytes += new Blob([window.localStorage.getItem(key) ?? '']).size;
+        }
+      }
+      return bytes;
     } catch {
       return 0;
     }
   })();
 
-  const handleReset = async () => {
-    setWorking(true);
-    try {
-      await resetDemoData();
-      await unregisterServiceWorker();
-      await refreshUsage();
-      toast.success(
-        'Demo data reset.',
-        'Records, radiographs and the cached app shell were cleared.',
-      );
-      setResetOpen(false);
-      navigate('/dashboard');
-    } finally {
-      setWorking(false);
-    }
-  };
+  // Images that are still waiting to be uploaded must not be cleared, or the
+  // queued record would lose its radiograph before it reaches the server.
+  const hasQueuedImages = syncQueue.length > 0;
 
   const handleClearImages = async () => {
     setWorking(true);
     try {
       await clearImages();
-      // Screening records keep their metadata but lose the stored image.
-      useDataStore.getState().screenings.forEach((screening) => {
-        if (screening.imageKey) {
-          useDataStore.getState().updateScreening(screening.id, { imageKey: null });
-        }
-      });
+      await unregisterServiceWorker();
       await refreshUsage();
-      toast.success('Stored radiographs cleared.', 'Screening records were kept.');
+      toast.success('Stored radiographs cleared.', 'Records on the server were not touched.');
       setClearImagesOpen(false);
     } finally {
       setWorking(false);
@@ -127,7 +109,7 @@ export function SettingsPage() {
     <div className="mx-auto max-w-4xl space-y-4">
       <PageHeader
         title="Settings"
-        description="Your profile, this facility, and the demo data stored on this device."
+        description="Your profile, your facility, and what is stored on this device."
       />
 
       {/* Profile */}
@@ -170,9 +152,9 @@ export function SettingsPage() {
             <DetailRow label="Phone">{user?.phone ?? 'None on file'}</DetailRow>
           </dl>
 
-          <Notice tone="demo" compact>
-            Profile details come from the local dataset. Editing them here would not reach any
-            remote system, so the fields are read-only.
+          <Notice tone="info" compact>
+            Profile details come from the staff directory and are managed by an administrator, so
+            the fields are read-only here.
           </Notice>
         </CardBody>
       </Card>
@@ -182,7 +164,7 @@ export function SettingsPage() {
         <CardHeader
           icon={<Building2 />}
           title="Facility"
-          description="The facility this prototype is operating as."
+          description="The facility you are working at."
         />
         <CardBody>
           {facility ? (
@@ -231,8 +213,8 @@ export function SettingsPage() {
                 {DEMO_MODEL.version}
               </span>
               <span className="mt-1 block text-xs leading-relaxed text-obsidian-500">
-                No trained model is loaded. Output is generated locally from the symptom data and
-                image-quality rating entered during screening.
+                The screening model runs as a separate service. While it is not connected,
+                records are saved and reviewed by a clinician without model output.
               </span>
             </DetailRow>
             <DetailRow label="Label set">{DEMO_MODEL.labels.join(', ')}</DetailRow>
@@ -244,7 +226,8 @@ export function SettingsPage() {
             </DetailRow>
             <DetailRow label="Authentication">
               <span className="text-obsidian-500">
-                Checked on this device only. No authentication server is involved.
+                Handled by Supabase Auth. Every request is checked again by the API and the
+                database.
               </span>
             </DetailRow>
           </dl>
@@ -263,8 +246,7 @@ export function SettingsPage() {
           </div>
 
           <Notice tone="info" compact>
-            Animations follow your operating system&rsquo;s reduced-motion setting, and the mock
-            service layer skips its artificial delays when that is enabled.
+            Animations follow your operating system&rsquo;s reduced-motion setting.
           </Notice>
         </CardBody>
       </Card>
@@ -274,7 +256,7 @@ export function SettingsPage() {
         <CardHeader
           icon={<HardDrive />}
           title="Storage on this device"
-          description="Where the demo records live and how much space they take."
+          description="Radiographs and records captured offline, held here until they are sent."
           actions={
             <Button
               size="sm"
@@ -309,21 +291,21 @@ export function SettingsPage() {
             <div className="rounded-md border border-obsidian-200 p-3.5">
               <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
                 <Database aria-hidden className="size-3" />
-                Record metadata (localStorage)
+                Offline outbox (localStorage)
               </p>
               <p className="mt-2 text-lg leading-none font-semibold text-obsidian-950 tabular">
                 {formatBytes(metadataBytes)}
               </p>
               <p className="mt-1.5 text-xs text-obsidian-500">
-                {patients.length} patients · {screenings.length} screenings · {referrals.length}{' '}
-                referrals · {followUps.length} follow-ups
+                {pluralise(syncQueue.length, 'record')} waiting to be sent
               </p>
             </div>
           </div>
 
           <Notice tone="demo" compact>
             Radiographs are kept out of localStorage and out of the service-worker cache on
-            purpose. Browser storage is not equivalent to a secured backend.
+            purpose. They stay here only until the record is sent; the server then holds them in
+            private storage.
           </Notice>
 
           <div className="flex flex-wrap gap-2">
@@ -331,47 +313,18 @@ export function SettingsPage() {
               variant="outline"
               leadingIcon={<ImageIcon className="size-4" />}
               onClick={() => setClearImagesOpen(true)}
-              disabled={!usage || usage.count === 0}
+              disabled={!usage || usage.count === 0 || hasQueuedImages}
             >
               Clear stored radiographs
             </Button>
+            {hasQueuedImages ? (
+              <p className="self-center text-xs text-obsidian-500">
+                Send or discard the queued records first.
+              </p>
+            ) : null}
           </div>
         </CardBody>
       </Card>
-
-      {/* Reset */}
-      <Card className="border-urgent-300/70">
-        <CardHeader
-          icon={<RotateCcw />}
-          title="Reset all records"
-          description="Restores the starting dataset and removes everything created since."
-        />
-        <CardBody className="space-y-3">
-          <p className="text-[13px] leading-relaxed text-obsidian-600">
-            This rebuilds the original patients, screenings, referrals and follow-ups, deletes every
-            uploaded radiograph from this device, and drops the cached application shell. Useful
-            before a fresh walkthrough.
-          </p>
-          <Button
-            variant="danger"
-            leadingIcon={<Trash2 className="size-4" />}
-            onClick={() => setResetOpen(true)}
-          >
-            Reset all records
-          </Button>
-        </CardBody>
-      </Card>
-
-      <ConfirmDialog
-        open={resetOpen}
-        onClose={() => setResetOpen(false)}
-        onConfirm={() => void handleReset()}
-        tone="danger"
-        loading={working}
-        title="Reset all demo data?"
-        description="Every record you have created or edited will be replaced by the original seeded dataset, and stored radiographs will be deleted. This cannot be undone."
-        confirmLabel="Reset everything"
-      />
 
       <ConfirmDialog
         open={clearImagesOpen}
@@ -380,7 +333,7 @@ export function SettingsPage() {
         tone="danger"
         loading={working}
         title="Clear stored radiographs?"
-        description="Uploaded images will be deleted from this device. Screening records stay, but they will no longer have an image to display."
+        description="Images held on this device will be deleted. Records already on the server are not affected."
         confirmLabel="Clear images"
       />
     </div>

@@ -1,31 +1,31 @@
 /**
- * Demo synchronisation.
+ * Synchronisation of records captured offline.
  *
- * To be unambiguous about what this does: it moves records between local
- * states. There is no server, nothing is transmitted, and no file leaves the
- * device. It exists so the offline workflow (queue, retry, conflict review) can
- * be demonstrated end to end, and every surface that triggers it says so.
+ * A screening recorded with no connection is held on the device (the record in
+ * the outbox, the radiograph in IndexedDB). Syncing sends it to the API:
+ * create the screening, upload the radiograph, then remove the device copy.
+ * It is a real upload; if the server rejects a record, that record is marked
+ * failed with the server's reason and stays on the device.
  *
  * Deliberate behaviours:
- *  - Local drafts are never "synced". A draft is an incomplete record, and
- *    silently pushing incomplete clinical records would be the wrong default.
+ *  - Local drafts are never sent. A draft is an incomplete record, and
+ *    pushing incomplete clinical records would be the wrong default.
  *  - Items already marked failed stay failed in a bulk run; they have to be
  *    retried individually, which is how a worker would actually triage them.
- *  - Conflicts are never resolved automatically. Somebody has to choose.
  *  - Running it with no connection refuses, because pretending otherwise is
- *    the single most misleading thing an offline demo could do.
+ *    the single most misleading thing an offline workflow could do.
  */
 
 import type { SyncQueueItem } from '@/types/domain';
 import { useDataStore } from '@/stores/dataStore';
 import { isConnectedNow } from '@/stores/connectionStore';
-import { delay } from './delay';
 
-export type SyncSkipReason = 'draft-incomplete' | 'needs-conflict-review' | 'needs-manual-retry';
+export type SyncSkipReason = 'draft-incomplete' | 'needs-manual-retry';
 
 export interface SyncRunResult {
   attempted: number;
   succeeded: number;
+  failed: number;
   skipped: { id: string; reason: SyncSkipReason }[];
   /** Set when the run could not start at all. */
   refused: 'offline' | null;
@@ -38,32 +38,28 @@ export function eligibleForBulkSync(queue: SyncQueueItem[]): SyncQueueItem[] {
 
 function skipReason(item: SyncQueueItem): SyncSkipReason | null {
   if (item.state === 'local-draft') return 'draft-incomplete';
-  if (item.state === 'conflict') return 'needs-conflict-review';
   if (item.state === 'failed') return 'needs-manual-retry';
   return null;
 }
 
 export const SKIP_COPY: Record<SyncSkipReason, string> = {
   'draft-incomplete': 'Draft is incomplete and was left on the device',
-  'needs-conflict-review': 'Conflict needs a decision before it can be resolved',
   'needs-manual-retry': 'Previously failed, retry it individually',
 };
 
 /**
- * Run the demo sync over the whole queue.
+ * Send every pending item.
  *
- * `onProgress` reports completed-of-total so the UI can show a real bar rather
- * than an invented one.
+ * `onProgress` reports completed-of-total so the UI can show a real bar.
  */
-export async function runDemoSync(
+export async function runSync(
   onProgress?: (completed: number, total: number) => void,
 ): Promise<SyncRunResult> {
   if (!isConnectedNow()) {
-    return { attempted: 0, succeeded: 0, skipped: [], refused: 'offline' };
+    return { attempted: 0, succeeded: 0, failed: 0, skipped: [], refused: 'offline' };
   }
 
-  const store = useDataStore.getState();
-  const queue = store.syncQueue;
+  const queue = useDataStore.getState().syncQueue;
 
   const skipped = queue
     .map((item) => {
@@ -77,36 +73,22 @@ export async function runDemoSync(
   onProgress?.(0, total);
 
   let succeeded = 0;
+  let failed = 0;
   for (const [index, item] of targets.entries()) {
-    // A short pause per record so progress is observable.
-    await delay(260);
-
     // Lost connection mid-run: stop and leave the rest pending.
     if (!isConnectedNow()) break;
 
-    useDataStore.getState().markSyncResult(item.id, 'synced');
-    succeeded += 1;
+    const outcome = await useDataStore.getState().syncItem(item.id);
+    if (outcome === 'synced') succeeded += 1;
+    else failed += 1;
     onProgress?.(index + 1, total);
   }
 
-  if (succeeded > 0) {
-    useDataStore.getState().setLastSyncAt(new Date().toISOString());
-  }
-
-  return { attempted: total, succeeded, skipped, refused: null };
+  return { attempted: total, succeeded, failed, skipped, refused: null };
 }
 
-/**
- * Retry one failed item.
- *
- * Succeeds on retry, which models the common real case: the first attempt died
- * with the connection, the second one goes through.
- */
+/** Retry one item. */
 export async function retrySyncItem(itemId: string): Promise<'synced' | 'failed' | 'offline'> {
   if (!isConnectedNow()) return 'offline';
-  await delay(520);
-  if (!isConnectedNow()) return 'offline';
-  useDataStore.getState().markSyncResult(itemId, 'synced');
-  useDataStore.getState().setLastSyncAt(new Date().toISOString());
-  return 'synced';
+  return useDataStore.getState().syncItem(itemId);
 }

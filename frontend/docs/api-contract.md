@@ -4,6 +4,31 @@ What the frontend expects when you connect a backend. Written against the
 frontend as it stands, so every endpoint here corresponds to something the
 interface already does against local state.
 
+## Implementation status
+
+This contract has now been implemented by `backend/` (see `backend/README.md`
+for the full route table). Where the implementation differs from the sketch
+below, the backend is the source of truth:
+
+- **Sign-up, sign-in and sign-out are Supabase Auth**, called from the browser
+  (`src/stores/authStore.ts`). There is no `POST /auth/register` or
+  `/auth/login` on the API. The API accepts the Supabase access token and
+  `GET /auth/me` returns the account. The "patient only" rule is enforced by a
+  database trigger that ignores any client-supplied role.
+- **Responses** use `{ success, data, meta? }` / `{ success: false, error }`.
+- **Facility publication** is `PATCH /facilities/:id/published`, as drafted.
+- **Staff link** became `PUT/DELETE /accounts/:id/staff-profile`, because the
+  staff record is now a table (`healthcare_professional_profiles`) rather than
+  a static module.
+- **Inference** stays a separate service: `POST /screenings/:id/analyze` calls
+  it when `INFERENCE_SERVICE_URL` is set and answers `503 MODEL_NOT_CONNECTED`
+  otherwise. Nothing is simulated server-side.
+- **Still not designed:** password reset, email verification flow beyond
+  Supabase's own, professional invitations, messaging, reminders, and
+  educational content management (only reading progress is stored).
+
+The sections below are the original reasoning and are kept for context.
+
 ## The thing to read first
 
 Everything in the current build runs in the browser. The account directory,

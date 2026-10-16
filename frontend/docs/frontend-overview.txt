@@ -1,0 +1,551 @@
+================================================================================
+PULMO - FRONTEND OVERVIEW
+What the frontend is, how it is built, and every feature it carries.
+================================================================================
+
+Read this to understand the frontend as a whole: its two faces, the stack, how
+auth and data flow, and what each page does. It describes the code as it stands,
+not a plan. Where something is a sample or not yet wired, it says so.
+
+
+--------------------------------------------------------------------------------
+0. THE ONE-PARAGRAPH VERSION
+--------------------------------------------------------------------------------
+
+PULMO is a web app for AI-assisted tuberculosis screening from chest X-rays,
+aimed at remote Indonesian community health settings. The frontend is a single
+React application that serves two things at once: a public, marketing-and-
+education site (brand name PULMO-TRACE) that anyone can browse, and a private,
+role-gated clinical application behind sign-in. Identity is handled by Supabase
+Auth; records come from a PULMO backend through one HTTP client. Four roles
+(visitor, patient, healthcare professional, administrator) each see a different
+workspace. The screening model itself is not asserted to be live: any analysis
+shown is labelled as a sample unless a real model is connected.
+
+
+--------------------------------------------------------------------------------
+1. CORE CONCEPT AND PRODUCT STANCE
+--------------------------------------------------------------------------------
+
+Purpose
+  Help find TB cases earlier by reading chest X-rays, and route every output to
+  a human. The product never claims to diagnose. Screening suggests who should
+  be tested; a laboratory test and a clinician make the diagnosis.
+
+Two audiences, one app
+  - Public visitor: learns what TB is, how the tool works, and what a result can
+    and cannot mean. No account needed.
+  - Signed-in user: a patient tracking their own care, a health professional
+    running the screening and review workflow, or an administrator managing the
+    platform.
+
+Scientific honesty as a design rule (threads through the whole UI)
+  - No fabricated medical results. Where no model is connected, analysis output
+    is shown as a clearly labelled sample, never as a real finding.
+  - A screening result is not a diagnosis, and the copy says so repeatedly.
+  - A model score is not "probability of disease".
+  - Mock/sample data is always distinguishable from real data.
+  - External clinical and epidemiological claims carry sources (WHO, etc.).
+
+
+--------------------------------------------------------------------------------
+2. TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+
+Framework      React 19 + TypeScript, function components and hooks only
+Build          Vite 8 (dev server, production build, code-splitting)
+Styling        Tailwind CSS 4 (via @tailwindcss/vite), utility-first
+Routing        React Router 7 (createBrowserRouter, lazy routes)
+State          Zustand 5 stores, with persistence where it makes sense
+Icons          lucide-react
+Motion         framer-motion, used sparingly
+Fonts          Inter (self-hosted via @fontsource-variable/inter)
+Auth           Supabase Auth (@supabase/supabase-js) for identity and tokens
+Local storage  idb-keyval (IndexedDB) for radiograph image blobs
+Utilities      clsx + tailwind-merge (the `cn` helper)
+
+Scripts (package.json)
+  npm run dev        Vite dev server
+  npm run build      type-check then production build
+  npm run preview    serve the production build
+  npm run typecheck  types only, no emit
+
+Environment (.env, copied from .env.example; only VITE_ vars reach the browser)
+  VITE_API_BASE_URL       PULMO backend base, e.g. http://localhost:4000/api/v1
+  VITE_SUPABASE_URL       Supabase project URL
+  VITE_SUPABASE_ANON_KEY  Supabase PUBLIC anon key (never the service-role key)
+  If the Supabase vars are missing, sign-in and sign-up say so plainly instead
+  of failing silently (see lib/env.ts -> isAuthConfigured).
+
+
+--------------------------------------------------------------------------------
+3. HOW THE APP IS SPLIT: PUBLIC SITE vs CLINICAL APP
+--------------------------------------------------------------------------------
+
+The codebase has two clearly separated parts under src/:
+
+A. The public site - everything under src/trace/
+   A dark, editorial, research-style marketing and education site. Its own
+   layout, navbar, footer, typography and components, namespaced so it never
+   clashes with the clinical app. Brand: PULMO-TRACE, "See Beyond the Scan".
+
+B. The clinical application - the rest of src/
+   The light, dense, operational interface used after sign-in. Shared UI kit,
+   role-aware navigation, data tables, dialogs, the screening workflow, and the
+   three role dashboards (patient, professional, admin).
+
+They share the same React app, the same auth, and the same design tokens, but
+not the same chrome.
+
+
+--------------------------------------------------------------------------------
+4. ROUTES (full map)
+--------------------------------------------------------------------------------
+
+PUBLIC (no account)
+  /                 Home (PULMO-TRACE marketing site)
+  /how-it-works     Plain-language explainer of the screening idea + FAQ
+  /demo             Interactive screening demo (sample output, clearly labelled)
+  /platform         The clinical app's own public landing/overview page
+
+AUTH
+  /login            Sign in
+  /register         Sign up (always creates a patient)
+  /app              Redirect helper -> sends each role to its own home
+  /onboarding       Patient first-run profile wizard (outside the app shell)
+
+PATIENT WORKSPACE  (role: patient, inside the app shell)
+  /me               Overview
+  /me/screenings    My screenings and reports
+  /me/followup      Follow-up appointments and referrals
+  /me/learn         TB Learning Center
+  /me/facilities    Nearby facilities
+  /me/profile       Profile, health info and consent
+
+ADMINISTRATION  (role: admin)
+  /admin            Overview (platform totals, recent activity)
+  /admin/users      Accounts and roles
+  /admin/facilities Facility directory CRUD
+  /admin/screenings Screening record metadata (no images/reports)
+  /admin/audit      Audit log
+
+HEALTHCARE PROFESSIONAL WORKSPACE  (role: professional)
+  /dashboard                      Workload + follow-up overview
+  /patients                       Patient directory
+  /patients/:patientId            Patient record and timeline
+  /screenings/new                 Record a screening, upload a chest X-ray
+  /screenings/:screeningId        Screening result
+  /screenings/:screeningId/report Printable explainable report
+  /referrals                      Referral register
+  /followups                      Follow-up queue
+  /facilities                     Facility directory
+  /reports                        Screening history and printable reports
+  /offline                        Offline queue (local drafts awaiting sync)
+  /settings                       Account and storage
+
+  *                 Not-found page
+
+
+--------------------------------------------------------------------------------
+5. AUTHENTICATION AND SESSION
+--------------------------------------------------------------------------------
+
+Identity: Supabase Auth
+  Supabase checks the password, issues and refreshes tokens, and keeps the
+  session across reloads. Sign-up puts every new account in the patient role
+  via a database trigger; the role is not a parameter the client can send.
+
+The session store (src/stores/authStore.ts)
+  Holds the signed-in person's Account (role, status, onboarding) as reported by
+  the backend's GET /auth/me, plus a workspace-loading phase. It deliberately
+  decides nothing about access: the role it holds is only for drawing the right
+  screens. Editing it in devtools changes what renders and nothing the server
+  will honour.
+
+  Key behaviours:
+  - init(): on reload, restores the Supabase session, fetches the account, and
+    loads the workspace. Listens for cross-tab sign-out.
+  - signIn(): one generic error for all credential failures (no account
+    enumeration); a suspended account gets a specific message; network failures
+    are told apart.
+  - register(): maps Supabase errors (already-registered, weak password, rate
+    limit) to friendly field errors. Supports email-confirmation flow.
+  - signOut(): clears Supabase session + all local per-user state.
+  - A 401 from the API ends the session instead of leaving a broken page.
+
+Authorization is server-side
+  Every request is re-authorised by the API and by Supabase Row Level Security
+  from the token alone. The frontend permission checks only decide what to show.
+
+
+--------------------------------------------------------------------------------
+6. ROLE-BASED ACCESS CONTROL
+--------------------------------------------------------------------------------
+
+Four roles
+  Visitor         Not an account - the absence of a session. Public pages only.
+  Patient         Own records, follow-ups, learning, profile. The only role that
+                  self-registration can create.
+  Professional    Assigned patients, the screening + review workflow, referrals,
+                  follow-ups, reports. Backed by a clinical staff record that
+                  carries canReview (who may sign off a radiograph review).
+  Administrator   Accounts, roles, facility directory, record metadata, audit.
+                  Deliberately NOT a clinical reviewer: admin access is not
+                  clinical competence.
+
+Permission matrix (src/lib/permissions.ts)
+  One table maps each role to a set of capabilities (e.g. screening:read:own,
+  screening:review, facility:manage, account:manage, audit:read). Guards and
+  navigation both read from it, so there is one source of truth. Includes
+  helpers: can(), canAny(), canReviewScreenings() (needs both the permission and
+  the staff canReview flag), ROLE_HOME (where each role lands).
+
+Route guards (src/routes/RequireAuth.tsx)
+  RequireAuth         is anyone signed in (and active, and past onboarding)?
+  RequireRole         is this one of the roles allowed here?
+  RequirePermission   does the account hold a specific capability?
+  RoleHome            /app -> redirect to the signed-in role's home
+  A patient who has not finished onboarding is always sent to /onboarding.
+  A wrong-role visit is redirected to that role's own home, not a dead end.
+
+
+--------------------------------------------------------------------------------
+7. DATA LAYER
+--------------------------------------------------------------------------------
+
+One HTTP client (src/lib/apiClient.ts)
+  All backend traffic goes through it. It attaches the Supabase access token to
+  every request, unwraps the { success, data, meta } envelope, turns failures
+  into a single ApiError type (with field errors for 422 and pagination meta),
+  and triggers sign-out on 401. Helpers: get, getPage, post, patch, put, delete,
+  upload (multipart), fetchAllPages, and errorMessage for the UI.
+
+Service modules (the seam between pages and the API)
+  services/recordsApi.ts     patients, screenings, referrals, follow-ups,
+                             facilities, dashboard summary, signed image URLs.
+                             Reads hydrate the store and return live data; writes
+                             delegate to the store, which calls the API and
+                             updates the cache. Nothing simulated, no fake delay.
+  services/onboardingApi.ts  patient onboarding steps and consent.
+  services/referenceData.ts  shared reference data (facilities, staff, etc.).
+  services/syncService.ts    offline outbox synchronisation.
+  services/imageStore.ts     radiograph blobs in IndexedDB (never localStorage).
+
+Zustand stores (src/stores/)
+  authStore         the session + current account (section 5).
+  accountStore      the account directory for administration (list/search/role/
+                    status), and admin data loading.
+  dataStore         patients, screenings, referrals, follow-ups, the offline
+                    sync queue; hydrate(account) pulls what the person may see.
+  facilityStore     the facility directory, with published/unpublished state.
+  modelStore        the screening model descriptor/status.
+  connectionStore   online/offline signal + a deliberate "work offline" switch.
+  toastStore        transient notifications.
+  selectors.ts      derived data (dashboard summary, patient rows, follow-up
+                    buckets, grouping helpers).
+
+Query + table hooks (src/hooks/)
+  useStoreQuery      run an async read, track loading/error, re-render on store
+                     changes (live updates).
+  useScreeningImage  load a radiograph blob/URL for display.
+  useTableControls   search, sort, pagination state for data tables.
+  useWorkloadCounts  the sidebar badge counts.
+  usePatientRecords  the signed-in patient's own records, scoped by account.
+
+Types (src/types/)
+  domain.ts     clinical domain: Patient, Screening, Referral, FollowUp,
+                Facility, User (staff), class labels, lesion regions, sync state.
+  account.ts    Account, roles, status, onboarding shape, audit entry.
+  inference.ts  the model response contract (probabilities, predicted label,
+                lesion boxes) mirrored from the Python training project.
+
+
+--------------------------------------------------------------------------------
+8. THE PUBLIC SITE (src/trace/) - PAGES AND SECTIONS
+--------------------------------------------------------------------------------
+
+Home (/)  - trace/pages/Home.tsx, composed of trace/sections/home/*
+  Hero           headline, CTAs, and a synthetic chest-radiograph figure
+  WhyItMatters    the TB burden and why screening matters (WHO-sourced)
+  HowItWorksSection  the screening idea in brief
+  CanAndCannot    what a result can and cannot tell you
+  Limits          honest limitations
+  FinalCta        call to action
+
+How it works (/how-it-works) - trace/pages/HowItWorks.tsx
+  A plain-language explainer plus an FAQ, written for non-clinicians.
+
+Model demo (/demo) - trace/pages/ModelDemo.tsx
+  The interactive piece. A large, accessible upload dropzone (drag-drop, click,
+  keyboard), image preview, a simulated inference progress sequence, and a
+  SimulatedResultPanel. Everything is labelled sample output; a score is shown
+  with the caution that it is not a probability of disease. Supporting pieces:
+  UploadDropzone, ImagePreview, InferenceStatus, SimulatedResultPanel,
+  OutputGlossary, and hooks useImageUpload / useSimulatedInference /
+  useSyntheticSample (generates a drawn sample X-ray so no patient image is
+  bundled).
+
+Shared public UI (trace/components/)
+  layout: TraceLayout, Navbar (scroll-reactive brand lockup), Footer, TraceMark
+  ui: Container, SectionHeading, Callout, DisclaimerBanner, SourceCitation,
+      StepFlow, TraceButton
+  visuals: RadiographFigure (the framed synthetic X-ray with zone markers and
+           synthetic-sample disclosures), Mascot
+  data: content.ts (page copy), sources.ts (citations), demoResults.ts
+  Palette: near-black background, restrained radiology-cyan accent.
+
+
+--------------------------------------------------------------------------------
+9. THE CLINICAL APP - SHARED SHELL AND UI KIT
+--------------------------------------------------------------------------------
+
+App shell (src/components/layout/)
+  AppShell         sidebar + sticky top bar + scrolling content, with a Suspense
+                   boundary for code-split pages
+  Sidebar          role-aware desktop navigation (different tree per role),
+                   workload badges, a primary action, and a role badge
+  MobileNav        mobile tab bar + slide-in drawer, also role-aware
+  TopBar           breadcrumbs, global search, connection status, user menu
+  UserMenu         who is signed in + sign out; account-keyed so patients (who
+                   have no staff record) still get a working sign-out
+  navigation.ts    the per-role navigation model and route titles
+  ConnectionStatus / OfflineBanner   online/offline state and the offline toggle
+  GlobalSearch     cross-entity quick search
+
+UI kit (src/components/ui/)
+  Button + ButtonLink, Card, DataTable, Dialog/ConfirmDialog, Badge,
+  StatusBadge (screening/referral/follow-up/sync/quality states), Avatar,
+  EmptyState/NoMatchesState/ErrorState, PageHeader, Pagination, ProgressBar,
+  Skeleton, Tabs, Toolbar, Toaster, Notice, IconButton, Logo.
+  All fully rounded controls, thin borders over shadows, consistent tokens.
+
+Forms (src/components/forms/)
+  Field (label/hint/error), Inputs (TextInput, TextArea, Select, Checkbox,
+  RadioGroup, SearchInput, Toggle), Stepper (the onboarding progress indicator).
+
+
+--------------------------------------------------------------------------------
+10. CLINICAL APP - PATIENT WORKSPACE
+--------------------------------------------------------------------------------
+
+Onboarding (/onboarding) - pages/OnboardingPage.tsx
+  A four-step first-run wizard with a progress indicator, shown before a new
+  patient reaches their dashboard. Steps: (1) personal info, (2) address/
+  location, (3) optional health info with a plain explanation of why it is
+  asked, (4) review and consent. Progress is saved per step so it can be
+  resumed. Health answers are optional and can be withdrawn later; withdrawing
+  clears the answers, not just a flag.
+
+Overview (/me) - PatientOverviewPage.tsx
+  Welcome, profile-completion status, latest screening status, upcoming
+  follow-up, and reading suggestions keyed to the patient's care stage (not to
+  any analysis output). Counts are of the patient's own records only.
+
+My screenings (/me/screenings) - PatientScreeningsPage.tsx
+  The patient's screening history. Leads with the reviewer's clinical note, not
+  the raw model output; marks a record "in progress" until a professional has
+  reviewed it. Link to the printable report when one exists. Empty state when
+  there are none.
+
+Follow-up (/me/followup) - PatientFollowUpPage.tsx
+  Appointments, referrals and contact arranged by the care team, shown read-
+  only. The page never fabricates or confirms a booking.
+
+TB Learning Center (/me/learn) - PatientLearningPage.tsx
+  Short patient-facing articles on TB (what it is, symptoms, prevention,
+  diagnosis, treatment, myths vs facts, supporting family). Reading progress is
+  tracked per account, shown as a simple count - no streaks or scores. Content
+  lives in data/education.ts. Suggestions adapt to care stage, never diagnosing.
+
+Facilities (/me/facilities)
+  The public facility directory filtered to published entries.
+
+Profile (/me/profile) - PatientProfilePage.tsx
+  View/edit personal details, manage health information and consent, account
+  settings. Withdrawing health consent clears the stored answers.
+
+
+--------------------------------------------------------------------------------
+11. CLINICAL APP - HEALTHCARE PROFESSIONAL WORKSPACE
+--------------------------------------------------------------------------------
+
+Dashboard (/dashboard) - DashboardPage.tsx
+  Today's screening workload, review queue and follow-up state. ActivityChart
+  and MetricTile summarise volume; figures come from the backend dashboard
+  summary over records the person may see.
+
+Patients (/patients, /patients/:id) - PatientsPage / PatientDetailPage.tsx
+  Searchable/sortable patient directory and a full patient record with a
+  chronological timeline (PatientTimeline, buildTimeline).
+
+New screening (/screenings/new) - NewScreeningPage.tsx
+  Record an encounter and upload a chest X-ray. ImageUpload handles the file;
+  the radiograph is stored locally (IndexedDB) and previewed; the record is
+  routed into the review queue. Supports offline draft capture.
+
+Screening result (/screenings/:id) - ScreeningResultPage.tsx
+  The screening output in a research-style report: class scores
+  (ProbabilityPanel), the XrayViewer with lesion overlays, and the review form.
+  Output is always framed as a screening aid, not a diagnosis, and labelled a
+  sample where no real model produced it.
+
+Explainable report (/screenings/:id/report) - ReportViewPage.tsx
+  A print-ready document: original vs overlay, symptom table, class scores, the
+  reviewer's sign-off, and the standing disclaimers.
+
+Review (ReviewForm, ReviewForm within result page)
+  A human records agreement and a decision (refer / repeat image / observe /
+  no action). Only staff with canReview may sign off.
+
+Referrals (/referrals) - ReferralsPage.tsx
+  The referral register with status controls (ReferralStatusControls) and a
+  create/edit dialog (ReferralFormDialog). Destinations filtered to facilities
+  that offer the requested service.
+
+Follow-ups (/followups) - FollowUpsPage.tsx
+  Overdue / due-today / upcoming queues computed from real dates. Log contact
+  attempts, reschedule, complete, or record why a patient could not be reached
+  (FollowUpFormDialog, FollowUpActionDialogs).
+
+Facilities (/facilities) - FacilitiesPage.tsx
+  The facility directory with services, travel estimates and record freshness;
+  FacilityMap for location.
+
+Reports (/reports) - ReportsPage.tsx
+  Screening history and printable reports.
+
+Offline queue (/offline) - OfflineQueuePage.tsx
+  Local drafts and records awaiting sync, with pending/failed/conflict state.
+
+Settings (/settings) - SettingsPage.tsx
+  Account details, local storage usage, and the offline toggle.
+
+
+--------------------------------------------------------------------------------
+12. CLINICAL APP - ADMINISTRATION
+--------------------------------------------------------------------------------
+
+Overview (/admin) - AdminOverviewPage.tsx
+  Live platform totals (patient accounts, professionals, facilities, screening
+  records) and recent audit activity. Numbers are real counts, kept honest -
+  not padded.
+
+Accounts (/admin/users) - AdminUsersPage.tsx
+  List, search and filter accounts; change role; suspend/reactivate. Passwords
+  are never shown. Two safety rules enforced in code: an admin cannot change
+  their own role or suspend themselves, and the last active admin cannot be
+  demoted or suspended. Every change writes an audit entry.
+
+Facilities (/admin/facilities) - AdminFacilitiesPage.tsx
+  Create / edit / publish / unpublish directory entries. New entries start
+  hidden until their details are checked; published entries appear in the public
+  directory. Coordinates are not hand-typed (they need a real lookup).
+
+Screening records (/admin/screenings) - AdminScreeningsPage.tsx
+  Record metadata and processing/sync status only. No radiographs, no clinical
+  assessments: administrative access is not clinical access.
+
+Audit log (/admin/audit) - AdminAuditPage.tsx
+  Role changes, account status and facility edits, each with actor, subject and
+  timestamp. Searchable and filterable.
+
+
+--------------------------------------------------------------------------------
+13. OFFLINE-FIRST AND IMAGE HANDLING
+--------------------------------------------------------------------------------
+
+  - Forms, drafts and edits keep working without a connection; an outbox shows
+    what is pending, failed or in conflict (OfflineQueuePage + syncService).
+  - A deliberate "work offline" switch lets a user queue locally on a flaky
+    connection instead of fighting repeated failed syncs (connectionStore).
+  - Chest radiograph blobs are stored in IndexedDB via idb-keyval, never in
+    localStorage; the backend serves a short-lived signed URL for viewing.
+  - A service worker caches the app shell (utils/registerServiceWorker.ts).
+
+
+--------------------------------------------------------------------------------
+14. DESIGN SYSTEM
+--------------------------------------------------------------------------------
+
+Identity
+  Clinical app: light "cloud" background, obsidian (near-black) chrome, calm
+  radiology-cyan ("CT blue") accent used only for active states, focus rings,
+  links and radiology visuals. Status colours (attention/urgent/complete) are
+  independent of the brand blue and always paired with an icon + text label,
+  never colour alone.
+  Public site: near-black background, the same restrained cyan accent, editorial
+  typography, a subtle technical grid in hero/figure areas only.
+
+Principles
+  - Thin borders and subtle background differences over drop shadows.
+  - Fully rounded controls; restrained card radii.
+  - Tabular numerals for data; a single consistent focus treatment.
+  - Respects prefers-reduced-motion; animation kept purposeful and minimal.
+  - Accessible: semantic HTML, labelled forms, visible focus, keyboard support.
+
+Tokens and helpers
+  Design tokens live in CSS (index.css) and Tailwind config. The `cn` helper
+  (clsx + tailwind-merge) resolves conditional/conflicting classes.
+
+
+--------------------------------------------------------------------------------
+15. PROJECT STRUCTURE (src/)
+--------------------------------------------------------------------------------
+
+  main.tsx              app entry; mounts the router, inits auth, registers SW
+  index.css             global styles and design tokens
+  routes/               router.tsx (route table), RequireAuth (guards),
+                        RouteError
+  pages/                clinical app pages; pages/patient/* and pages/admin/*
+  trace/                the entire public PULMO-TRACE site (pages, sections,
+                        components, data, hooks)
+  components/           clinical UI: layout, ui kit, forms, and feature groups
+                        (dashboard, patients, screening, referrals, followups,
+                        facilities)
+  stores/               Zustand stores (auth, account, data, facility, model,
+                        connection, toast) + selectors
+  services/             API seams (recordsApi, onboardingApi, referenceData,
+                        syncService) and imageStore (IndexedDB)
+  lib/                  apiClient, env, supabase, permissions, passwordRules,
+                        sessionReset
+  hooks/                query/table/image/workload hooks
+  types/                domain, account and inference types
+  data/                 reference/sample data (facilities, geography, users,
+                        education, model) + index barrel
+  utils/                cn, date, format, id, labels, service-worker registration
+
+
+--------------------------------------------------------------------------------
+16. FEATURE CHECKLIST (quick reference)
+--------------------------------------------------------------------------------
+
+  [x] Public marketing + education site (PULMO-TRACE)
+  [x] Plain-language "how it works" explainer + FAQ
+  [x] Interactive screening demo with labelled sample output
+  [x] Supabase Auth sign-in / sign-up (sign-up always creates a patient)
+  [x] Four-role RBAC with per-role navigation and dashboards
+  [x] Route guards (auth, role, permission) + role-based redirects
+  [x] Patient onboarding wizard with resumable progress and consent
+  [x] Patient dashboard: overview, screenings, follow-up, learning, facilities,
+      profile
+  [x] TB Learning Center with per-account reading progress
+  [x] Professional workflow: screening capture, X-ray upload, AI-format result,
+      human review sign-off, referrals, follow-ups, reports
+  [x] Explainable, printable report view
+  [x] Administration: accounts/roles, facility CRUD + publish, record metadata,
+      audit log
+  [x] Offline-first drafts, outbox and sync, with a deliberate offline switch
+  [x] IndexedDB radiograph storage + signed-URL viewing
+  [x] One typed API client with token auth, error envelope, 401 sign-out
+  [x] Accessible, responsive, dark/light dual aesthetic with a shared token set
+  [x] Consistent scientific-integrity copy: no fabricated results, score != risk,
+      screening != diagnosis, sample data always labelled
+
+
+================================================================================
+NOTE
+  This describes the frontend only. The backend and database (PULMO API +
+  Supabase) are separate. Where the Supabase env vars are not set, auth-
+  dependent features announce that they are not configured rather than failing
+  silently.
+================================================================================

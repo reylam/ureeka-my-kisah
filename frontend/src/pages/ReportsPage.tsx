@@ -21,7 +21,7 @@ import {
 import { useDataStore } from '@/stores/dataStore';
 import { useStoreQuery } from '@/hooks/useStoreQuery';
 import { useTableControls } from '@/hooks/useTableControls';
-import { mockApi } from '@/services/mockApi';
+import { recordsApi } from '@/services/recordsApi';
 import { users } from '@/data/users';
 import { screeningStatusLabel } from '@/utils/labels';
 import { dateOffset, formatDate, toISODate } from '@/utils/date';
@@ -69,7 +69,7 @@ export function ReportsPage() {
   const referrals = useDataStore((state) => state.referrals);
 
   const { data: screenings, loading, error, refetch } = useStoreQuery<Screening[]>(
-    () => mockApi.getScreenings(),
+    () => recordsApi.getScreenings(),
     () => useDataStore.getState().screenings,
   );
 

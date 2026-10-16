@@ -58,6 +58,8 @@ const INCONCLUSIVE_BELOW = 0.6;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 
+const baseName = (value) => (value ? String(value).split(/[\\/]/).pop() || undefined : undefined);
+
 /**
  * Where a box sits on the film, in words a reader can check against the image.
  * Radiographs are viewed as if facing the patient, so the patient's right is
@@ -112,7 +114,9 @@ export function toAnalysis(rawInput, size, now = new Date()) {
     probabilities: raw.probabilities,
     regions,
     model: {
-      name: raw.model?.classifier ?? 'unnamed classifier',
+      // A service might report a checkpoint path; keep only the file name so
+      // no server directory ends up in the database or the UI.
+      name: baseName(raw.model?.classifier) ?? 'unnamed classifier',
       version: raw.model?.version ?? 'unversioned',
       backbone: raw.model?.backbone ?? 'unknown',
       labels: LABELS,
@@ -125,7 +129,7 @@ export function toAnalysis(rawInput, size, now = new Date()) {
   };
 }
 
-export function createInferenceClient({ url, timeoutMs }, fetchImpl = globalThis.fetch) {
+export function createInferenceClient({ url, timeoutMs, apiKey = null }, fetchImpl = globalThis.fetch) {
   return {
     configured: Boolean(url),
 
@@ -141,6 +145,7 @@ export function createInferenceClient({ url, timeoutMs }, fetchImpl = globalThis
         response = await fetchImpl(url, {
           method: 'POST',
           body: form,
+          headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined,
           signal: AbortSignal.timeout(timeoutMs),
         });
       } catch {

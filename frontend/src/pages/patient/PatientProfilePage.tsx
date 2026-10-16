@@ -7,7 +7,8 @@ import { Notice } from '@/components/ui/Notice';
 import { Badge } from '@/components/ui/Badge';
 import { Field } from '@/components/forms/Field';
 import { Checkbox, TextInput } from '@/components/forms/Inputs';
-import { useAccountStore } from '@/stores/accountStore';
+import { errorMessage } from '@/lib/apiClient';
+import { saveOnboardingPersonal, withdrawHealthConsent } from '@/services/onboardingApi';
 import { useCurrentAccount } from '@/stores/authStore';
 import { toast } from '@/stores/toastStore';
 import { formatDate } from '@/utils/date';
@@ -23,7 +24,6 @@ import { ROLE_LABEL } from '@/lib/permissions';
  */
 export function PatientProfilePage() {
   const account = useCurrentAccount();
-  const store = useAccountStore();
   const [editing, setEditing] = useState(false);
 
   const [draft, setDraft] = useState(() => ({
@@ -34,31 +34,33 @@ export function PatientProfilePage() {
   if (!account) return null;
   const { personal, address, health, consent } = account.onboarding;
 
-  const save = () => {
+  const save = async () => {
     if (draft.fullName.trim().length < 2) {
       toast.error('Enter your full name.');
       return;
     }
-    store.saveOnboardingPersonal(account.id, {
-      fullName: draft.fullName.trim(),
-      birthDate: personal?.birthDate ?? '',
-      phone: draft.phone.trim(),
-      sex: personal?.sex ?? null,
-    });
-    setEditing(false);
-    toast.success('Profile updated.');
+    try {
+      await saveOnboardingPersonal({
+        fullName: draft.fullName.trim(),
+        birthDate: personal?.birthDate ?? '',
+        phone: draft.phone.trim(),
+        sex: personal?.sex ?? null,
+      });
+      setEditing(false);
+      toast.success('Profile updated.');
+    } catch (cause) {
+      toast.error('Could not update your profile.', errorMessage(cause));
+    }
   };
 
-  const withdrawHealth = () => {
-    store.saveOnboardingHealth(account.id, {
-      symptoms: [],
-      symptomWeeks: null,
-      priorTb: 'prefer-not-to-say',
-      householdContact: null,
-      notes: '',
-      shared: false,
-    });
-    toast.success('Health answers withdrawn.', 'The answers have been cleared from your record.');
+  // The server clears the answers, not just the consent flag.
+  const withdrawHealth = async () => {
+    try {
+      await withdrawHealthConsent();
+      toast.success('Health answers withdrawn.', 'The answers have been cleared from your record.');
+    } catch (cause) {
+      toast.error('Could not withdraw your answers.', errorMessage(cause));
+    }
   };
 
   return (

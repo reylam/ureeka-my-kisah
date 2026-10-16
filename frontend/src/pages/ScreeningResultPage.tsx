@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowRight,
@@ -32,11 +33,7 @@ import { FollowUpFormDialog } from '@/components/followups/FollowUpFormDialog';
 import { useDataStore } from '@/stores/dataStore';
 import { useIsConnected } from '@/stores/connectionStore';
 import { toast } from '@/stores/toastStore';
-import {
-  chooseScenario,
-  requestAnalysis,
-  toScreeningAnalysis,
-} from '@/services/screeningService';
+import { ApiError, errorMessage } from '@/lib/apiClient';
 import { users } from '@/data/users';
 import { facilities } from '@/data/facilities';
 import {
@@ -87,10 +84,11 @@ export function ScreeningResultPage() {
   const referral = useDataStore((state) =>
     state.referrals.find((item) => item.id === screening?.referralId),
   );
-  const followUps = useDataStore((state) =>
-    state.followUps.filter((item) => item.screeningId === screeningId),
+  // useShallow: the filtered array is new on every call (see PatientDetailPage).
+  const followUps = useDataStore(
+    useShallow((state) => state.followUps.filter((item) => item.screeningId === screeningId)),
   );
-  const attachAnalysis = useDataStore((state) => state.attachAnalysis);
+  const analyzeScreening = useDataStore((state) => state.analyzeScreening);
 
   const [referralOpen, setReferralOpen] = useState(false);
   const [followUpOpen, setFollowUpOpen] = useState(false);
@@ -103,7 +101,7 @@ export function ScreeningResultPage() {
         <EmptyState
           icon={<FileSearch />}
           title="Screening record not found"
-          description="This record may have been removed as part of a demo data reset."
+          description="It may not exist, or it may belong to a patient outside your facility."
           action={
             <Button variant="primary" onClick={() => navigate('/reports')}>
               Back to screening history
@@ -119,7 +117,7 @@ export function ScreeningResultPage() {
   const analysis = screening.analysis;
   const reportedSymptoms = BOOLEAN_SYMPTOMS.filter((key) => screening.symptoms[key]);
 
-  /** Run the demo analysis for a record that is still queued. */
+  /** Ask the server to run the screening model for a record that has no output yet. */
   const runAnalysis = async () => {
     if (!connected) {
       toast.attention(
@@ -135,20 +133,18 @@ export function ScreeningResultPage() {
     }, 170);
 
     try {
-      const fingerprint = screening.imageMeta
-        ? `${screening.imageMeta.fileName}:${screening.imageMeta.sizeBytes}`
-        : screening.id;
-      const request = {
-        symptoms: screening.symptoms,
-        imageQuality: screening.imageQuality,
-        imageFingerprint: fingerprint,
-      };
-      const response = await requestAnalysis(request);
-      attachAnalysis(screening.id, toScreeningAnalysis(response, chooseScenario(request)));
+      await analyzeScreening(screening.id);
       setProgress(100);
-      toast.success('Demo analysis complete.', 'The record now needs a clinical review.');
-    } catch {
-      toast.error('The demo analysis could not be completed.', 'The record is unchanged.');
+      toast.success('Analysis complete.', 'The record now needs a clinical review.');
+    } catch (cause) {
+      if (cause instanceof ApiError && cause.code === 'MODEL_NOT_CONNECTED') {
+        toast.info(
+          'The screening model is not connected.',
+          'The record is unchanged and can still be reviewed by a clinician.',
+        );
+      } else {
+        toast.error('The analysis could not be completed.', errorMessage(cause));
+      }
     } finally {
       window.clearInterval(ticker);
       setRunning(false);
@@ -158,10 +154,13 @@ export function ScreeningResultPage() {
 
   /* ── Next step, stated plainly ──────────────────────────────────────────── */
   const nextStep = (() => {
-    if (!analysis)
+    if (!analysis && !screening.review)
       return {
-        title: 'Waiting for the demo analysis',
-        body: 'This record has no output yet. Run the analysis to move it into the review queue.',
+        title: 'No model output yet',
+        body:
+          screening.modelStatus === 'unavailable'
+            ? 'The screening model is not connected. A clinician can still review the image and record a decision.'
+            : 'Run the analysis if the model is connected, or have a clinician review the image directly.',
         tone: 'info' as const,
       };
     if (!screening.review)
@@ -328,10 +327,12 @@ export function ScreeningResultPage() {
           <Card>
             <CardHeader
               icon={<Stethoscope />}
-              title="Demo screening output"
+              title="Screening model output"
               description={
                 analysis
-                  ? `Generated ${formatRelative(analysis.analysedAt)} by the built-in simulator.`
+                  ? analysis.simulated
+                    ? `Generated ${formatRelative(analysis.analysedAt)} by the built-in simulator.`
+                    : `Produced ${formatRelative(analysis.analysedAt)} by the screening model.`
                   : 'Nothing has been generated for this record yet.'
               }
             />
@@ -339,9 +340,9 @@ export function ScreeningResultPage() {
               {!analysis ? (
                 running ? (
                   <div>
-                    <ProgressBar value={progress} label="Running the demo analysis" />
+                    <ProgressBar value={progress} label="Running the screening model" />
                     <p className="mt-2 text-xs text-obsidian-500">
-                      Generating output from the recorded symptoms and image-quality rating.
+                      The radiograph is being sent to the screening model.
                     </p>
                   </div>
                 ) : (
@@ -349,9 +350,11 @@ export function ScreeningResultPage() {
                     <div className="flex items-start gap-2.5 rounded-md border border-obsidian-200 bg-obsidian-50 px-3.5 py-3">
                       <Hourglass aria-hidden className="mt-px size-4 shrink-0 text-obsidian-400" />
                       <p className="text-[13px] leading-relaxed text-obsidian-700">
-                        This record is queued. {connected
-                          ? 'Run the demo analysis to generate output.'
-                          : 'Analysis needs a connection, so it will stay queued until then.'}
+                        {screening.modelStatus === 'unavailable'
+                          ? 'The screening model is not connected to the server, so there is no model output for this record. It can still be reviewed.'
+                          : connected
+                            ? 'There is no model output for this record yet.'
+                            : 'Analysis needs a connection, so it will wait until one is available.'}
                       </p>
                     </div>
                     <Button
@@ -361,7 +364,7 @@ export function ScreeningResultPage() {
                       leadingIcon={<Play className="size-4" />}
                       onClick={() => void runAnalysis()}
                     >
-                      Run demo analysis
+                      Run model analysis
                     </Button>
                   </div>
                 )

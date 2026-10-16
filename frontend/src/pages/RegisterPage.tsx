@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/forms/Field';
 import { TextInput } from '@/components/forms/Inputs';
 import { useAuthStore } from '@/stores/authStore';
-import { useAccountStore } from '@/stores/accountStore';
-import { checkPasswordStrength } from '@/lib/password';
+import { checkPasswordStrength } from '@/lib/passwordRules';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 
@@ -20,13 +19,13 @@ import { cn } from '@/utils/cn';
  * list before someone has an account is how a sign-up form turns into a
  * medical intake questionnaire.
  *
- * There is no role selector, and the store's `register` has no role argument
- * to pass one to. Every account created here is a patient.
+ * There is no role selector, and `register` has no role argument to pass one
+ * to. Every account created here is a patient: the database assigns the role
+ * when the sign-up row is created and ignores anything the browser sends.
  */
 export function RegisterPage() {
   const navigate = useNavigate();
-  const register = useAccountStore((state) => state.register);
-  const signInAs = useAuthStore((state) => state.signInAs);
+  const register = useAuthStore((state) => state.register);
   const alreadySignedIn = useAuthStore((state) => Boolean(state.accountId));
 
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
@@ -58,9 +57,8 @@ export function RegisterPage() {
     if (!validate()) return;
 
     setSubmitting(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 350));
 
-    const result = register({ name: form.name, email: form.email, password: form.password });
+    const result = await register({ name: form.name, email: form.email, password: form.password });
     setSubmitting(false);
 
     if (!result.ok) {
@@ -68,22 +66,29 @@ export function RegisterPage() {
       return;
     }
 
+    // When the project requires email confirmation there is no session yet.
+    if (result.confirmationRequired) {
+      toast.success('Account created.', 'Check your email to confirm the address, then sign in.');
+      navigate('/login', { replace: true });
+      return;
+    }
+
     // Straight into the session, then onboarding. Asking someone to sign in
     // again immediately after registering is a pointless extra step.
-    signInAs(result.account.id);
     toast.success('Account created.', 'A few questions next, so your records are complete.');
     navigate('/onboarding', { replace: true });
   };
 
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
-      <div className="on-dark flex shrink-0 flex-col justify-between bg-obsidian-950 px-6 py-7 sm:px-10 lg:w-[28rem] lg:py-10">
+      {/* Logo pinned top-left; the pitch sits centred in the space below it. */}
+      <div className="on-dark flex shrink-0 flex-col bg-obsidian-950 px-6 py-7 sm:px-10 lg:w-[28rem] lg:py-10">
         <Link to="/" className="inline-flex w-fit">
           <Logo tone="light" />
         </Link>
 
-        <div className="mt-8 lg:mt-0">
-          <h1 className="max-w-sm text-xl leading-snug font-semibold text-white lg:text-2xl">
+        <div className="mt-8 flex flex-col items-center text-center lg:mt-0 lg:flex-1 lg:justify-center">
+          <h1 className="text-xl leading-snug font-semibold text-white lg:text-2xl">
             Create a patient account
           </h1>
           <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-obsidian-300">
@@ -97,14 +102,13 @@ export function RegisterPage() {
               'Health questions are optional and explained before they are asked.',
               'Health worker and administrator accounts are created by an administrator, not here.',
             ].map((item) => (
-              <li key={item} className="flex items-start gap-2.5">
+              <li key={item} className="flex items-start gap-2.5 text-left">
                 <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ct-400" />
                 {item}
               </li>
             ))}
           </ul>
         </div>
-
       </div>
 
       <div className="flex flex-1 items-center justify-center bg-cloud px-4 py-10 sm:px-8">
@@ -169,6 +173,7 @@ export function RegisterPage() {
                     describedBy={describedBy}
                     invalid={invalid}
                     leadingIcon={<Lock />}
+                    placeholder="********"
                     className="pr-10"
                   />
                   <button
@@ -220,6 +225,7 @@ export function RegisterPage() {
                   describedBy={describedBy}
                   invalid={invalid}
                   leadingIcon={<Lock />}
+                  placeholder="***"
                 />
               )}
             </Field>
@@ -247,8 +253,8 @@ export function RegisterPage() {
           </form>
 
           <p className="mt-5 border-t border-obsidian-200 pt-4 text-xs leading-relaxed text-obsidian-500">
-            Accounts in this build are stored on this device. Connecting the API moves credential
-            checks and authorisation to the server.
+            Your password is checked and stored by the sign-in service. PULMO never sees it again
+            after you submit this form.
           </p>
         </div>
       </div>

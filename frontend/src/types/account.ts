@@ -17,31 +17,31 @@ export type AccountRole = 'patient' | 'professional' | 'admin';
 
 export type AccountStatus = 'active' | 'suspended';
 
+/** The staff record behind a professional or administrator account. */
+export interface StaffProfile {
+  clinicalRole: 'chw' | 'nurse' | 'physician' | 'coordinator';
+  /** Never true in effect for an administrator: administrative access is not clinical. */
+  canReview: boolean;
+  facilityId: string;
+  phone: string | null;
+}
+
 export interface Account {
   id: string;
   name: string;
   email: string;
-  /**
-   * Digest of the password with the salt below.
-   *
-   * To be explicit about what this is and is not: the digest is computed in
-   * the browser by `lib/password.ts`, which is not a password-hashing
-   * function in the cryptographic sense. It exists so that no plain-text
-   * password sits in storage or in a store snapshot. Real hashing belongs on
-   * the server with bcrypt or argon2, and the API contract in
-   * `docs/api-contract.md` says so.
-   */
-  passwordHash: string;
-  passwordSalt: string;
+  /** Credentials live in Supabase Auth; the app never sees a password hash. */
   role: AccountRole;
   status: AccountStatus;
   createdAt: ISODateTime;
   lastSignInAt: ISODateTime | null;
-  /** Professional accounts point at their staff record in `data/users.ts`. */
+  /** Set when the account has a staff record; it is the same id as the account. */
   staffUserId: string | null;
   /** Patient accounts point at their clinical record once one exists. */
   patientId: string | null;
   onboarding: OnboardingState;
+  /** Sent to administrators when listing accounts; absent elsewhere. */
+  staff?: StaffProfile | null;
 }
 
 /* ── Patient onboarding ───────────────────────────────────────────────────── */
@@ -109,11 +109,26 @@ export type AuditAction =
   | 'account.role-changed'
   | 'account.suspended'
   | 'account.reactivated'
+  | 'onboarding.completed'
+  | 'consent.health-info-changed'
   | 'facility.created'
   | 'facility.updated'
   | 'facility.published'
   | 'facility.unpublished'
-  | 'onboarding.completed';
+  | 'facility.deleted'
+  | 'patient.viewed'
+  | 'patient.created'
+  | 'patient.updated'
+  | 'patient.facility-changed'
+  | 'screening.created'
+  | 'screening.deleted'
+  | 'screening.image-attached'
+  | 'screening.image-viewed'
+  | 'screening.analysed'
+  | 'screening.reviewed'
+  | 'referral.created'
+  | 'referral.status-changed'
+  | 'followup.created';
 
 export interface AuditEntry {
   id: string;

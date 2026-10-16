@@ -1,279 +1,35 @@
 import type { Facility } from '@/types/domain';
-import { PROVINCE } from './geography';
-import { dateOffset } from '@/utils/date';
 
 /**
- * Sample healthcare facility directory.
+ * Facility directory.
  *
- * Every entry is fictional. Distances, travel times, phone numbers, services
- * and opening hours are illustrative sample values, NOT verified real-world
- * information. The `infoStatus` field models the fact that a real directory is
- * never uniformly trustworthy. Coordinators have to keep checking it.
+ * A registry filled from `GET /facilities` by `services/referenceData.ts`; the
+ * hard-coded sample entries that used to live here are now rows in the
+ * database (see `backend/supabase/seed.sql`). Like `data/users.ts`, the arrays
+ * are filled in place so existing imports stay valid.
  *
- * Distances are expressed relative to the operating facility (`fac_puskesmas_waerana`),
- * which is the facility the demo user belongs to.
+ * `OPERATING_FACILITY_ID` is the signed-in professional's own facility. It is
+ * an ES live binding: importers see the new value after `setFacilityDirectory`
+ * runs. It is an empty string for roles without a facility.
  */
 
-export const OPERATING_FACILITY_ID = 'fac_puskesmas_waerana';
+export const facilities: Facility[] = [];
 
-export const facilities: Facility[] = [
-  {
-    id: OPERATING_FACILITY_ID,
-    name: 'Puskesmas Waerana',
-    type: 'puskesmas',
-    region: 'Waerana',
-    province: PROVINCE,
-    address: 'Jl. Raya Waerana No. 12, Wae Nioka',
-    phone: '(0385) 555-0110',
-    coordinates: { lat: -8.6221, lng: 120.1894 },
-    services: ['cxr', 'sputum-microscopy', 'tb-treatment', 'general-outpatient'],
-    distanceKm: 0,
-    travelTimeMinutes: 0,
-    infoStatus: 'verified-sample',
-    infoUpdatedAt: dateOffset(-6),
-    operatingHours: 'Mon–Sat, 07:30–14:00',
-    tbProgrammeContact: 'dr. Hanif Ramadhan',
-  },
-  {
-    id: 'fac_pustu_golo_mbu',
-    name: 'Pustu Golo Mbu',
-    type: 'posyandu',
-    region: 'Waerana',
-    province: PROVINCE,
-    address: 'Dusun Golo Mbu, Desa Golo Mbu',
-    phone: '0812-5550-0231',
-    coordinates: { lat: -8.6702, lng: 120.2411 },
-    services: ['general-outpatient'],
-    distanceKm: 7.4,
-    travelTimeMinutes: 35,
-    infoStatus: 'needs-review',
-    infoUpdatedAt: dateOffset(-94),
-    operatingHours: 'Tue & Fri, 08:00–12:00',
-    tbProgrammeContact: null,
-  },
-  {
-    id: 'fac_posyandu_rendu_bata',
-    name: 'Posyandu Rendu Bata',
-    type: 'posyandu',
-    region: 'Waerana',
-    province: PROVINCE,
-    address: 'Balai Desa Rendu Bata',
-    phone: '0813-5550-0884',
-    coordinates: { lat: -8.5908, lng: 120.2203 },
-    services: ['general-outpatient', 'pediatric-tb'],
-    distanceKm: 5.1,
-    travelTimeMinutes: 24,
-    infoStatus: 'verified-sample',
-    infoUpdatedAt: dateOffset(-21),
-    operatingHours: 'Wed, 08:00–11:00',
-    tbProgrammeContact: null,
-  },
-  {
-    id: 'fac_rsud_lembor',
-    name: 'RSUD Lembor Tengah',
-    type: 'district-hospital',
-    region: 'Lembor Tengah',
-    province: PROVINCE,
-    address: 'Jl. Kesehatan No. 4, Nggorang Baru',
-    phone: '(0385) 555-0420',
-    coordinates: { lat: -8.5411, lng: 120.0732 },
-    services: [
-      'cxr',
-      'sputum-microscopy',
-      'tcm-genexpert',
-      'tb-treatment',
-      'general-outpatient',
-      'inpatient',
-    ],
-    distanceKm: 18.6,
-    travelTimeMinutes: 52,
-    infoStatus: 'verified-sample',
-    infoUpdatedAt: dateOffset(-11),
-    operatingHours: 'Daily, 24 hours (TB clinic Mon–Fri 08:00–13:00)',
-    tbProgrammeContact: 'dr. Sri Wulandari, Sp.P',
-  },
-  {
-    id: 'fac_klinik_siru',
-    name: 'Klinik Pratama Siru Permai',
-    type: 'clinic',
-    region: 'Lembor Tengah',
-    province: PROVINCE,
-    address: 'Jl. Siru Permai No. 88',
-    phone: '(0385) 555-0377',
-    coordinates: { lat: -8.5623, lng: 120.1012 },
-    services: ['general-outpatient', 'sputum-microscopy'],
-    distanceKm: 15.2,
-    travelTimeMinutes: 41,
-    infoStatus: 'unconfirmed',
-    infoUpdatedAt: dateOffset(-168),
-    operatingHours: 'Mon–Sat, 16:00–20:00',
-    tbProgrammeContact: null,
-  },
-  {
-    id: 'fac_puskesmas_satar_mese',
-    name: 'Puskesmas Satar Mese Utara',
-    type: 'puskesmas',
-    region: 'Satar Mese Utara',
-    province: PROVINCE,
-    address: 'Jl. Lungar Raya, Lungar',
-    phone: '(0385) 555-0298',
-    coordinates: { lat: -8.7114, lng: 120.3388 },
-    services: ['sputum-microscopy', 'tb-treatment', 'general-outpatient', 'pediatric-tb'],
-    distanceKm: 22.9,
-    travelTimeMinutes: 68,
-    infoStatus: 'verified-sample',
-    infoUpdatedAt: dateOffset(-33),
-    operatingHours: 'Mon–Sat, 07:30–14:00',
-    tbProgrammeContact: 'Ns. Yohana Bete',
-  },
-  {
-    id: 'fac_lab_iteng',
-    name: 'Laboratorium Rujukan Iteng',
-    type: 'lab',
-    region: 'Satar Mese Utara',
-    province: PROVINCE,
-    address: 'Kompleks Iteng Selatan Blok B',
-    phone: '(0385) 555-0511',
-    coordinates: { lat: -8.7390, lng: 120.3102 },
-    services: ['sputum-microscopy', 'tcm-genexpert'],
-    distanceKm: 25.4,
-    travelTimeMinutes: 74,
-    infoStatus: 'verified-sample',
-    infoUpdatedAt: dateOffset(-17),
-    operatingHours: 'Mon–Fri, 08:00–15:00',
-    tbProgrammeContact: 'Andreas Liu, A.Md.AK',
-  },
-  {
-    id: 'fac_puskesmas_nanga_baru',
-    name: 'Puskesmas Nanga Baru',
-    type: 'puskesmas',
-    region: 'Nanga Baru',
-    province: PROVINCE,
-    address: 'Jl. Pelabuhan Nanga Lili No. 2',
-    phone: '(0385) 555-0633',
-    coordinates: { lat: -8.4488, lng: 120.4201 },
-    services: ['cxr', 'sputum-microscopy', 'tb-treatment', 'general-outpatient'],
-    distanceKm: 41.3,
-    travelTimeMinutes: 115,
-    infoStatus: 'needs-review',
-    infoUpdatedAt: dateOffset(-77),
-    operatingHours: 'Mon–Sat, 08:00–13:00',
-    tbProgrammeContact: 'Ns. Marselinus Dopo',
-  },
-  {
-    id: 'fac_pustu_lekolembo',
-    name: 'Pustu Lekolembo',
-    type: 'posyandu',
-    region: 'Nanga Baru',
-    province: PROVINCE,
-    address: 'Dusun Lekolembo Atas',
-    phone: '0821-5550-1190',
-    coordinates: { lat: -8.4203, lng: 120.4677 },
-    services: ['general-outpatient'],
-    distanceKm: 47.8,
-    travelTimeMinutes: 142,
-    infoStatus: 'unconfirmed',
-    infoUpdatedAt: dateOffset(-203),
-    operatingHours: 'Thu, 09:00–12:00',
-    tbProgrammeContact: null,
-  },
-  {
-    id: 'fac_rs_rujukan_tanjung',
-    name: 'RS Rujukan Tanjung Kelapa',
-    type: 'referral-hospital',
-    region: 'Tanjung Kelapa',
-    province: PROVINCE,
-    address: 'Jl. Pesisir Kelapa Dua No. 1',
-    phone: '(0385) 555-0700',
-    coordinates: { lat: -8.4871, lng: 119.9204 },
-    services: [
-      'cxr',
-      'sputum-microscopy',
-      'tcm-genexpert',
-      'tb-treatment',
-      'mdr-tb-treatment',
-      'pediatric-tb',
-      'general-outpatient',
-      'inpatient',
-    ],
-    distanceKm: 36.2,
-    travelTimeMinutes: 88,
-    infoStatus: 'verified-sample',
-    infoUpdatedAt: dateOffset(-4),
-    operatingHours: 'Daily, 24 hours',
-    tbProgrammeContact: 'dr. Bagas Prasetyo, Sp.P',
-  },
-  {
-    id: 'fac_klinik_loha',
-    name: 'Klinik Loha Tengah',
-    type: 'clinic',
-    region: 'Tanjung Kelapa',
-    province: PROVINCE,
-    address: 'Jl. Loha Tengah No. 19',
-    phone: '(0385) 555-0745',
-    coordinates: { lat: -8.5016, lng: 119.9588 },
-    services: ['general-outpatient', 'pediatric-tb'],
-    distanceKm: 33.0,
-    travelTimeMinutes: 79,
-    infoStatus: 'needs-review',
-    infoUpdatedAt: dateOffset(-61),
-    operatingHours: 'Mon–Fri, 08:00–16:00',
-    tbProgrammeContact: null,
-  },
-  {
-    id: 'fac_puskesmas_warloka',
-    name: 'Puskesmas Warloka Baru',
-    type: 'puskesmas',
-    region: 'Tanjung Kelapa',
-    province: PROVINCE,
-    address: 'Jl. Warloka Baru KM 3',
-    phone: '(0385) 555-0812',
-    coordinates: { lat: -8.5544, lng: 119.8831 },
-    services: ['sputum-microscopy', 'tb-treatment', 'general-outpatient'],
-    distanceKm: 39.5,
-    travelTimeMinutes: 97,
-    infoStatus: 'verified-sample',
-    infoUpdatedAt: dateOffset(-28),
-    operatingHours: 'Mon–Sat, 07:30–14:00',
-    tbProgrammeContact: 'Ns. Clara Ndiwa',
-  },
-  {
-    id: 'fac_rsud_waerana',
-    name: 'RSUD Waerana',
-    type: 'district-hospital',
-    region: 'Waerana',
-    province: PROVINCE,
-    address: 'Jl. Compang Tolok No. 30',
-    phone: '(0385) 555-0155',
-    coordinates: { lat: -8.6015, lng: 120.1702 },
-    services: ['cxr', 'tcm-genexpert', 'tb-treatment', 'general-outpatient', 'inpatient'],
-    distanceKm: 3.8,
-    travelTimeMinutes: 14,
-    infoStatus: 'verified-sample',
-    infoUpdatedAt: dateOffset(-9),
-    operatingHours: 'Daily, 24 hours (TB clinic Mon–Sat 08:00–12:00)',
-    tbProgrammeContact: 'dr. Intan Permatasari, Sp.P',
-  },
-  {
-    id: 'fac_pustu_tenda_wangka',
-    name: 'Pustu Tenda Wangka',
-    type: 'posyandu',
-    region: 'Lembor Tengah',
-    province: PROVINCE,
-    address: 'Dusun Tenda Wangka',
-    phone: '0819-5550-0462',
-    coordinates: { lat: -8.5277, lng: 120.1188 },
-    services: ['general-outpatient'],
-    distanceKm: 12.7,
-    travelTimeMinutes: 38,
-    infoStatus: 'needs-review',
-    infoUpdatedAt: dateOffset(-119),
-    operatingHours: 'Mon & Thu, 08:00–12:00',
-    tbProgrammeContact: null,
-  },
-];
+export let OPERATING_FACILITY_ID = '';
 
 /** Facilities that can receive a referral, i.e. offer more than the basics. */
-export const referralTargetIds = facilities
-  .filter((f) => f.id !== OPERATING_FACILITY_ID && f.services.length > 2)
-  .map((f) => f.id);
+export const referralTargetIds: string[] = [];
+
+export function setFacilityDirectory(list: Facility[], operatingFacilityId: string | null): void {
+  facilities.splice(0, facilities.length, ...list);
+  OPERATING_FACILITY_ID = operatingFacilityId ?? '';
+  referralTargetIds.splice(
+    0,
+    referralTargetIds.length,
+    ...list.filter((f) => f.id !== OPERATING_FACILITY_ID && f.services.length > 2).map((f) => f.id),
+  );
+}
+
+export function clearFacilityDirectory(): void {
+  setFacilityDirectory([], null);
+}

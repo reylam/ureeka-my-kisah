@@ -9,7 +9,13 @@ import { Field } from '@/components/forms/Field';
 import { Checkbox, RadioGroup, Select, TextArea, TextInput } from '@/components/forms/Inputs';
 import { Stepper, type Step } from '@/components/forms/Stepper';
 import { useAuthStore, useCurrentAccount } from '@/stores/authStore';
-import { useAccountStore } from '@/stores/accountStore';
+import { errorMessage } from '@/lib/apiClient';
+import {
+  completeOnboarding,
+  saveOnboardingAddress,
+  saveOnboardingHealth,
+  saveOnboardingPersonal,
+} from '@/services/onboardingApi';
 import type { OnboardingHealth } from '@/types/account';
 import { DISTRICTS, PROVINCE, VILLAGES, type District } from '@/data/geography';
 import { toast } from '@/stores/toastStore';
@@ -51,7 +57,7 @@ export function OnboardingPage() {
   const navigate = useNavigate();
   const account = useCurrentAccount();
   const signOut = useAuthStore((state) => state.signOut);
-  const store = useAccountStore();
+  const [saving, setSaving] = useState(false);
 
   const [step, setStep] = useState(() => Math.min(account?.onboarding.step ?? 0, 3));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -119,36 +125,44 @@ export function OnboardingPage() {
     return Object.keys(next).length === 0;
   };
 
-  const goNext = () => {
-    if (!validateStep()) return;
+  // Each step is saved to the server before moving on, so the wizard resumes
+  // where it was left and nothing is held only in this tab.
+  const goNext = async () => {
+    if (saving || !validateStep()) return;
 
-    if (step === 0) {
-      store.saveOnboardingPersonal(account.id, {
-        fullName: personal.fullName.trim(),
-        birthDate: personal.birthDate,
-        phone: personal.phone.trim(),
-        sex: personal.sex,
-      });
+    setSaving(true);
+    try {
+      if (step === 0) {
+        await saveOnboardingPersonal({
+          fullName: personal.fullName.trim(),
+          birthDate: personal.birthDate,
+          phone: personal.phone.trim(),
+          sex: personal.sex,
+        });
+      }
+      if (step === 1) await saveOnboardingAddress({ ...address });
+      if (step === 2) await saveOnboardingHealth(health);
+
+      if (step === 3) {
+        await completeOnboarding({
+          dataUse: consent.dataUse,
+          // Only meaningful if they actually shared anything in step 3.
+          healthInfo: health.shared ? consent.healthInfo : false,
+        });
+        toast.success('You are all set.');
+        navigate('/me', { replace: true });
+        return;
+      }
+
+      setStep(step + 1);
+    } catch (cause) {
+      toast.error('Could not save this step.', errorMessage(cause));
+    } finally {
+      setSaving(false);
     }
-    if (step === 1) store.saveOnboardingAddress(account.id, { ...address });
-    if (step === 2) store.saveOnboardingHealth(account.id, health);
-
-    if (step === 3) {
-      store.completeOnboarding(account.id, {
-        acceptedAt: new Date().toISOString(),
-        dataUse: consent.dataUse,
-        // Only meaningful if they actually shared anything in step 3.
-        healthInfo: health.shared ? consent.healthInfo : false,
-      });
-      toast.success('You are all set.');
-      navigate('/me', { replace: true });
-      return;
-    }
-
-    setStep(step + 1);
   };
 
-  const skipHealth = () => {
+  const skipHealth = async () => {
     const declined: OnboardingHealth = {
       symptoms: [],
       symptomWeeks: null,
@@ -157,9 +171,16 @@ export function OnboardingPage() {
       notes: '',
       shared: false,
     };
-    setHealth(declined);
-    store.saveOnboardingHealth(account.id, declined);
-    setStep(3);
+    setSaving(true);
+    try {
+      await saveOnboardingHealth(declined);
+      setHealth(declined);
+      setStep(3);
+    } catch (cause) {
+      toast.error('Could not save your choice.', errorMessage(cause));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

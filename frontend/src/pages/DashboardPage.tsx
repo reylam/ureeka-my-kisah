@@ -24,7 +24,7 @@ import { SimulatedResultNotice } from '@/components/ui/Notice';
 import { useDataStore } from '@/stores/dataStore';
 import { buildDashboardSummary, followUpBucket } from '@/stores/selectors';
 import { useStoreQuery } from '@/hooks/useStoreQuery';
-import { mockApi } from '@/services/mockApi';
+import { recordsApi } from '@/services/recordsApi';
 import { useCurrentUser } from '@/stores/authStore';
 import { facilities, OPERATING_FACILITY_ID } from '@/data/facilities';
 import { followUpReasonLabel } from '@/utils/labels';
@@ -57,7 +57,7 @@ export function DashboardPage() {
   const lastSyncAt = useDataStore((state) => state.lastSyncAt);
 
   const { data: summary, loading } = useStoreQuery(
-    () => mockApi.getDashboardSummary(),
+    () => recordsApi.getDashboardSummary(),
     () => {
       const state = useDataStore.getState();
       return buildDashboardSummary(

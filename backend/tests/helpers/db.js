@@ -27,10 +27,36 @@ const PRELUDE = `
   create schema auth;
   create table auth.users (
     id uuid primary key default gen_random_uuid(),
+    instance_id uuid,
+    aud text,
+    role text,
     email text,
+    encrypted_password text,
+    email_confirmed_at timestamptz,
+    raw_app_meta_data jsonb,
     raw_user_meta_data jsonb not null default '{}'::jsonb,
+    created_at timestamptz,
+    updated_at timestamptz,
+    confirmation_token text,
+    email_change text,
+    email_change_token_new text,
+    recovery_token text,
     last_sign_in_at timestamptz
   );
+  create table auth.identities (
+    id uuid primary key,
+    user_id uuid not null references auth.users (id) on delete cascade,
+    provider_id text not null,
+    identity_data jsonb not null,
+    provider text not null,
+    last_sign_in_at timestamptz,
+    created_at timestamptz,
+    updated_at timestamptz
+  );
+  -- Stand-ins for pgcrypto (the real project hashes with bcrypt).
+  create schema extensions;
+  create function extensions.gen_salt(text) returns text language sql as $$ select 'salt' $$;
+  create function extensions.crypt(text, text) returns text language sql as $$ select 'hashed:' || md5($1 || $2) $$;
   create function auth.uid() returns uuid
     language sql stable
     as $$
@@ -41,6 +67,13 @@ const PRELUDE = `
     $$;
   grant usage on schema auth to anon, authenticated, service_role;
   grant execute on function auth.uid() to anon, authenticated, service_role;
+
+  -- Supabase grants new public objects to its API roles by default; the
+  -- migrations then revoke what clients must not have. Mirror that starting point.
+  alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+  alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+  alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+  grant usage on schema public to service_role;
 
   create schema storage;
   create table storage.buckets (

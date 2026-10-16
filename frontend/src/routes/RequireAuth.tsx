@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useCurrentAccount } from '@/stores/authStore';
+import { useAuthStore, useCurrentAccount } from '@/stores/authStore';
+import { ErrorState } from '@/components/ui/EmptyState';
+import { LineSkeleton } from '@/components/ui/Skeleton';
 import { ROLE_HOME, can, type Permission } from '@/lib/permissions';
 import type { AccountRole } from '@/types/account';
 
@@ -15,11 +17,46 @@ import type { AccountRole } from '@/types/account';
  *   RequirePermission  does this account hold a specific capability?
  *
  * All three are interface gates. They decide what is shown and they are not a
- * security boundary: the session and the account directory both live in the
- * visitor's own browser. The same checks have to exist on the server before
- * any of this touches real records. `docs/api-contract.md` lists which
- * endpoint owns which one.
+ * security boundary: the session is a Supabase token, and every API call and
+ * every database row is authorised again on the server from that token alone
+ * (Express middleware, then Row Level Security). Editing the role held in the
+ * browser changes what is drawn, not what is allowed.
+ *
+ * `RequireAuth` also holds the page back until the workspace has loaded (the
+ * staff and facility directories, and the records this role may see), so no
+ * screen renders half-filled.
  */
+
+function WorkspaceLoading() {
+  return (
+    <div className="mx-auto max-w-md px-6 py-24" role="status" aria-label="Loading your workspace">
+      <LineSkeleton lines={4} />
+    </div>
+  );
+}
+
+function WorkspaceError({ message }: { message: string | null }) {
+  const loadWorkspace = useAuthStore((state) => state.loadWorkspace);
+  const signOut = useAuthStore((state) => state.signOut);
+  return (
+    <div className="mx-auto max-w-md py-16">
+      <ErrorState
+        title="Could not load your workspace"
+        description={message ?? undefined}
+        onRetry={() => void loadWorkspace()}
+      />
+      <p className="text-center">
+        <button
+          type="button"
+          className="text-[13px] text-obsidian-500 underline underline-offset-2 hover:text-obsidian-900"
+          onClick={() => void signOut()}
+        >
+          Sign out
+        </button>
+      </p>
+    </div>
+  );
+}
 
 function SignInRedirect() {
   const location = useLocation();
@@ -29,6 +66,8 @@ function SignInRedirect() {
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const account = useCurrentAccount();
+  const workspace = useAuthStore((state) => state.workspace);
+  const workspaceError = useAuthStore((state) => state.workspaceError);
 
   if (!account) return <SignInRedirect />;
 
@@ -41,6 +80,9 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   if (account.role === 'patient' && !account.onboarding.completedAt) {
     return <Navigate to="/onboarding" replace />;
   }
+
+  if (workspace === 'error') return <WorkspaceError message={workspaceError} />;
+  if (workspace !== 'ready') return <WorkspaceLoading />;
 
   return <>{children}</>;
 }

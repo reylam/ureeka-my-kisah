@@ -42,10 +42,12 @@ export async function get(ctx, id) {
   return serialize.patient(row, notes);
 }
 
+/** The caller's own record, or null before onboarding is finished (not an error). */
 export async function getOwn(ctx) {
-  if (!ctx.patientId) throw ApiError.notFound('No clinical record yet. Finish onboarding first.');
-  const row = unwrapOne(await ctx.db.from('patient_profiles').select('*').eq('id', ctx.patientId).maybeSingle());
-  return serialize.patient(row);
+  const row = unwrap(
+    await ctx.db.from('patient_profiles').select('*').eq('profile_id', ctx.userId).maybeSingle(),
+  );
+  return row ? serialize.patient(row) : null;
 }
 
 export async function create(ctx, input) {

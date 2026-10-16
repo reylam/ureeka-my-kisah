@@ -3,7 +3,6 @@ import { ArrowUpRight } from 'lucide-react';
 import { Container } from '@/trace/components/ui/Container';
 import { TraceFooterMark } from './TraceMark';
 import { NAV_ITEMS } from './Navbar';
-import { PROJECT } from '@/trace/data/content';
 import { cn } from '@/utils/cn';
 
 /**
@@ -88,12 +87,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 border-t border-trace-line pt-7">
-          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
-            <p className="text-[12.5px] text-trace-dim">© 2026 PULMO-TRACE</p>
-            <p className="font-mono text-[11px] tracking-[0.06em] text-trace-dim">
-              Updated {PROJECT.updated}
-            </p>
-          </div>
+          <p className="text-[12.5px] text-trace-dim">© 2026 PULMO-TRACE</p>
         </div>
       </Container>
     </footer>

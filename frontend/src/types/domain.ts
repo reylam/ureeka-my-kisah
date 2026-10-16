@@ -100,7 +100,8 @@ export interface Facility {
   province: string;
   address: string;
   phone: string;
-  coordinates: { lat: number; lng: number };
+  /** Null until a real geocoding lookup has placed the entry. Never a guess. */
+  coordinates: { lat: number; lng: number } | null;
   services: FacilityService[];
   /** Sample travel estimates from the operating facility. Not verified. */
   distanceKm: number;
@@ -172,7 +173,13 @@ export interface Screening {
   imageMeta: ImageMeta | null;
   imageQuality: ImageQuality;
 
-  /** Null until the demo analysis step has run. */
+  /**
+   * What the model step did, kept apart from the record's workflow `status`
+   * and from the clinician's `review`. Absent on records held only on this
+   * device.
+   */
+  modelStatus?: ModelStatus;
+  /** Null until a model has produced output for this record. */
   analysis: ScreeningAnalysis | null;
   review: ClinicalReview | null;
 
@@ -181,6 +188,8 @@ export interface Screening {
   sync: SyncState;
   createdOffline: boolean;
 }
+
+export type ModelStatus = 'not-run' | 'pending' | 'completed' | 'failed' | 'unavailable';
 
 export interface ImageMeta {
   fileName: string;
@@ -203,8 +212,8 @@ export interface ScreeningAnalysis {
   regions: LesionRegion[];
   model: ModelDescriptor;
   analysedAt: ISODateTime;
-  /** True whenever output came from the built-in simulator, not a real model. */
-  simulated: true;
+  /** True only for output from the built-in simulator. A real model run is false. */
+  simulated: boolean;
   /** Why detection was skipped, when applicable. */
   detectionNote: string | null;
 }
@@ -344,6 +353,23 @@ export interface SyncQueueItem {
   error: string | null;
   /** Set when state is 'conflict': describes the competing change. */
   conflict: SyncConflict | null;
+  /**
+   * What will be sent to the server when this item syncs. Only screenings
+   * captured without a connection are queued; everything else is written to
+   * the API immediately.
+   */
+  payload?: QueuedScreening;
+}
+
+export interface QueuedScreening {
+  patientId: string;
+  symptoms: SymptomSet;
+  vitals: ScreeningVitals;
+  imageQuality: ImageQuality;
+  /** Key of the radiograph held in IndexedDB until the upload succeeds. */
+  imageKey: string | null;
+  asDraft: boolean;
+  capturedAt: ISODateTime;
 }
 
 export interface SyncConflict {

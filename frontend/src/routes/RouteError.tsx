@@ -27,7 +27,7 @@ export function RouteError() {
         </div>
         <h1 className="mt-4 text-base font-semibold text-obsidian-950">Something broke</h1>
         <p className="mt-1.5 text-[13px] leading-relaxed text-obsidian-600">
-          This screen failed to render. The demo data on this device has not been changed.
+          This screen failed to render. Nothing you have saved has been changed.
         </p>
         <pre className="mt-3 max-h-40 overflow-auto rounded-md border border-obsidian-200 bg-obsidian-50 p-3 font-mono text-xs break-words whitespace-pre-wrap text-obsidian-700">
           {message}

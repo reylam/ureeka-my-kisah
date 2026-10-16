@@ -48,20 +48,24 @@ export function ContactAttemptDialog({
     setError(null);
   }, [open, patient?.phone]);
 
-  const submit = () => {
+  const submit = async () => {
     // A failed attempt is only useful if it says what happened.
     if (outcome !== 'reached' && note.trim().length < 5) {
       setError('Say what happened, so the next attempt is better informed.');
       return;
     }
-    logContactAttempt(followUp.id, channel, outcome, note.trim() || null);
-    toast.success(
-      'Contact attempt logged.',
-      outcome === 'reached'
-        ? 'The follow-up is now in progress.'
-        : 'The follow-up stays open for another attempt.',
-    );
-    onClose();
+    try {
+      await logContactAttempt(followUp.id, channel, outcome, note.trim() || null);
+      toast.success(
+        'Contact attempt logged.',
+        outcome === 'reached'
+          ? 'The follow-up is now in progress.'
+          : 'The follow-up stays open for another attempt.',
+      );
+      onClose();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The attempt could not be saved.');
+    }
   };
 
   return (
@@ -187,14 +191,18 @@ export function CompleteFollowUpDialog({
     }
   }, [open]);
 
-  const submit = () => {
+  const submit = async () => {
     if (note.trim().length < 5) {
       setError('Record the outcome, even briefly. It goes on the patient timeline.');
       return;
     }
-    completeFollowUp(followUp.id, note.trim());
-    toast.success(`${followUp.code} completed.`, 'The outcome was added to the patient timeline.');
-    onClose();
+    try {
+      await completeFollowUp(followUp.id, note.trim());
+      toast.success(`${followUp.code} completed.`, 'The outcome was added to the patient timeline.');
+      onClose();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The follow-up could not be completed.');
+    }
   };
 
   return (
@@ -256,17 +264,21 @@ export function UnresolvedFollowUpDialog({
     }
   }, [open]);
 
-  const submit = () => {
+  const submit = async () => {
     if (reason.trim().length < 10) {
       setError('Explain what blocked this, in enough detail for someone else to pick it up.');
       return;
     }
-    markFollowUpUnresolved(followUp.id, reason.trim());
-    toast.attention(
-      `${followUp.code} marked unresolved.`,
-      'It stays visible in the unresolved queue rather than disappearing.',
-    );
-    onClose();
+    try {
+      await markFollowUpUnresolved(followUp.id, reason.trim());
+      toast.attention(
+        `${followUp.code} marked unresolved.`,
+        'It stays visible in the unresolved queue rather than disappearing.',
+      );
+      onClose();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The follow-up could not be updated.');
+    }
   };
 
   return (

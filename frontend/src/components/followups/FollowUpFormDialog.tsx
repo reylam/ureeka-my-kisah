@@ -11,7 +11,7 @@ import { toast } from '@/stores/toastStore';
 import { users, assignableWorkerIds } from '@/data/users';
 import { followUpReasonLabel, userRoleLabel } from '@/utils/labels';
 import { dateOffset, formatDueLabel } from '@/utils/date';
-import { mockApi } from '@/services/mockApi';
+import { recordsApi } from '@/services/recordsApi';
 
 /**
  * Schedule or reschedule a follow-up.
@@ -111,15 +111,15 @@ export function FollowUpFormDialog({
     setSaving(true);
     try {
       if (editing && followUp) {
-        rescheduleFollowUp(followUp.id, dueDate, note.trim() || undefined);
+        await rescheduleFollowUp(followUp.id, dueDate, note.trim() || undefined);
         if (assignedWorkerId !== followUp.assignedWorkerId) {
-          await mockApi.updateFollowUp(followUp.id, { assignedWorkerId });
+          await recordsApi.updateFollowUp(followUp.id, { assignedWorkerId });
         }
         toast.success(
           `${followUp.code} moved to ${formatDueLabel(dueDate).toLowerCase()}.`,
         );
       } else {
-        const created = await mockApi.createFollowUp({
+        const created = await recordsApi.createFollowUp({
           patientId: effectivePatientId,
           referralId,
           screeningId,
@@ -133,6 +133,8 @@ export function FollowUpFormDialog({
         );
       }
       onClose();
+    } catch (cause) {
+      toast.error('The follow-up could not be saved.', cause instanceof Error ? cause.message : undefined);
     } finally {
       setSaving(false);
     }

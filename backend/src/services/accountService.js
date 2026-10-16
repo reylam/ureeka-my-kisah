@@ -17,6 +17,14 @@ export async function me(ctx) {
     }
   }
 
+  // The session was loaded before this request, so a clinical record created in
+  // between (finishing onboarding) is not in ctx yet. Ask again when it is missing.
+  let patientId = ctx.patientId;
+  if (ctx.role === 'patient' && !patientId) {
+    patientId =
+      unwrap(await ctx.db.from('patient_profiles').select('id').eq('profile_id', ctx.userId).maybeSingle())?.id ?? null;
+  }
+
   let onboardingRow = null;
   if (ctx.role === 'patient') {
     onboardingRow = unwrap(
@@ -36,7 +44,7 @@ export async function me(ctx) {
     },
     {
       staff: ctx.staff,
-      patientId: ctx.patientId,
+      patientId,
       onboarding: serialize.onboarding(onboardingRow),
     },
   );
