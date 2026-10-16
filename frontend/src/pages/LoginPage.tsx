@@ -20,6 +20,12 @@ import { toast } from '@/stores/toastStore';
  * On success the destination comes from the role, not from a constant, so a
  * patient does not land on the clinical dashboard.
  */
+const DEMO_ACCOUNTS = [
+  { role: 'Pasien', email: 'patient@parupintas.test', password: 'Patient123!' },
+  { role: 'Tenaga kesehatan', email: 'doctor@parupintas.test', password: 'Doctor123!' },
+  { role: 'Administrator', email: 'admin@parupintas.test', password: 'Admin123!' },
+] as const;
+
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -98,7 +104,40 @@ export function LoginPage() {
               </li>
             ))}
           </ul>
-        </div>
+
+          <div className="mt-8 w-full max-w-sm rounded-xl border border-obsidian-200 bg-cloud p-4 text-left">
+            <p className="text-[12px] font-semibold tracking-wide text-obsidian-500 uppercase">
+              Akun demo
+            </p>
+            <ul className="mt-3 space-y-2">
+              {DEMO_ACCOUNTS.map((account) => (
+                <li key={account.email}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail(account.email);
+                      setPassword(account.password);
+                      setErrors({});
+                    }}
+                    className="w-full rounded-lg border border-obsidian-200 bg-white px-3 py-2 text-left transition-colors hover:border-ct-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ct-600"
+                  >
+                    <span className="block text-[12px] font-medium text-obsidian-950">
+                      {account.role}
+                    </span>
+                    <span className="block font-mono text-[11.5px] text-obsidian-600">
+                      {account.email}
+                    </span>
+                    <span className="block font-mono text-[11.5px] text-obsidian-600">
+                      {account.password}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[11.5px] leading-relaxed text-obsidian-500">
+              Klik salah satu untuk mengisi formulir.
+            </p>
+          </div>        </div>
       </div>
 
       {/* Form panel */}

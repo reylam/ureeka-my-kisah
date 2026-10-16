@@ -161,6 +161,17 @@ export async function removeDraft(ctx, id, { bucket }) {
 
 /* ── Image ──────────────────────────────────────────────────────────────── */
 
+/**
+ * A storage failure the caller can be told about. The raw error is logged for
+ * whoever runs the deployment; the response says what failed without echoing
+ * the storage service's own wording.
+ */
+function storageFailure(error, logger = console) {
+  logger.error({ message: 'storage request failed', status: error?.statusCode ?? error?.status, detail: error?.message });
+  if (/not found/i.test(error?.message ?? '')) return ApiError.notFound('The image file is missing from storage.');
+  return new ApiError(502, 'STORAGE_ERROR', 'The image store could not complete that request.');
+}
+
 export async function uploadImage(ctx, id, file, fields, { bucket }) {
   const screening = unwrapOne(
     await ctx.db.from('screenings').select('id,patient_id,operator_id,status').eq('id', id).maybeSingle(),
@@ -181,7 +192,7 @@ export async function uploadImage(ctx, id, file, fields, { bucket }) {
     contentType: kind.mime,
     upsert: false,
   });
-  if (upload.error) throw upload.error;
+  if (upload.error) throw storageFailure(upload.error);
 
   const previous = unwrap(
     await ctx.admin.from('screening_reports').select('image_path').eq('screening_id', id).maybeSingle(),
@@ -239,7 +250,7 @@ export async function signedImageUrl(ctx, id, { bucket, ttlSeconds }) {
   await audit.record(ctx, { action: 'screening.image-viewed', subject: id });
 
   const { data, error } = await ctx.admin.storage.from(bucket).createSignedUrl(report.image_path, ttlSeconds);
-  if (error || !data?.signedUrl) throw error ?? new Error('Could not sign image URL');
+  if (error || !data?.signedUrl) throw storageFailure(error ?? new Error('Could not sign image URL'));
   return { url: data.signedUrl, expiresInSeconds: ttlSeconds };
 }
 

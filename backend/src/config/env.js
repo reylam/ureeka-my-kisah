@@ -55,6 +55,29 @@ export function loadConfig(source = process.env) {
     throw new Error(`Invalid environment configuration:\n${problems}`);
   }
   const env = parsed.data;
+
+  // Catch the two Supabase keys being pasted into each other's variable. The
+  // service-role key is the one that can write storage and the audit log, so
+  // with them swapped sign-in still works and then every server-side write
+  // fails with an unhelpful 500. Keys that are not JWTs (the newer sb_*
+  // format, or test placeholders) cannot be checked this way and are skipped.
+  const roleOf = (key) => {
+    try {
+      return JSON.parse(Buffer.from(key.split('.')[1], 'base64url').toString('utf8')).role ?? null;
+    } catch {
+      return null;
+    }
+  };
+  const anonRole = roleOf(env.SUPABASE_ANON_KEY);
+  const serviceRole = roleOf(env.SUPABASE_SERVICE_ROLE_KEY);
+  if (anonRole === 'service_role' || serviceRole === 'anon') {
+    throw new Error(
+      'Invalid environment configuration:\n' +
+        '  - SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY look swapped ' +
+        `(the first carries role "${anonRole}", the second "${serviceRole}"). ` +
+        'SUPABASE_ANON_KEY must be the "anon" key and SUPABASE_SERVICE_ROLE_KEY the "service_role" key.',
+    );
+  }
   return {
     env: env.NODE_ENV,
     isProduction: env.NODE_ENV === 'production',
