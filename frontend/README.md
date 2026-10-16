@@ -1,232 +1,212 @@
-# Sentra TB · Screening & Healthcare Access
+# PULMO Frontend
 
-Frontend prototype for preliminary tuberculosis screening from chest X-rays, aimed at community
-health teams working in remote areas with unreliable connectivity.
+Antarmuka web PULMO: skrining TB berbantuan AI dari rontgen dada untuk layanan kesehatan di daerah
+terpencil Indonesia. Satu aplikasi React melayani dua hal sekaligus:
 
-> **Screening, not diagnosis.** This is demonstration software. It is not a medical device, it has
-> not been validated, and it must not be used for clinical decisions. Every patient, facility,
-> contact detail and result in it is synthetic.
+- **Situs publik (PULMO-TRACE)** di `/`, `/how-it-works`, dan `/demo`. Bisa dibuka siapa saja tanpa akun.
+- **Aplikasi klinis** di balik login, dengan ruang kerja berbeda untuk pasien, tenaga kesehatan, dan administrator.
 
----
+> **Skrining, bukan diagnosis.** Keluaran model hanyalah sinyal untuk tes lanjutan. Keputusan klinis
+> tetap di tangan tenaga kesehatan. Aplikasi ini belum divalidasi sebagai alat medis.
 
-## What this build is
-
-A complete, interactive frontend covering the whole screening pathway: record an encounter, route
-the output to a clinician, refer the patient to a facility that can test them, and track whether
-they got there. There is no backend, no database server and no trained model in this phase.
-
-**Implemented**
-
-- Public overview page at `/`, readable without signing in
-- Simulated sign-in and sign-out
-- Dashboard whose every figure is derived from the local dataset
-- Patient directory with search, status filters, sorting and pagination
-- Patient record with a merged timeline, screenings, referrals, follow-ups and notes
-- Multi-step screening form with local chest X-ray upload, preview and validation
-- Screening result screen with a dark radiograph viewer and an overlay toggle
-- Explainable report with a side-by-side comparison and a print layout
-- Facility directory with list and schematic map views
-- Referral register with the full status lifecycle and history
-- Follow-up tracker with overdue, due-today, upcoming, completed and unresolved queues
-- Offline queue with drafts, retries, conflict review and a demo synchronisation action
-- Settings, including storage usage and a demo data reset
-
-**Deliberately not included**
-
-- **No trained model.** Screening output comes from a built-in simulator, labelled as such on
-  every surface that displays it. See [Connecting a real model](#connecting-a-real-model).
-- **No backend, database or auth server.** Sign-in is a local string comparison, not a security
-  boundary.
-- **No real patient data.** The dataset is generated. Sample radiographs are drawn in SVG rather
-  than taken from a patient dataset, and are watermarked `SYNTHETIC SAMPLE`.
-- **No verified facility information.** Distances, opening hours, phone numbers and services are
-  illustrative.
-- **No notifications.** Nothing is sent to any patient, facility or external service.
-- **No performance figures.** Nothing here has been evaluated, so no accuracy, sensitivity or
-  specificity numbers appear anywhere.
-- No Docker, and no container-based workflow.
+Gambaran produk ada di [README utama](../README.md). Dokumen backend ada di
+[`../backend/README.md`](../backend/README.md).
 
 ---
 
-## Running it
+## Tech stack
 
-Requires Node.js 20 or newer (built against Node 26).
+| Bagian | Pilihan |
+| --- | --- |
+| Framework | React 19, TypeScript, Vite |
+| Routing | React Router 7 (`createBrowserRouter`, halaman di-lazy-load) |
+| Styling | Tailwind CSS 4, font Inter (self-hosted) |
+| State | Zustand |
+| Auth | Supabase Auth, dipanggil langsung dari browser |
+| Data | Backend PULMO lewat satu HTTP client (`src/lib/apiClient.ts`) |
+| Offline | Service worker untuk app shell, IndexedDB untuk outbox dan rontgen |
+
+---
+
+## Menjalankan secara lokal
+
+Butuh Node.js 20 atau lebih baru.
 
 ```bash
 npm install
+cp .env.example .env     # Windows PowerShell: Copy-Item .env.example .env
 npm run dev
 ```
 
-The dev server prints a local URL, by default <http://localhost:5173>.
+Dev server berjalan di <http://localhost:5173>. Frontend butuh backend dan Supabase yang hidup untuk
+login dan data. Cara menyalakannya ada di `../backend/README.md`.
 
-| Script            | Purpose                                      |
-| ----------------- | -------------------------------------------- |
-| `npm run dev`     | Vite dev server with hot reload              |
-| `npm run build`   | Type-check with `tsc -b`, then build to `dist/` |
-| `npm run preview` | Serve the production build locally           |
-| `npm run typecheck` | Type-check only                            |
-
-### Signing in
-
-`/` is public. Select **Sign in** to enter the application; the form arrives pre-filled, so no
-credentials need to be looked up. Clearing the fields exercises the form's own validation.
-
-Roles differ in one way that matters: only a nurse or physician can sign off a clinical review. Use
-**Act as a different role** in the profile menu or in Settings to switch between a community health
-worker and a reviewing clinician.
+| Script | Fungsi |
+| --- | --- |
+| `npm run dev` | Dev server Vite dengan hot reload |
+| `npm run build` | Type-check dengan `tsc -b`, lalu build ke `dist/` |
+| `npm run preview` | Menyajikan hasil build secara lokal |
+| `npm run typecheck` | Type-check saja |
 
 ---
 
-## Resetting demo data
+## Environment variable
 
-Records you create or edit are persisted in the browser, so they survive a reload. To get back to
-the seeded dataset:
+Semua diawali `VITE_`, jadi **ikut ter-bundle dan terlihat oleh setiap pengunjung**. Jangan taruh
+rahasia di sini, terutama service-role key Supabase.
 
-**Settings → Reset demo data**
+| Variabel | Isi |
+| --- | --- |
+| `VITE_API_BASE_URL` | URL backend lengkap dengan prefix versi, mis. `http://localhost:4000/api/v1`. Kalau kosong, dipakai nilai itu sebagai default. |
+| `VITE_SUPABASE_URL` | URL project Supabase. Untuk `supabase start`, lihat `supabase status`. |
+| `VITE_SUPABASE_ANON_KEY` | Kunci **anon** (publik). Perlindungan data ada di RLS database dan pengecekan backend. |
 
-That rebuilds the original patients, screenings, referrals and follow-ups, deletes every uploaded
-radiograph from IndexedDB, and drops the cached application shell.
-
-Settings also offers **Clear stored radiographs** on its own, which removes the images but keeps the
-screening records.
-
-To wipe everything manually, clear site data for the origin in your browser's developer tools. The
-relevant keys are `sentratb.data.v1` and `sentratb.auth.v1` in localStorage, plus the `keyval-store`
-IndexedDB database.
+Kalau dua variabel Supabase kosong, halaman login menyatakannya terus terang dan tidak bisa masuk.
+Nilai `VITE_*` dibaca saat **build**, jadi setelah mengubahnya di hosting, deploy ulang.
 
 ---
 
-## Where data lives
+## Akun contoh
 
-| Data                            | Stored in            | Why                                                     |
-| ------------------------------- | -------------------- | ------------------------------------------------------- |
-| Patients, screenings, referrals, follow-ups, sync queue | localStorage (`sentratb.data.v1`) | Small JSON, needs to survive a reload |
-| Uploaded chest radiographs      | IndexedDB            | Blobs are large; localStorage is synchronous and capped  |
-| Session flag                    | localStorage (`sentratb.auth.v1`) | Nothing else to keep                       |
-| Application shell (HTML, JS, CSS, icons) | Service worker cache | Lets the app open with no connection           |
+Setelah database lokal di-seed (`supabase db reset`), tersedia akun sampel untuk setiap peran. Daftar
+lengkap dan kata sandinya ada di [`docs/accounts.md`](docs/accounts.md). Contoh:
 
-Radiographs are kept out of localStorage and out of the service-worker cache on purpose. The service
-worker only caches shell assets and refuses anything else.
+| Peran | Email | Landing |
+| --- | --- | --- |
+| Pasien | `patient@pulmo.test` | `/me` |
+| Tenaga kesehatan | `doctor@pulmo.test` | `/dashboard` |
+| Administrator | `admin@pulmo.test` | `/admin` |
 
-**Browser storage is not equivalent to a secured backend.** Anyone with access to this device
-profile can read these records.
-
-### Offline behaviour
-
-Four separate things, kept distinct throughout the UI:
-
-1. **Offline form entry** works with no connection.
-2. **Local persistence** writes records to this browser's storage on this device.
-3. **Synchronisation** in this prototype only moves records between local states. Nothing is
-   transmitted, because there is no server.
-4. **Model inference** is not performed on the device and needs a connection, so queued records
-   wait.
-
-Use **Simulate being offline** (connection indicator in the top bar, the Offline Queue page, or
-Settings) to demonstrate the offline path without disconnecting anything. Pulling the real network
-works too: the app is a PWA with a cached shell.
+Pendaftaran lewat `/register` selalu menghasilkan **pasien**. Akun tenaga kesehatan dan admin dibuat
+dengan mempromosikan akun yang ada dari halaman Akun admin, atau dengan `npm run provision` di
+`backend/`. `/app` mengarahkan akun yang sedang masuk ke beranda sesuai perannya.
 
 ---
 
-## Project structure
+## Peta rute
+
+| Kelompok | Rute |
+| --- | --- |
+| Publik (PULMO-TRACE) | `/`, `/how-it-works`, `/demo` |
+| Publik (platform) | `/platform`, `/login`, `/register`, `/app` |
+| Onboarding pasien | `/onboarding` |
+| Pasien | `/me`, `/me/screenings`, `/me/followup`, `/me/learn`, `/me/facilities`, `/me/profile` |
+| Tenaga kesehatan | `/dashboard`, `/patients`, `/patients/:id`, `/screenings/new`, `/screenings/:id`, `/screenings/:id/report`, `/referrals`, `/followups`, `/facilities`, `/reports`, `/offline`, `/settings` |
+| Administrator | `/admin`, `/admin/users`, `/admin/facilities`, `/admin/screenings`, `/admin/audit` |
+
+Rute per peran dibungkus `RequireAuth` dan `RequireRole`. Itu hanya mengatur apa yang ditawarkan
+antarmuka. Penegakan izin yang sebenarnya ada di backend dan RLS database.
+
+---
+
+## Struktur proyek
 
 ```
 src/
-├── components/
-│   ├── dashboard/      activity chart, metric tiles
-│   ├── facilities/     schematic facility map
-│   ├── followups/      scheduling and contact-attempt dialogs
-│   ├── forms/          field wrapper, inputs, stepper
-│   ├── layout/         app shell, sidebar, top bar, mobile nav
-│   ├── patients/       timeline builder and renderer
-│   ├── referrals/      referral form and status controls
-│   ├── screening/      X-ray viewer, upload, review form, sample radiographs
-│   └── ui/             buttons, badges, cards, tables, dialogs, toasts
-├── data/               seeded dataset and static reference data
-├── hooks/              query, table controls, image resolution
-├── pages/              one file per route
-├── routes/             route table and auth guard
-├── services/           mock API, screening simulator, sync, image store
-├── stores/             Zustand stores and derived selectors
-├── types/              domain model and the inference wire contract
-└── utils/              dates, formatting, labels, class names
+├── components/   komponen UI bersama (ui, forms, layout, dashboard, patients, screening, ...)
+├── data/         data referensi statis (geografi, edukasi, fasilitas, model)
+├── hooks/        query, kontrol tabel, resolusi gambar
+├── lib/          apiClient, env, supabase, permissions, risk, sessionReset
+├── pages/        satu file per rute (juga pages/patient dan pages/admin)
+├── routes/       tabel rute, RequireAuth, RouteError
+├── services/     recordsApi, onboardingApi, referenceData, syncService, imageStore
+├── stores/       Zustand: auth, data, facility, account, model, koneksi, toast
+├── trace/        situs publik PULMO-TRACE (halaman, section, komponen, hook demo)
+├── types/        model domain dan kontrak inferensi
+└── utils/        tanggal, format, label, service worker
+public/           manifest, service worker, ikon
+docs/             accounts.md, api-contract.md, catatan frontend dan riset
 ```
 
-### Data layer
+---
 
-One dataset, built once in `data/seed.ts`, with real referential integrity: every screening points
-at a patient that exists, every referral at a real screening and facility, every follow-up at a real
-referral. A fixed PRNG seed makes it identical on every load, and all dates are generated relative
-to today, so "overdue" and "upcoming" are always genuinely correct.
+## Alur data
 
-### Service layer
+- **Auth.** Daftar, masuk, dan keluar lewat Supabase Auth dari `stores/authStore.ts`. Token akses
+  dikirim ke backend, yang menentukan peran dan hak akses dari database.
+- **Data.** `stores/dataStore.ts` adalah cache dari rekam milik akun yang sedang masuk. Isinya diisi
+  dari API setelah login, setiap tulis ke API dulu, dan respons menggantikan salinan lokal. Server
+  menentukan apa yang diterima tiap peran: tenaga kesehatan menerima pasien di fasilitasnya, pasien
+  hanya miliknya sendiri, admin hanya metadata.
+- **HTTP.** Semua panggilan melewati `lib/apiClient.ts`. Respons backend berbentuk
+  `{ success, data, meta? }`. Kontrak lengkapnya di [`docs/api-contract.md`](docs/api-contract.md).
+- **Ganti akun.** `lib/sessionReset.ts` membersihkan store saat sesi berakhir, supaya data satu akun
+  tidak bocor ke akun berikutnya di perangkat yang sama.
 
-`services/mockApi.ts` is the boundary where a real backend would attach. Every method is async and
-returns plain data, so each can become a `fetch` call without touching a component. The current
-"transport" is the local store plus a short delay, which is what lets the UI show real loading
-states. No endpoint URLs are invented.
+### Model dan hasil skrining
+
+Frontend tidak menjalankan model dan tidak mengarang angka klinis.
+
+- `stores/modelStore.ts` bertanya ke `GET /health` apakah model terhubung. Selama belum diketahui,
+  dianggap **tidak terhubung**.
+- **Demo publik** (`/demo`) mengirim gambar ke `POST /demo/analyze`. Gambar hanya ditahan di memori
+  untuk satu permintaan dan tidak disimpan. Kalau model tidak terhubung, halaman memakai hasil contoh
+  yang diberi label jelas sebagai contoh, tanpa mengirim apa pun ke server.
+- **Skrining klinis** dianalisis lewat `POST /screenings/:id/analyze`. Tanpa model, backend menjawab
+  `503` dan frontend menyatakan bahwa langkah model belum berjalan.
+
+### Mode offline
+
+Aplikasi tetap bisa dipakai tanpa sinyal, dengan batas yang jelas:
+
+1. Skrining yang direkam saat offline disimpan di **outbox** perangkat (rekam di penyimpanan lokal,
+   rontgen di IndexedDB).
+2. Saat koneksi kembali, `services/syncService.ts` mengirimnya sungguhan ke API: buat skrining,
+   unggah rontgen, lalu hapus salinan di perangkat.
+3. Draf tidak pernah dikirim. Item yang gagal tetap di perangkat bersama alasan dari server dan
+   harus dicoba ulang satu per satu.
+4. Menjalankan sinkronisasi saat offline ditolak, bukan berpura-pura berhasil.
+5. Analisis model butuh koneksi, jadi rekaman offline menunggu.
+
+Hanya skrining yang diantrekan. Tulis lainnya (rujukan, tindak lanjut, dan seterusnya) langsung ke
+API. Service worker (`public/sw.js`) hanya menyimpan app shell: HTML, aset build Vite, ikon, dan
+manifest. Data pasien dan rontgen sengaja tidak pernah masuk cache-nya. Service worker hanya
+didaftarkan pada build produksi.
 
 ---
 
-## Connecting a real model
+## Deploy ke Vercel
 
-`services/screeningService.ts` is the only seam. `requestAnalysis()` returns an `InferenceResponse`,
-which mirrors — field for field — the JSON emitted by the sibling Python project in `../train/tb-train`:
+1. Impor repo dan set **Root Directory** ke `frontend`. Framework terdeteksi sebagai Vite
+   (build `npm run build`, output `dist`).
+2. Isi tiga variabel `VITE_*` di Settings → Environment Variables. `VITE_API_BASE_URL` harus
+   mengarah ke backend yang sudah di-deploy, mis. `https://<backend>.vercel.app/api/v1`.
+3. Pastikan ada rewrite SPA agar refresh di `/login` atau `/me` tidak 404. File `vercel.json` di
+   folder ini sudah mengaturnya.
+4. Tambahkan URL frontend ke `FRONTEND_ORIGIN` di backend (tanpa slash di akhir). Tanpa itu, browser
+   memblokir panggilan API karena CORS.
+5. Di Supabase, tambahkan URL frontend ke Authentication → URL Configuration.
 
-```json
-{
-  "image": "...",
-  "prediction": "TB",
-  "probabilities": { "Healthy": 0.02, "Sick-non-TB": 0.11, "TB": 0.87 },
-  "model": { "classifier": "...", "backbone": "densenet121" },
-  "disclaimer": "...",
-  "detection": { "n_lesions": 2, "boxes": [{ "box_xyxy": [x1, y1, x2, y2], "score": 0.81 }] }
-}
-```
-
-To go live:
-
-1. Set `INFERENCE_ENDPOINT` in `src/types/inference.ts`.
-2. POST the image blob to it inside `requestAnalysis()` and delete the simulator branch.
-3. Remove the `simulated: true` flag and the notices keyed off it.
-
-The three class labels (`Healthy`, `Sick-non-TB`, `TB`) and the lesion-box shape are already modelled
-in `types/domain.ts`, and the report already renders boxes as a toggleable overlay. No component or
-store needs to change.
-
-### What the simulator actually does
-
-It does **not** look at the image. No model runs in the browser and no image leaves the device. It
-produces a deterministic result from data the health worker already typed in: symptom duration,
-red-flag symptoms and the declared image-quality rating. That exists purely so the downstream
-workflow (review, referral, follow-up, report) can be demonstrated end to end. The derivation is
-stated in the UI wherever output is shown.
+Setelah mengubah env, deploy ulang. Kalau layar tampak usang setelah rilis baru, hapus service
+worker lewat DevTools → Application, atau lewat halaman Settings di aplikasi.
 
 ---
 
-## Design notes
+## Mengatur ulang data lokal
 
-Visual identity is obsidian black with a calm CT-scan blue accent. Black carries the brand, the
-sidebar and the primary actions; CT blue is reserved for active navigation, focus rings, links and
-radiology visualisations. Content surfaces stay light and readable. The radiograph viewer is the one
-deliberately dark area, because a chest X-ray is unreadable against white.
-
-Clinical and operational status is never communicated by colour alone: every status badge renders an
-icon and a text label as well, so meaning survives greyscale printing and colour-vision deficiency.
-"No screening alert" is deliberately not green, because an absent alert is not a clean bill of
-health.
-
-Accessibility: semantic HTML, a single consistent focus treatment, keyboard-navigable tabs, dialogs
-with focus trapping and restoration, a skip link, `aria-live` toasts, and reduced-motion support
-that also disables the mock service layer's artificial delays. Full WCAG conformance would require
-manual testing with assistive technology and an expert review, which has not been done here.
+Yang tersimpan di browser hanya outbox, rontgen yang menunggu terkirim, dan cache app shell. Untuk
+membersihkannya, buka **Settings**: hapus radiograf tersimpan (juga melepas service worker). Cara
+manual: hapus site data untuk origin tersebut di DevTools. Data di server tidak ikut terhapus.
 
 ---
 
-## Known limitations
+## Catatan desain dan aksesibilitas
 
-- The schematic facility map is a relative-position plot, not a navigable map. No mapping provider
-  is connected.
-- Sync conflict resolution models the decision a real sync would force; both versions are local.
-- Review permissions are enforced in the UI only, which is appropriate for a prototype and would
-  not be sufficient in a real deployment.
+- Identitas visual: hitam obsidian dengan aksen biru CT-scan. Biru dicadangkan untuk navigasi aktif,
+  fokus, tautan, dan visualisasi radiologi. Penampil rontgen sengaja gelap.
+- Status klinis dan operasional tidak pernah hanya berupa warna. Setiap badge punya ikon dan teks.
+  "Tidak ada peringatan skrining" sengaja tidak hijau, karena tidak adanya peringatan bukan jaminan sehat.
+- Semantic HTML, fokus yang konsisten, tab yang bisa dinavigasi keyboard, dialog dengan focus trap,
+  skip link, toast `aria-live`, dan dukungan reduced motion.
+- Kepatuhan WCAG penuh butuh pengujian manual dengan teknologi bantu dan tinjauan ahli. Itu belum dilakukan.
+
+---
+
+## Batasan yang diketahui
+
+- Peta fasilitas bersifat skematis (plot posisi relatif), bukan peta navigasi. Belum ada penyedia peta.
+- Model tidak berjalan di frontend. Hasil analisis hanya ada kalau backend terhubung ke layanan
+  inferensi (lihat `../inference`).
+- Cek izin di `lib/permissions.ts` hanya mengatur tampilan. Penegakannya ada di server.
+- Belum dirancang: reset kata sandi, undangan tenaga kesehatan, pesan, pengingat, dan manajemen
+  konten edukasi.

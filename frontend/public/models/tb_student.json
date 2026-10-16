@@ -1,0 +1,21 @@
+{
+  "labels": [
+    "Healthy",
+    "Sick-non-TB",
+    "TB"
+  ],
+  "imageSize": 224,
+  "mean": [
+    0.48500001430511475,
+    0.4560000002384186,
+    0.4059999883174896
+  ],
+  "std": [
+    0.2290000021457672,
+    0.2240000069141388,
+    0.22499999403953552
+  ],
+  "backbone": "mobilenet_v3_small",
+  "source": "tb_student_ptq_int8.pt.zip",
+  "version": "ptq-int8-c03c7e83b343"
+}
