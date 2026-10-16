@@ -219,7 +219,7 @@ export function PatientTour() {
       {spot ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute rounded-2xl ring-2 ring-trace-accent transition-all duration-300 ease-out"
+          className="pointer-events-none absolute rounded-2xl ring-2 ring-trace-accent"
           style={{
             top: spot.top - SPOT_PAD,
             left: spot.left - SPOT_PAD,
@@ -240,7 +240,7 @@ export function PatientTour() {
         aria-describedby={bodyId}
         tabIndex={-1}
         style={cardStyle}
-        className="absolute rounded-2xl border border-trace-line bg-trace-card p-5 shadow-[0_18px_48px_-12px_rgb(10_12_16/0.45)] transition-[top,left] duration-300 ease-out focus:outline-none"
+        className="absolute rounded-2xl border border-trace-line bg-trace-card p-5 shadow-[0_18px_48px_-12px_rgb(10_12_16/0.45)] focus:outline-none"
       >
         <div className="flex items-center justify-between gap-3">
           <p className="flex items-center gap-2 trace-label text-trace-dim">

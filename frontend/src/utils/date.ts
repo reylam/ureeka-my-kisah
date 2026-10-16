@@ -92,15 +92,6 @@ export function formatTime(value: ISODateTime): string {
   return new Date(value).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
 }
 
-/** Due labels for follow-up queues: "3 days overdue", "due today", "in 5 days". */
-export function formatDueLabel(date: ISODate): string {
-  const diff = daysFromToday(date);
-  if (diff === 0) return 'Jatuh tempo hari ini';
-  if (diff === 1) return 'Jatuh tempo besok';
-  if (diff < 0) return `Terlambat ${Math.abs(diff)} hari`;
-  return `${diff} hari lagi`;
-}
-
 /** Compact relative time for activity feeds and sync timestamps. */
 export function formatRelative(value: ISODateTime): string {
   const diffMs = Date.now() - new Date(value).getTime();

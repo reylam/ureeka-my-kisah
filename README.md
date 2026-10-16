@@ -4,46 +4,32 @@
 
 ## Tentang PARUPINTAS
 
-PARUPINTAS adalah aplikasi web yang membantu petugas kesehatan menapis (skrining) tuberkulosis paru dari citra rontgen dada. Sasarannya layanan kesehatan di daerah terpencil di Indonesia, tempat akses ke pembaca rontgen dan tenaga ahli sering terbatas.
+PARUPINTAS adalah aplikasi web untuk mempercepat skrining tuberkulosis paru dari citra rontgen dada di sebuah klinik. Pasien mendaftar tanpa akun, dokter Sp. Radiologi memeriksa rontgennya dengan bantuan model AI, dan pasien mengikuti status serta nomor antreannya sendiri lewat kode akses.
 
-> **PARUPINTAS melakukan skrining, bukan diagnosis.** Keluaran model hanyalah sinyal bahwa seorang pasien sebaiknya menjalani tes lanjutan, seperti tes dahak atau tes molekuler. Vonis dan keputusan klinis tetap ada di tangan tenaga kesehatan. Peran model adalah mempercepat penemuan kasus, bukan menggantikan penilaian manusia.
-
-## Masalah yang diselesaikan
-
-Sebagian besar kasus TB yang tidak tertangani justru kasus yang tidak pernah terdeteksi. Di daerah terpencil, keterbatasan tenaga pembaca rontgen membuat banyak pasien tidak sempat ditapis, dan sebagian yang sudah ditapis pun hilang jejak sebelum sampai ke pengobatan.
-
-PARUPINTAS menjawab persoalan itu dengan mengangkat skrining sebagai langkah awal yang bisa dikerjakan lebih cepat, lalu merangkai seluruh perjalanan pasien, dari skrining, peninjauan klinis, rujukan, sampai tindak lanjut, dalam satu alur yang terpantau. Pasien pun punya akses sendiri ke riwayat, jadwal, dan materi edukasi TB. Karena jaringan di lapangan kerap tidak stabil, aplikasi tetap bisa dipakai saat offline dan menyinkronkan datanya begitu kembali online.
+> **PARUPINTAS melakukan skrining, bukan diagnosis.** Keluaran model hanyalah sinyal bahwa seorang pasien sebaiknya dilihat lebih dekat dan menjalani tes lanjutan. Keputusan klinis tetap di tangan dokter.
 
 ## Siapa yang memakai
 
 | Peran | Yang dilakukan |
 | --- | --- |
-| **Pengunjung** (tanpa akun) | Membaca informasi umum TB, melihat cara kerja sistem, mencoba demo, dan menelusuri daftar fasilitas kesehatan. |
-| **Pasien** | Melihat rekam skriningnya sendiri, jadwal tindak lanjut, profil kesehatan, dan pusat belajar TB. Setiap pendaftaran mandiri otomatis menjadi pasien. |
-| **Tenaga kesehatan** (dokter, perawat, kader) | Mendata pasien di fasilitasnya, membuat skrining baru (gejala, tanda vital, unggah rontgen), meninjau hasil, membuat rujukan, dan menjadwalkan tindak lanjut. Kewenangan menandatangani hasil peninjauan dibedakan: dokter bisa, kader tidak. |
-| **Administrator** | Mengelola akun, peran, dan direktori fasilitas, serta memantau metadata rekaman dan jejak audit. Sengaja bukan peran klinis, sehingga tidak bisa melihat isi medis pasien. |
+| **Pasien** (tanpa akun) | Mengisi formulir pendaftaran dan langsung mendapat **kode akses** (voucher). Dengan kode itu pasien melihat status pemeriksaannya, yang diperbarui sendiri secara berkala sampai hasil skrining awal dan nomor antreannya keluar. |
+| **Admin** | Menyimpan data pasien dari setiap pendaftaran (dicocokkan dengan pasien yang sudah tercatat, atau disimpan sebagai pasien baru), mendaftarkan pasien yang datang langsung, mengecek riwayat rontgen pasien, dan memantau prioritas antrean saat ini. |
+| **Dokter Sp. Radiologi** | Memeriksa gambar rontgen sambil melengkapi data pasien, mengecek prioritas berdasarkan hasil skrining, lalu mengirimnya ke sistem. |
 
-## Yang bisa dilakukan di aplikasi
+## Alurnya
 
-Inti aplikasi adalah satu alur skrining yang utuh:
-
-1. **Skrining** — petugas memasukkan gejala dan tanda vital, mengunggah rontgen, lalu memperoleh hasil penapisan untuk ditinjau.
-2. **Peninjauan klinis** — tenaga kesehatan meninjau temuan, menyetujui atau menolaknya, dan menentukan langkah berikutnya.
-3. **Rujukan** — bila perlu, pasien dirujuk ke fasilitas yang tepat lengkap dengan riwayat statusnya.
-4. **Tindak lanjut** — menjadwalkan dan mencatat setiap upaya menghubungi pasien.
-
-Di luar alur itu, aplikasi menyediakan:
-
-- Direktori fasilitas kesehatan beserta layanannya.
-- Materi edukasi TB untuk pasien lengkap dengan progres membacanya.
-- Mode offline yang menyimpan data saat tanpa sinyal untuk dikirim kemudian.
+1. **Daftar.** Pasien mengisi nama, jenis kelamin, tanggal lahir, telepon, alamat, dan keluhan, lalu menerima kode akses.
+2. **Simpan data pasien.** Admin mencocokkan pendaftaran itu dengan rekam medis, supaya riwayat rontgen pasien tidak terpecah.
+3. **Periksa.** Radiolog mengunggah rontgen. Model berjalan langsung di browser, memberi tiga score (Sehat, Sakit bukan TB, TB) dan menandai area yang paling memengaruhi hasilnya, lengkap dengan label kelasnya.
+4. **Tentukan prioritas dan kirim.** Saran prioritas dari model hanya titik awal; keputusan akhir ada di dokter. Nomor antrean dibuat saat dikirim.
+5. **Antrean.** Pasien diurutkan dari prioritas tertinggi. Halaman status pasien ikut berubah: *menunggu → sedang diperiksa → hasil keluar → dipanggil*.
 
 ## Prinsip yang dipegang
 
-- **Skrining, bukan diagnosis.** Hasil model selalu diposisikan sebagai pemicu tes lanjutan.
-- **Tidak mengarang angka klinis.** Bila model belum terhubung, hal itu dinyatakan terus terang alih-alih menampilkan hasil palsu.
-- **Privasi dijaga ketat.** Pasien hanya melihat datanya sendiri, tenaga kesehatan hanya pasien di fasilitasnya, dan administrator tidak dapat menembus isi medis.
+- **Skrining, bukan diagnosis.** Hasil model selalu diposisikan sebagai pemicu pemeriksaan lanjutan, dan kotak pada rontgen menandai area yang dipakai model, bukan lesi yang sudah dipastikan.
+- **Tidak mengarang angka klinis.** Tidak ada hasil atau akurasi buatan, termasuk di data contoh.
+- **Kode akses adalah satu-satunya kunci pasien.** Kode itu hanya membuka ringkasan sempit: status, nomor antrean, prioritas, dan hasil awal dalam kata-kata. Gambar dan data klinis hanya bisa dilihat petugas.
 
 ---
 
-Catatan teknis, mulai dari cara menjalankan, konfigurasi, hingga pengembangan, ada di [`backend/README.md`](backend/README.md) dan [`frontend/docs/`](frontend/docs/).
+Catatan teknis, mulai dari cara menjalankan, konfigurasi, hingga pengujian, ada di [`backend/README.md`](backend/README.md) dan [`frontend/README.md`](frontend/README.md).

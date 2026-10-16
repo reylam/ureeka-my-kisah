@@ -26,9 +26,9 @@ export function NotFoundPage() {
           <Button
             variant="primary"
             leadingIcon={<Home className="size-4" />}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/app')}
           >
-            Ke dashboard
+            Ke beranda petugas
           </Button>
         }
       />

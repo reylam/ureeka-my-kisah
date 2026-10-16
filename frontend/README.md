@@ -3,8 +3,9 @@
 Antarmuka web PARUPINTAS: skrining TB berbantuan AI dari rontgen dada untuk layanan kesehatan di daerah
 terpencil Indonesia. Satu aplikasi React melayani dua hal sekaligus:
 
-- **Situs publik (PARUPINTAS)** di `/`, `/how-it-works`, dan `/demo`. Bisa dibuka siapa saja tanpa akun.
-- **Aplikasi klinis** di balik login, dengan ruang kerja berbeda untuk pasien, tenaga kesehatan, dan administrator.
+- **Situs publik** tanpa akun: penjelasan (`/`, `/how-it-works`), demo model (`/demo`), dan dua halaman
+  pasien, yaitu formulir pendaftaran (`/daftar`) dan cek status dengan kode akses (`/hasil`).
+- **Ruang kerja petugas** di balik login, untuk admin dan dokter Sp. Radiologi.
 
 > **Skrining, bukan diagnosis.** Keluaran model hanyalah sinyal untuk tes lanjutan. Keputusan klinis
 > tetap di tangan tenaga kesehatan. Aplikasi ini belum divalidasi sebagai alat medis.
@@ -68,18 +69,16 @@ Nilai `VITE_*` dibaca saat **build**, jadi setelah mengubahnya di hosting, deplo
 
 ## Akun contoh
 
-Setelah database lokal di-seed (`supabase db reset`), tersedia akun sampel untuk setiap peran. Daftar
-lengkap dan kata sandinya ada di [`docs/accounts.md`](docs/accounts.md). Contoh:
+Setelah database lokal di-seed, tersedia akun petugas berikut. Daftar lengkap ada di
+[`docs/accounts.md`](docs/accounts.md).
 
-| Peran | Email | Landing |
+| Peran | Email | Kata sandi |
 | --- | --- | --- |
-| Pasien | `patient@parupintas.test` | `/me` |
-| Tenaga kesehatan | `doctor@parupintas.test` | `/dashboard` |
-| Administrator | `admin@parupintas.test` | `/admin` |
+| Admin | `admin@parupintas.test` | `Admin123!` |
+| Dokter Sp. Radiologi | `radiolog@parupintas.test` | `Radiolog123!` |
 
-Pendaftaran lewat `/register` selalu menghasilkan **pasien**. Akun tenaga kesehatan dan admin dibuat
-dengan mempromosikan akun yang ada dari halaman Akun admin, atau dengan `npm run provision` di
-`backend/`. `/app` mengarahkan akun yang sedang masuk ke beranda sesuai perannya.
+Pasien tidak punya akun. Seed juga berisi kode akses contoh untuk mencoba `/hasil`, misalnya
+`BARU-2345` (menunggu) dan `ANTR-2345` (sudah di antrean).
 
 ---
 
@@ -87,15 +86,29 @@ dengan mempromosikan akun yang ada dari halaman Akun admin, atau dengan `npm run
 
 | Kelompok | Rute |
 | --- | --- |
-| Publik (PARUPINTAS) | `/`, `/how-it-works`, `/demo` |
-| Publik (platform) | `/platform`, `/login`, `/register`, `/app` |
-| Onboarding pasien | `/onboarding` |
-| Pasien | `/me`, `/me/screenings`, `/me/followup`, `/me/learn`, `/me/facilities`, `/me/profile` |
-| Tenaga kesehatan | `/dashboard`, `/patients`, `/patients/:id`, `/screenings/new`, `/screenings/:id`, `/screenings/:id/report`, `/referrals`, `/followups`, `/facilities`, `/reports`, `/offline`, `/settings` |
-| Administrator | `/admin`, `/admin/users`, `/admin/facilities`, `/admin/screenings`, `/admin/audit` |
+| Publik | `/`, `/how-it-works`, `/demo`, `/daftar`, `/hasil`, `/login` |
+| Admin dan radiolog | `/requests` (pendaftaran), `/queue` (antrean), `/screenings/:id` |
+| Radiolog | `/screenings/:id/examine` |
+| Admin | `/patients`, `/patients/:id` (riwayat rontgen) |
 
-Rute per peran dibungkus `RequireAuth` dan `RequireRole`. Itu hanya mengatur apa yang ditawarkan
-antarmuka. Penegakan izin yang sebenarnya ada di backend dan RLS database.
+`/app` mengarahkan petugas yang sedang masuk ke berandanya. Rute dibungkus `RequireAuth` dan
+`RequireRole`, yang hanya mengatur tampilan; penegakan izin ada di backend dan RLS database.
+
+---
+
+## Alurnya
+
+1. **Pasien** mengisi `/daftar` (nama, jenis kelamin, tanggal lahir, telepon, alamat, keluhan) dan
+   langsung mendapat **kode akses** (voucher).
+2. **Admin** membuka *Pendaftaran*, lalu menyimpan data pasien dari formulir: dicocokkan dengan pasien
+   yang sudah tercatat, atau disimpan sebagai pasien baru. Pasien yang datang langsung didaftarkan dari
+   halaman yang sama dan juga mendapat kode.
+3. **Radiolog** membuka permintaan itu, melengkapi data, mengunggah rontgen. Model di browser membaca
+   gambarnya dan menandai area yang dipakainya. Radiolog menentukan prioritas, lalu mengirim ke sistem;
+   saat itulah nomor antrean dibuat.
+4. **Pasien** membuka `/hasil` dengan kodenya. Halaman itu memeriksa ulang sendiri setiap 15 detik:
+   *menunggu → sedang diperiksa → hasil awal + nomor antrean → sudah dipanggil*.
+5. **Admin** memantau *Antrean* (urut prioritas) dan menekan **Panggil** saat pasien dipanggil.
 
 ---
 
@@ -103,18 +116,17 @@ antarmuka. Penegakan izin yang sebenarnya ada di backend dan RLS database.
 
 ```
 src/
-├── components/   komponen UI bersama (ui, forms, layout, dashboard, patients, screening, ...)
-├── data/         data referensi statis (geografi, edukasi, fasilitas, model)
-├── hooks/        query, kontrol tabel, resolusi gambar
-├── lib/          apiClient, env, supabase, permissions, risk, sessionReset
-├── pages/        satu file per rute (juga pages/patient dan pages/admin)
+├── components/   komponen bersama (ui, forms, layout, patients, screening)
+├── hooks/        gambar rontgen (signed URL), nama petugas
+├── lib/          apiClient, env, supabase, permissions, queue, risk, screeningAnalysis
+├── pages/        satu file per rute
 ├── routes/       tabel rute, RequireAuth, RouteError
-├── services/     recordsApi, onboardingApi, referenceData, syncService, imageStore
-├── stores/       Zustand: auth, data, facility, account, model, koneksi, toast
-├── trace/        situs publik PARUPINTAS (halaman, section, komponen, hook demo)
-├── types/        model domain dan kontrak inferensi
-└── utils/        tanggal, format, label, service worker
-public/           manifest, service worker, ikon
+├── services/     recordsApi (semua panggilan API), localModel (model ONNX di browser)
+├── stores/       Zustand: auth, toast
+├── trace/        situs publik (halaman, section, komponen, hook demo)
+├── types/        model domain dan akun
+└── utils/        tanggal, format, label
+public/           manifest, ikon, model ONNX, contoh rontgen (test/)
 docs/             accounts.md, api-contract.md, catatan frontend dan riset
 ```
 
@@ -122,46 +134,22 @@ docs/             accounts.md, api-contract.md, catatan frontend dan riset
 
 ## Alur data
 
-- **Auth.** Daftar, masuk, dan keluar lewat Supabase Auth dari `stores/authStore.ts`. Token akses
-  dikirim ke backend, yang menentukan peran dan hak akses dari database.
-- **Data.** `stores/dataStore.ts` adalah cache dari rekam milik akun yang sedang masuk. Isinya diisi
-  dari API setelah login, setiap tulis ke API dulu, dan respons menggantikan salinan lokal. Server
-  menentukan apa yang diterima tiap peran: tenaga kesehatan menerima pasien di fasilitasnya, pasien
-  hanya miliknya sendiri, admin hanya metadata.
+- **Auth.** Petugas masuk dan keluar lewat Supabase Auth (`stores/authStore.ts`). Token akses dikirim
+  ke backend, yang menentukan peran dari database.
+- **Data.** Tidak ada cache sisi klien. Setiap halaman meminta datanya saat dibuka, lewat
+  `services/recordsApi.ts`. Pendaftaran, antrean, dan halaman status pasien memintanya ulang secara
+  berkala.
 - **HTTP.** Semua panggilan melewati `lib/apiClient.ts`. Respons backend berbentuk
-  `{ success, data, meta? }`. Kontrak lengkapnya di [`docs/api-contract.md`](docs/api-contract.md).
-- **Ganti akun.** `lib/sessionReset.ts` membersihkan store saat sesi berakhir, supaya data satu akun
-  tidak bocor ke akun berikutnya di perangkat yang sama.
+  `{ success, data, meta? }`. Daftar endpoint ada di [`../backend/README.md`](../backend/README.md).
 
 ### Model dan hasil skrining
 
-Frontend tidak menjalankan model dan tidak mengarang angka klinis.
-
-- `stores/modelStore.ts` bertanya ke `GET /health` apakah model terhubung. Selama belum diketahui,
-  dianggap **tidak terhubung**.
-- **Demo publik** (`/demo`) mengirim gambar ke `POST /demo/analyze`. Gambar hanya ditahan di memori
-  untuk satu permintaan dan tidak disimpan. Kalau model tidak terhubung, halaman memakai hasil contoh
-  yang diberi label jelas sebagai contoh, tanpa mengirim apa pun ke server.
-- **Skrining klinis** dianalisis lewat `POST /screenings/:id/analyze`. Tanpa model, backend menjawab
-  `503` dan frontend menyatakan bahwa langkah model belum berjalan.
-
-### Mode offline
-
-Aplikasi tetap bisa dipakai tanpa sinyal, dengan batas yang jelas:
-
-1. Skrining yang direkam saat offline disimpan di **outbox** perangkat (rekam di penyimpanan lokal,
-   rontgen di IndexedDB).
-2. Saat koneksi kembali, `services/syncService.ts` mengirimnya sungguhan ke API: buat skrining,
-   unggah rontgen, lalu hapus salinan di perangkat.
-3. Draf tidak pernah dikirim. Item yang gagal tetap di perangkat bersama alasan dari server dan
-   harus dicoba ulang satu per satu.
-4. Menjalankan sinkronisasi saat offline ditolak, bukan berpura-pura berhasil.
-5. Analisis model butuh koneksi, jadi rekaman offline menunggu.
-
-Hanya skrining yang diantrekan. Tulis lainnya (rujukan, tindak lanjut, dan seterusnya) langsung ke
-API. Service worker (`public/sw.js`) hanya menyimpan app shell: HTML, aset build Vite, ikon, dan
-manifest. Data pasien dan rontgen sengaja tidak pernah masuk cache-nya. Service worker hanya
-didaftarkan pada build produksi.
+Model (`public/models/tb_student.onnx`) berjalan di browser lewat ONNX Runtime Web, jadi tidak perlu
+server model. Ia memberi tiga score kelas. Karena model ini classifier tanpa kepala deteksi, kotak pada
+rontgen dihitung dengan **uji oklusi**: tiap bagian gambar ditutup bergantian dan model dijalankan ulang;
+area yang paling menurunkan score kelas teratas diberi kotak dan label kelasnya. Artinya kotak
+menunjukkan area yang dipakai model, bukan lesi yang sudah dipastikan. Backend hanya menyimpan
+probabilitas dan kotaknya, lalu menurunkan sendiri hasil, risk point, dan nama zona.
 
 ---
 
@@ -171,22 +159,14 @@ didaftarkan pada build produksi.
    (build `npm run build`, output `dist`).
 2. Isi tiga variabel `VITE_*` di Settings → Environment Variables. `VITE_API_BASE_URL` harus
    mengarah ke backend yang sudah di-deploy, mis. `https://<backend>.vercel.app/api/v1`.
-3. Pastikan ada rewrite SPA agar refresh di `/login` atau `/me` tidak 404. File `vercel.json` di
+3. Pastikan ada rewrite SPA agar refresh di `/login` atau `/hasil` tidak 404. File `vercel.json` di
    folder ini sudah mengaturnya.
 4. Tambahkan URL frontend ke `FRONTEND_ORIGIN` di backend (tanpa slash di akhir). Tanpa itu, browser
    memblokir panggilan API karena CORS.
 5. Di Supabase, tambahkan URL frontend ke Authentication → URL Configuration.
 
-Setelah mengubah env, deploy ulang. Kalau layar tampak usang setelah rilis baru, hapus service
-worker lewat DevTools → Application, atau lewat halaman Settings di aplikasi.
-
----
-
-## Mengatur ulang data lokal
-
-Yang tersimpan di browser hanya outbox, rontgen yang menunggu terkirim, dan cache app shell. Untuk
-membersihkannya, buka **Settings**: hapus radiograf tersimpan (juga melepas service worker). Cara
-manual: hapus site data untuk origin tersebut di DevTools. Data di server tidak ikut terhapus.
+Setelah mengubah env, deploy ulang. Mode offline sudah dihapus. `public/sw.js` sekarang hanya
+membersihkan cache service worker lama di browser yang pernah memasangnya, lalu melepas dirinya sendiri.
 
 ---
 
@@ -204,9 +184,9 @@ manual: hapus site data untuk origin tersebut di DevTools. Data di server tidak 
 
 ## Batasan yang diketahui
 
-- Peta fasilitas bersifat skematis (plot posisi relatif), bukan peta navigasi. Belum ada penyedia peta.
-- Model tidak berjalan di frontend. Hasil analisis hanya ada kalau backend terhubung ke layanan
-  inferensi (lihat `../inference`).
+- Model belum divalidasi secara klinis, dan tidak ada angka akurasi yang diklaim.
+- Halaman status pasien memeriksa ulang dengan polling, bukan push. Pembaruannya bisa terlambat
+  hingga 15 detik.
 - Cek izin di `lib/permissions.ts` hanya mengatur tampilan. Penegakannya ada di server.
-- Belum dirancang: reset kata sandi, undangan tenaga kesehatan, pesan, pengingat, dan manajemen
-  konten edukasi.
+- Belum dirancang: reset kata sandi, pengelolaan akun petugas dari aplikasi (sekarang lewat
+  `npm run provision` di `backend/`), dan notifikasi ke pasien.

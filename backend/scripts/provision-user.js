@@ -1,15 +1,14 @@
 /**
- * Create or promote a privileged account (health professional or administrator).
+ * Create a staff account, or give an existing one its role.
  *
- * Self-registration can only ever produce a patient, by design. Privileged
- * roles come from here (or from an existing administrator in the app), using
- * the service-role key from backend/.env. Run it from a trusted machine.
+ * Patients have no account, and an account created any other way has no role
+ * and reaches nothing. Staff roles come from here, using the service-role key
+ * from backend/.env. Run it from a trusted machine.
  *
  *   npm run provision -- --email admin@example.org --name "Rina Hartati" --role admin
- *   npm run provision -- --email doc@example.org --name "dr. Hanif" --role professional \
- *       --clinical-role physician --facility <facility-uuid> --can-review
+ *   npm run provision -- --email rad@example.org --name "dr. Hanif, Sp.Rad" --role radiologist
  *
- * If the e-mail already has an account it is promoted; otherwise one is
+ * If the e-mail already has an account it gets the role; otherwise one is
  * created with a random password that is printed once. Pass --password to set
  * your own.
  */

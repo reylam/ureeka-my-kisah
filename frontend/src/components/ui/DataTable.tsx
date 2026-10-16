@@ -244,7 +244,7 @@ function DefaultMobileCard<T>({
 
 /** Utility for cells that hold an identifier. */
 export function MonoCell({ children }: { children: ReactNode }) {
-  return <span className="font-mono text-xs text-obsidian-600">{children}</span>;
+  return <span className="font-mono text-xs whitespace-nowrap text-obsidian-600">{children}</span>;
 }
 
 /** Utility for a primary cell with a quiet secondary line underneath. */

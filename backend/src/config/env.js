@@ -57,7 +57,7 @@ export function loadConfig(source = process.env) {
   const env = parsed.data;
 
   // Catch the two Supabase keys being pasted into each other's variable. The
-  // service-role key is the one that can write storage and the audit log, so
+  // service-role key is the one that can write storage and model output, so
   // with them swapped sign-in still works and then every server-side write
   // fails with an unhelpful 500. Keys that are not JWTs (the newer sb_*
   // format, or test placeholders) cannot be checked this way and are skipped.

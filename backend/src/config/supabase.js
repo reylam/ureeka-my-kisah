@@ -10,7 +10,7 @@ import { createClient } from '@supabase/supabase-js';
  *               and Row Level Security applies. This is the default for
  *               anything that reads or writes on a user's behalf.
  *   admin       the service role. It bypasses RLS, so it is used only for
- *               operations a user cannot do themselves (writing audit rows,
+ *               operations a user cannot do themselves (the public request form,
  *               image storage, model output) and only after the calling code
  *               has made its own authorisation decision.
  *

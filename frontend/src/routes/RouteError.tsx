@@ -43,9 +43,9 @@ export function RouteError() {
           <Button
             variant="outline"
             leadingIcon={<Home className="size-4" />}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/app')}
           >
-            Kembali ke dashboard
+            Kembali ke beranda
           </Button>
         </div>
       </div>
