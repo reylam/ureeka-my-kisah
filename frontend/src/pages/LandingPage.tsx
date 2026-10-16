@@ -122,7 +122,7 @@ export function LandingPage() {
       {/* â”€â”€ Top bar â”€â”€ */}
       <header className="sticky top-0 z-40 border-b border-obsidian-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
-          {/* This overview now lives at /platform; the root is the PULMO-TRACE
+          {/* This overview now lives at /platform; the root is the PARUPINTAS
               research site, so the wordmark links back here rather than away. */}
           <Link to="/platform" className="shrink-0">
             <Logo tone="dark" />

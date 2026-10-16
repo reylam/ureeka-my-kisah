@@ -73,7 +73,7 @@ export function useSyntheticSample(
           return;
         }
         onFile(
-          new File([blob], 'pulmo-trace-synthetic-sample.png', {
+          new File([blob], 'parupintas-synthetic-sample.png', {
             type: 'image/png',
             // Fixed timestamp, so the sample always maps to the same
             // placeholder scenario and demos stay reproducible.

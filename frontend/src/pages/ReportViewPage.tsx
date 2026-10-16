@@ -507,7 +507,7 @@ export function ReportViewPage() {
         {/* Footer repeated on the printed sheet */}
         <footer className="border-t border-obsidian-200 px-5 py-3 print:px-0">
           <p className="text-[11px] leading-relaxed text-obsidian-500">
-            Dibuat oleh PULMO-TRACE, prototipe demonstrasi. Semua data, termasuk pasien dan
+            Dibuat oleh PARUPINTAS, prototipe demonstrasi. Semua data, termasuk pasien dan
             radiograf ini, bersifat sintetis. Bukan alat kesehatan, belum divalidasi, dan tidak
             untuk penggunaan klinis. {SIMULATED_RESULT_NOTICE}
           </p>

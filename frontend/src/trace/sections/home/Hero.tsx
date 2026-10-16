@@ -35,7 +35,7 @@ export function Hero() {
 
             <p className="mt-6 max-w-lg text-[16px] leading-7 text-trace-muted">
               Tuberculosis sering sudah terlihat di chest X-ray sebelum ada yang yakin soal itu.
-              PULMO-TRACE mengeksplorasi bagaimana software bisa membantu menandai tanda-tanda
+              PARUPINTAS mengeksplorasi bagaimana software bisa membantu menandai tanda-tanda
               tersebut lebih awal, dan dibuat untuk jujur soal apa arti dan bukan arti sebuah
               hasil.
             </p>

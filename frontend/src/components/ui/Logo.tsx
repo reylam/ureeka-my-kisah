@@ -89,9 +89,9 @@ export function Logo({
               tone === 'light' ? 'text-white' : 'text-obsidian-950',
             )}
           >
-            PULMO
+            PARU
             <span className={tone === 'light' ? 'text-obsidian-400' : 'text-obsidian-400'}>
-              -TRACE
+              PINTAS
             </span>
           </span>
           <span
@@ -100,7 +100,7 @@ export function Logo({
               tone === 'light' ? 'text-obsidian-400' : 'text-obsidian-500',
             )}
           >
-            See Beyond the Scan
+            Skrining TB Berbantuan AI
           </span>
         </span>
       ) : null}

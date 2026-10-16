@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import * as serialize from './serializers.js';
 import * as audit from './auditService.js';
-import { toAnalysis } from './inferenceService.js';
+import { LABELS, toAnalysis } from './inferenceService.js';
 import { readImageSize } from './imageInfo.js';
 import { unwrap, unwrapOne } from './db.js';
 import { sniffImage } from '../middleware/upload.js';
@@ -287,6 +287,47 @@ export async function analyze(ctx, id, { inference, bucket, logger = console }) 
   }
 
   await audit.recordAfter(ctx, { action: 'screening.analysed', subject: id });
+  return get(ctx, id);
+}
+
+/**
+ * Record an analysis that the clinician's browser computed.
+ *
+ * With no model service on the server (a serverless deployment has no room for
+ * one) the model runs in the browser, and the browser reports the three class
+ * probabilities it got. This is the one place the server stores model output it
+ * did not compute itself, so it is held to what it can check: the scores must be
+ * a valid distribution, the caller must be the clinician allowed to analyse this
+ * record, and everything derived (leading class, outcome, risk point) is worked
+ * out here from those scores and never taken from the request. The audit entry
+ * says the model ran in the browser.
+ */
+export async function recordBrowserAnalysis(ctx, id, { probabilities, model }) {
+  const row = unwrapOne(await ctx.db.from('screenings').select(FULL).eq('id', id).maybeSingle());
+  const report = Array.isArray(row.screening_reports) ? row.screening_reports[0] : row.screening_reports;
+  if (!report?.image_path) throw ApiError.conflict('Attach an image before running the model.');
+  if (report.model_status === 'completed') throw ApiError.conflict('This screening has already been analysed.');
+  if (!['queued', 'awaiting-review'].includes(row.status)) {
+    throw ApiError.conflict('Only a submitted screening can be analysed.');
+  }
+
+  const prediction = LABELS.reduce((best, label) => (probabilities[label] > probabilities[best] ? label : best));
+  const analysis = toAnalysis(
+    {
+      prediction,
+      probabilities,
+      model: { classifier: model.name, backbone: model.backbone, version: model.version },
+    },
+    null,
+  );
+
+  const { error } = await ctx.admin
+    .from('screening_reports')
+    .update({ model_status: 'completed', analysis, analysed_at: analysis.analysedAt })
+    .eq('screening_id', id);
+  if (error) throw error;
+
+  await audit.recordAfter(ctx, { action: 'screening.analysed', subject: id, detail: 'Model run in the browser' });
   return get(ctx, id);
 }
 

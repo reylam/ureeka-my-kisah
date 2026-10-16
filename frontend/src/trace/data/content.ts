@@ -11,8 +11,10 @@
  */
 
 export const PROJECT = {
-  name: 'PULMO-TRACE',
-  tagline: 'See Beyond the Scan',
+  name: 'PARUPINTAS',
+  tagline: 'Skrining TB Berbantuan AI',
+  subtitle:
+    'Percepatan Skrining Tuberkulosis Berbantuan AI untuk Mengatasi Antrean Pembacaan Citra Rontgen',
   version: '0.1.0',
   updated: 'Oktober 2026',
 } as const;

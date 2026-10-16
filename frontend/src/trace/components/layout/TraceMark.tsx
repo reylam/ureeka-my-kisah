@@ -85,8 +85,8 @@ export function TraceWordmark({
             compact ? 'translate-y-0 text-[13px]' : 'translate-y-[1px] text-[15px]',
           )}
         >
-          PULMO
-          <span className="text-trace-dim">-TRACE</span>
+          PARU
+          <span className="text-trace-dim">PINTAS</span>
         </span>
 
         {/* Collapsed with max-height rather than a grid-row trick: height
@@ -100,7 +100,7 @@ export function TraceWordmark({
             compact ? 'mt-0 max-h-0 -translate-y-1 opacity-0' : 'mt-1 max-h-5 translate-y-0 opacity-100',
           )}
         >
-          <span className="block whitespace-nowrap tracking-[0.02em]">See Beyond the Scan</span>
+          <span className="block whitespace-nowrap tracking-[0.02em]">{PROJECT.tagline}</span>
         </span>
       </span>
     </span>
@@ -114,11 +114,11 @@ export function TraceFooterMark({ className }: { className?: string }) {
       <TraceMark className="size-8 shrink-0 text-trace-accent" />
       <span className="flex flex-col">
         <span className="font-mono text-[15px] font-medium tracking-[0.13em] text-trace-text">
-          PULMO
-          <span className="text-trace-dim">-TRACE</span>
+          PARU
+          <span className="text-trace-dim">PINTAS</span>
         </span>
         <span className="mt-1 text-[11.5px] tracking-[0.02em] text-trace-dim">
-          See Beyond the Scan
+          {PROJECT.subtitle}
         </span>
       </span>
     </span>

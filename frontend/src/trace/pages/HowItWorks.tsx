@@ -283,7 +283,7 @@ export function TraceHowItWorks() {
             id="sources-heading"
             eyebrow="Sumber"
             title="Dari mana fakta-fakta di situs ini berasal"
-            standfirst="Tiga dokumen World Health Organization. Tidak ada entri untuk studi tentang PULMO-TRACE di sini, karena memang belum ada."
+            standfirst="Tiga dokumen World Health Organization. Tidak ada entri untuk studi tentang PARUPINTAS di sini, karena memang belum ada."
           />
           <SourceList sources={SOURCE_LIST} className="mt-10 max-w-3xl" />
         </Container>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { LogIn, Menu, X } from 'lucide-react';
 import { TraceWordmark } from './TraceMark';
@@ -80,7 +80,7 @@ export function Navbar() {
         >
           <Link
             to="/"
-            aria-label="PULMO-TRACE, beranda"
+            aria-label="PARUPINTAS, beranda"
             className="-ml-1 rounded-full px-1 py-1"
           >
             <TraceWordmark compact={collapsed} />

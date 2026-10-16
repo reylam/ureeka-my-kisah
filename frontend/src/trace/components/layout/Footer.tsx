@@ -87,7 +87,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 border-t border-trace-line pt-7">
-          <p className="text-[12.5px] text-trace-dim">© 2026 PULMO-TRACE</p>
+          <p className="text-[12.5px] text-trace-dim">© 2026 PARUPINTAS</p>
         </div>
       </Container>
     </footer>

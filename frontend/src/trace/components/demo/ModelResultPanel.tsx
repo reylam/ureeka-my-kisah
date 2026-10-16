@@ -58,7 +58,7 @@ const LIMITATIONS = [
   'Model ini belum divalidasi secara klinis di sini, dan tidak ada angka akurasi yang diklaim. Risk point bukan persentase peluang sakit.',
 ];
 
-const SYNTHETIC_SAMPLE_NAME = 'pulmo-trace-synthetic-sample.png';
+const SYNTHETIC_SAMPLE_NAME = 'parupintas-synthetic-sample.png';
 
 export function ModelResultPanel({
   analysis,
@@ -209,8 +209,8 @@ export function ModelResultPanel({
             <dt className="trace-label text-trace-dim">Dari mana jawaban ini</dt>
             <dd className="mt-1.5 text-[13.5px] leading-6 text-trace-muted">
               Gambar kamu dibaca oleh model <span className="font-mono text-[12px]">{analysis.model.backbone}</span>{' '}
-              (<span className="font-mono text-[12px]">{analysis.model.version}</span>) di server
-              situs ini. Gambarnya tidak disimpan setelah jawaban dikirim kembali.
+              (<span className="font-mono text-[12px]">{analysis.model.version}</span>) yang
+              berjalan langsung di browser-mu. Gambarnya tidak pernah keluar dari perangkatmu.
             </dd>
           </div>
           <div className="min-w-0">

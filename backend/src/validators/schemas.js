@@ -172,6 +172,26 @@ export const screeningCreateBody = strict({
   performedAt: isoDateTime.optional(),
 });
 
+// Class scores computed by the model running in the clinician's browser. Only
+// the scores and the model's name are accepted; the label, outcome and risk
+// point are derived on the server.
+const classScore = z.number().min(0).max(1);
+export const browserAnalysisBody = strict({
+  probabilities: strict({
+    Healthy: classScore,
+    'Sick-non-TB': classScore,
+    TB: classScore,
+  }).refine(
+    (value) => Math.abs(value.Healthy + value['Sick-non-TB'] + value.TB - 1) <= 0.02,
+    'Class scores must add up to 1.',
+  ),
+  model: strict({
+    name: shortText(80),
+    version: shortText(80),
+    backbone: shortText(80),
+  }),
+});
+
 export const screeningFinalizeBody = strict({
   symptoms: symptomsSchema,
   vitals: vitalsSchema,

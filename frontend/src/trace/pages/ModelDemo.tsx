@@ -15,7 +15,7 @@ import { Mascot } from '@/trace/components/visuals/Mascot';
 import { MAX_BYTES, MIN_EDGE_PX, useImageUpload } from '@/trace/hooks/useImageUpload';
 import { useDemoInference } from '@/trace/hooks/useDemoInference';
 import { useSyntheticSample } from '@/trace/hooks/useSyntheticSample';
-import { useModelStore } from '@/stores/modelStore';
+import { localModelSupported, preloadLocalModel } from '@/services/localModel';
 
 /**
  * Model Demo.
@@ -24,11 +24,12 @@ import { useModelStore } from '@/stores/modelStore';
  * not after the result. A reader who stops halfway down has still been told
  * that nothing here diagnoses anything and what happens to the image.
  *
- * Two modes, chosen from the API's own health report and never assumed. With
- * the screening model connected the image is sent to the server, analysed and
- * discarded, and the page says so. Without it the page runs the stand-in, where
- * nothing leaves the device, and says that instead. The privacy banner is the
- * part that must never be wrong, so it is written per mode.
+ * Two modes, decided by whether this browser can run the screening model
+ * (WebAssembly). Where it can, the model runs in the tab and the image is read
+ * by it right there; where it cannot, the page runs the stand-in. Either way the
+ * image stays on the device, and the page says what is doing the reading. The
+ * model starts downloading as soon as the page opens, so it is usually ready by
+ * the time a file has been picked.
  *
  * All state lives in two hooks, selection and run, and the page wires them
  * together. Selecting a new image resets the run, so a stale report can never
@@ -37,19 +38,15 @@ import { useModelStore } from '@/stores/modelStore';
 export function TraceModelDemo() {
   const upload = useImageUpload();
 
-  // `null` until the API has answered. The run button waits for it, so the
-  // mode cannot change under a run that has already started.
-  const modelConnected = useModelStore((state) => state.connected);
-  const loadModelStatus = useModelStore((state) => state.load);
-  const live = modelConnected === true;
+  const live = localModelSupported();
   const inference = useDemoInference(live);
 
   useEffect(() => {
-    void loadModelStatus();
-  }, [loadModelStatus]);
+    preloadLocalModel();
+  }, []);
 
   useEffect(() => {
-    document.title = 'Demo Model · PULMO-TRACE';
+    document.title = 'Demo Model · PARUPINTAS';
   }, []);
 
   const { select, clear } = upload;
@@ -71,8 +68,7 @@ export function TraceModelDemo() {
 
   const sample = useSyntheticSample(selectAndReset);
 
-  const canAnalyse =
-    Boolean(upload.image) && inference.state !== 'running' && modelConnected !== null;
+  const canAnalyse = Boolean(upload.image) && inference.state !== 'running';
 
   return (
     <>
@@ -95,23 +91,11 @@ export function TraceModelDemo() {
                 ? 'Model terlatih membaca gambar dan memberi tiga score serta satu risk point, tetapi belum divalidasi secara klinis di sini dan tidak ada angka akurasi yang diklaim. Ini alat bantu screening, bukan penilaian tentang seseorang. Kalau kamu khawatir soal tuberkulosis, temui tenaga kesehatan.'
                 : 'Ini hanya demonstrasi antarmuka. Belum ada model terlatih yang terhubung, jadi hasil di bawah adalah placeholder yang diberi label jelas dan bukan penilaian atas gambar mana pun. Kalau kamu khawatir soal tuberkulosis, temui tenaga kesehatan.'}
             </DisclaimerBanner>
-            {live ? (
-              <DisclaimerBanner
-                tone="privacy"
-                title="Gambarmu dianalisis di server, lalu tidak disimpan"
-              >
-                Setelah kamu menekan tombol periksa, gambar dikirim ke server situs ini, dibaca
-                model, lalu dibuang begitu jawabannya dikirim kembali. Tidak ada yang disimpan,
-                tetapi gambarnya memang keluar dari perangkatmu. Jangan pakai file yang memuat nama
-                atau nomor pasien seseorang.
-              </DisclaimerBanner>
-            ) : (
-              <DisclaimerBanner tone="privacy" title="File kamu tetap ada di perangkatmu">
-                Gambar dibaca oleh browser-mu sendiri untuk menampilkan preview. Tidak ada yang
-                di-upload, dan tidak ada yang disimpan. Tetap saja, jangan pakai file yang memuat
-                nama atau nomor pasien seseorang.
-              </DisclaimerBanner>
-            )}
+            <DisclaimerBanner tone="privacy" title="File kamu tetap ada di perangkatmu">
+              {live
+                ? 'Modelnya berjalan langsung di browser-mu. Gambar dibaca di sini, tidak di-upload ke server mana pun, dan tidak ada yang disimpan. Yang diunduh hanya file model (sekitar 6 MB) saat pertama kali dipakai. Tetap saja, jangan pakai file yang memuat nama atau nomor pasien seseorang.'
+                : 'Gambar dibaca oleh browser-mu sendiri untuk menampilkan preview. Tidak ada yang di-upload, dan tidak ada yang disimpan. Tetap saja, jangan pakai file yang memuat nama atau nomor pasien seseorang.'}
+            </DisclaimerBanner>
           </div>
         </Container>
       </section>

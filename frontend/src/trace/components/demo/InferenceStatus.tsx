@@ -145,7 +145,8 @@ function resolveLiveDisplay(state: InferenceState, hasImage: boolean) {
       label: 'Memproses',
       tone: accent,
       spinning: true,
-      description: 'Gambar sedang dibaca oleh model screening. Biasanya hanya butuh beberapa detik.',
+      description:
+        'Gambar sedang dibaca oleh model screening di browser-mu. Pertama kali bisa lebih lama karena file model perlu diunduh dulu.',
     };
   }
   if (state === 'done') {
@@ -163,7 +164,7 @@ function resolveLiveDisplay(state: InferenceState, hasImage: boolean) {
       tone: accent,
       spinning: false,
       description:
-        'Gambar sudah termuat. Belum ada yang dikirim; gambar baru dikirim ke server setelah kamu menekan tombol.',
+        'Gambar sudah termuat dan tombolnya siap dipakai. Modelnya berjalan di browser-mu, jadi gambar tidak dikirim ke mana pun.',
     };
   }
   return {

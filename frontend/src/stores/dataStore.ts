@@ -49,6 +49,8 @@ import { onSessionReset } from '@/lib/sessionReset';
 import { PROVINCE } from '@/data/geography';
 import { OPERATING_FACILITY_ID } from '@/data/facilities';
 import { deleteImage, getImage } from '@/services/imageStore';
+import { classifyImage, localModelSupported } from '@/services/localModel';
+import { getScreeningImageUrl } from '@/services/recordsApi';
 import { createId } from '@/utils/id';
 
 /* ── Input shapes for create actions ──────────────────────────────────────── */
@@ -143,7 +145,10 @@ export interface DataState {
   saveDraft: (screeningId: string, patch: DraftPatch) => Promise<Screening>;
   /** Submit a saved draft. `offline` keeps it in the outbox instead of sending. */
   finalizeDraft: (screeningId: string, patch: DraftPatch, offline: boolean) => Promise<Screening>;
-  /** Ask the server to run the screening model. Rejects with MODEL_NOT_CONNECTED when it is not wired. */
+  /**
+   * Run the screening model: on the server when it has one, otherwise in this
+   * browser. Rejects with MODEL_NOT_CONNECTED when neither can run it.
+   */
   analyzeScreening: (screeningId: string) => Promise<Screening>;
   submitReview: (
     screeningId: string,
@@ -694,6 +699,35 @@ export const useDataStore = create<DataState>()((set, get) => {
         set((state) => ({ screenings: upsert(state.screenings, updated) }));
         return updated;
       } catch (cause) {
+        // No model service behind the API (a static or serverless deployment,
+        // say): run the model in this browser instead and report what it found.
+        if (
+          cause instanceof ApiError &&
+          (cause.code === 'MODEL_NOT_CONNECTED' || cause.code === 'MODEL_UNREACHABLE') &&
+          localModelSupported()
+        ) {
+          try {
+            const url = await getScreeningImageUrl(screeningId);
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('The radiograph could not be fetched.');
+            const { probabilities, model } = await classifyImage(await response.blob());
+            const updated = normaliseScreening(
+              await api.post<Raw<Screening>>(`/screenings/${screeningId}/analysis`, {
+                probabilities,
+                model,
+              }),
+            );
+            set((state) => ({ screenings: upsert(state.screenings, updated) }));
+            return updated;
+          } catch (local) {
+            // A conflict (already analysed, not submitted) is the server's
+            // answer and should reach the caller as it is. Anything else means
+            // the browser could not do it, which for the person is the same as
+            // the model not being connected.
+            if (local instanceof ApiError && local.status === 409) throw local;
+          }
+        }
+
         // Mirror what the server recorded so the badge is right without a refetch.
         if (cause instanceof ApiError && cause.code === 'MODEL_NOT_CONNECTED') {
           set((state) => ({

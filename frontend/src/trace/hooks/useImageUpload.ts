@@ -3,12 +3,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * Local image selection for the demo.
  *
- * Selection stays in the browser: the file is read into an object URL to draw
- * a preview and to measure its pixel dimensions, and selecting sends nothing
- * anywhere. Only the explicit "check" action in `useDemoInference` ever posts
- * the file, and only when the API reports the screening model as connected.
- * The "stays on your device" disclosure on the demo page is shown only in the
- * mode where that is true.
+ * Everything stays in the browser: the file is read into an object URL to draw
+ * a preview and to measure its pixel dimensions, and nothing is sent anywhere.
+ * The screening model runs in the same tab (`services/localModel.ts`), so the
+ * "stays on your device" disclosure on the demo page is true in both modes, and
+ * it is the only reason the page is allowed to make it.
  *
  * Object URLs are revoked when the selection is replaced or the component
  * unmounts, so repeatedly swapping images does not leak blobs.

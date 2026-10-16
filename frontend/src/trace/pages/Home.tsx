@@ -16,7 +16,7 @@ import { FinalCta } from '@/trace/sections/home/FinalCta';
  */
 export function TraceHome() {
   useEffect(() => {
-    document.title = 'PULMO-TRACE · See Beyond the Scan';
+    document.title = `PARUPINTAS · ${PROJECT.subtitle}`;
   }, []);
 
   return (

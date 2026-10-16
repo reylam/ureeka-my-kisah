@@ -1,6 +1,6 @@
 {
-  "name": "PULMO-TRACE · AI-assisted TB screening research prototype",
-  "short_name": "PULMO-TRACE",
+  "name": "PARUPINTAS · Skrining TB Berbantuan AI",
+  "short_name": "PARUPINTAS",
   "description": "Research prototype for AI-assisted tuberculosis screening from chest X-rays. Research and educational use only, not for clinical diagnosis. All data is synthetic.",
   "start_url": "/dashboard",
   "scope": "/",

@@ -45,14 +45,6 @@ export function buildRouter({ config, inference }) {
     controllers.facilities.list,
   );
 
-  // The research site's demo: one image in, the model's analysis out, nothing
-  // stored. Public, like the demo page itself.
-  router.post(
-    '/demo/analyze',
-    imageUpload(config.storage.maxUploadBytes),
-    controllers.demo({ inference }).analyze,
-  );
-
   /* ── Session ──────────────────────────────────────────────────────────── */
 
   // Fallback sign-up for when Supabase Auth's own limits refuse the browser.
@@ -124,6 +116,14 @@ export function buildRouter({ config, inference }) {
   // Professionals only. An administrator is refused here, by design.
   router.get('/screenings/:id/image', ...clinical, validate(id), screeningsController.imageUrl);
   router.post('/screenings/:id/analyze', ...clinical, validate(id), screeningsController.analyze);
+  // The model can also run in the clinician's browser (no model service on the
+  // server); this stores what it reported. See recordBrowserAnalysis.
+  router.post(
+    '/screenings/:id/analysis',
+    ...clinical,
+    validate({ ...id, body: v.browserAnalysisBody }),
+    screeningsController.recordAnalysis,
+  );
   router.post(
     '/screenings/:id/review',
     ...clinical,
