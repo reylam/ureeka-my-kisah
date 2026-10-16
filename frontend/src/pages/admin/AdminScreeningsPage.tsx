@@ -49,29 +49,29 @@ export function AdminScreeningsPage() {
   const columns: Column<Screening>[] = [
     {
       id: 'id',
-      header: 'Record',
+      header: 'Rekam',
       cell: (screening) => <MonoCell>{screening.id}</MonoCell>,
     },
     {
       id: 'performed',
-      header: 'Recorded',
+      header: 'Dicatat',
       cell: (screening) => (
         <StackedCell
           primary={formatDateTime(screening.performedAt)}
-          secondary={screening.createdOffline ? 'Captured offline' : undefined}
+          secondary={screening.createdOffline ? 'Diambil saat offline' : undefined}
         />
       ),
     },
     {
       id: 'facility',
-      header: 'Facility',
+      header: 'Fasilitas',
       hideBelow: 'md',
       cell: (screening) => {
         const facility = facilities.find((item) => item.id === screening.facilityId);
         const operator = users.find((user) => user.id === screening.operatorId);
         return (
           <StackedCell
-            primary={facility?.name ?? 'Unknown facility'}
+            primary={facility?.name ?? 'Fasilitas tidak dikenal'}
             secondary={operator?.name ?? undefined}
           />
         );
@@ -79,7 +79,7 @@ export function AdminScreeningsPage() {
     },
     {
       id: 'status',
-      header: 'Workflow',
+      header: 'Alur kerja',
       cell: (screening) => <ScreeningStatusBadge status={screening.status} />,
     },
     {
@@ -93,46 +93,46 @@ export function AdminScreeningsPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Screening records"
-        description="Record metadata and processing status across every facility."
+        title="Rekam screening"
+        description="Metadata rekam dan status pemrosesan di semua fasilitas."
       />
 
       <Notice tone="info" compact>
         <span className="inline-flex items-center gap-1.5 font-medium">
           <Lock aria-hidden className="size-3.5" />
-          Metadata only
+          Hanya metadata
         </span>
         <span className="mt-1 block">
-          Radiographs, analysis output and clinical assessments stay with the professionals
-          assigned to that patient. Administrative access is not clinical access.
+          Radiograf, output analisis, dan penilaian klinis hanya bisa diakses petugas kesehatan
+          yang ditugaskan untuk pasien tersebut. Akses administratif bukan akses klinis.
         </span>
       </Notice>
 
       {stuck > 0 ? (
         <Notice tone="attention" compact>
-          {stuck} record{stuck === 1 ? '' : 's'} failed to synchronise or has a conflict.
+          {stuck} rekam gagal sync atau mengalami konflik.
         </Notice>
       ) : null}
 
       <Card>
         <CardHeader
-          title={`${rows.length} of ${screenings.length} records`}
+          title={`${rows.length} dari ${screenings.length} rekam`}
           icon={<ClipboardList />}
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <SearchInput
-                label="Search by record id"
+                label="Cari berdasarkan ID rekam"
                 value={query}
                 onChange={setQuery}
-                placeholder="Record id"
+                placeholder="ID rekam"
               />
               <Select
-                aria-label="Filter by workflow status"
+                aria-label="Filter berdasarkan status alur kerja"
                 value={status}
                 onChange={(event) => setStatus(event.target.value as ScreeningStatus | 'all')}
                 className="max-w-52"
               >
-                <option value="all">All statuses</option>
+                <option value="all">Semua status</option>
                 {(Object.keys(screeningStatusLabel) as ScreeningStatus[]).map((value) => (
                   <option key={value} value={value}>
                     {screeningStatusLabel[value]}
@@ -146,7 +146,7 @@ export function AdminScreeningsPage() {
           {rows.length === 0 ? (
             <div className="p-4">
               <NoMatchesState
-                entity="records"
+                entity="rekam"
                 onClear={() => {
                   setQuery('');
                   setStatus('all');
@@ -158,7 +158,7 @@ export function AdminScreeningsPage() {
               rows={rows}
               columns={columns}
               rowKey={(screening) => screening.id}
-              caption="Screening record metadata and processing status"
+              caption="Metadata rekam screening dan status pemrosesan"
               renderMobileCard={(screening) => (
                 <div className="space-y-2">
                   <MonoCell>{screening.id}</MonoCell>

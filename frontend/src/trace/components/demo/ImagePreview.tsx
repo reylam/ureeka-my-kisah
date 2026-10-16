@@ -35,7 +35,7 @@ export function ImagePreview({
         <div className="trace-grid-fine flex max-h-[460px] items-center justify-center bg-trace-film p-3">
           <img
             src={image.url}
-            alt={`Preview of the selected file ${image.file.name}. Displayed for review only; it has not been analysed.`}
+            alt={`Preview file terpilih ${image.file.name}. Hanya ditampilkan untuk ditinjau; belum dianalisis.`}
             className="max-h-[430px] w-auto max-w-full object-contain"
           />
         </div>
@@ -43,8 +43,8 @@ export function ImagePreview({
         {/* No overlay is drawn on a user's image. The placeholder scenarios
             carry no localisation, and dashed circles on someone's radiograph
             would read as a detection result no matter what the caption said. */}
-        <p className="absolute top-3 left-3 rounded border border-trace-line bg-trace-film/85 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-trace-dim">
-          Displayed locally · not analysed
+        <p className="absolute top-3 left-3 rounded border border-white/15 bg-trace-film/85 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-[#a1a8b3]">
+          Ditampilkan secara lokal · tidak dianalisis
         </p>
       </div>
 
@@ -64,19 +64,19 @@ export function ImagePreview({
             <dd className="mt-1 font-mono text-[11.5px] text-trace-muted">{extension}</dd>
           </div>
           <div>
-            <dt className="trace-label text-trace-dim">Size</dt>
+            <dt className="trace-label text-trace-dim">Ukuran</dt>
             <dd className="mt-1 font-mono text-[11.5px] text-trace-muted">
               {formatBytes(image.file.size)}
             </dd>
           </div>
           <div>
-            <dt className="trace-label text-trace-dim">Dimensions</dt>
+            <dt className="trace-label text-trace-dim">Dimensi</dt>
             <dd className="mt-1 font-mono text-[11.5px] text-trace-muted">
               {image.width} × {image.height} px
             </dd>
           </div>
           <div>
-            <dt className="trace-label text-trace-dim">Aspect</dt>
+            <dt className="trace-label text-trace-dim">Rasio</dt>
             <dd className="mt-1 font-mono text-[11.5px] text-trace-muted">
               {(image.width / image.height).toFixed(2)} : 1
             </dd>
@@ -85,11 +85,11 @@ export function ImagePreview({
 
         <div className="flex items-center justify-between gap-3 border-t border-trace-line px-4 py-3">
           <p className="text-[12.5px] text-trace-dim">
-            Held in browser memory only. Nothing is uploaded.
+            Hanya disimpan di memori browser. Tidak ada yang di-upload.
           </p>
           <TraceButton variant="ghost" size="sm" onClick={onRemove}>
             <Trash2 aria-hidden className="size-3.5" />
-            Remove
+            Hapus
           </TraceButton>
         </div>
       </figcaption>

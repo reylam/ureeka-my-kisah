@@ -1,6 +1,7 @@
 import type { ClassLabel, ScreeningAnalysis } from '@/types/domain';
 import { cn } from '@/utils/cn';
 import { formatPercent } from '@/utils/format';
+import { RiskPoint } from './RiskPoint';
 
 /**
  * Class score breakdown.
@@ -15,9 +16,9 @@ import { formatPercent } from '@/utils/format';
  */
 
 const LABEL_DESCRIPTION: Record<ClassLabel, string> = {
-  Healthy: 'No abnormality associated with the training labels',
-  'Sick-non-TB': 'Abnormality present, but not labelled as TB in training',
-  TB: 'Features the model associates with TB in its training data',
+  Healthy: 'Tidak ada kelainan yang terkait dengan label pada data training',
+  'Sick-non-TB': 'Ada kelainan, tetapi tidak berlabel TB pada data training',
+  TB: 'Ciri yang dikaitkan model dengan TB pada data training-nya',
 };
 
 export function ProbabilityPanel({
@@ -36,6 +37,8 @@ export function ProbabilityPanel({
 
   return (
     <div className={cn('space-y-3', className)}>
+      <RiskPoint analysis={analysis} />
+
       <ul className="space-y-2.5">
         {entries.map(([label, value], index) => {
           const leading = index === 0;
@@ -79,13 +82,15 @@ export function ProbabilityPanel({
       <p className="border-t border-obsidian-100 pt-2.5 text-xs leading-relaxed text-obsidian-500">
         {margin < 0.15 ? (
           <>
-            The top two classes are within {formatPercent(margin)} of each other, so the
-            distribution does not favour one answer. Treat the output as unresolved.
+            Dua kelas teratas hanya selisih {formatPercent(margin)}, jadi distribusinya tidak
+            condong ke satu jawaban. Anggap output ini belum terselesaikan.
           </>
         ) : (
           <>
-            The leading class is {formatPercent(margin)} ahead of the next one. These are the demo
-            simulator&rsquo;s own scores and are not calibrated against any real population.
+            Kelas teratas unggul {formatPercent(margin)} dari kelas berikutnya.{' '}
+            {analysis.simulated
+              ? 'Ini adalah score milik simulator demo dan tidak dikalibrasi terhadap populasi nyata mana pun.'
+              : 'Ini adalah score milik model dan belum dikalibrasi terhadap populasi nyata mana pun.'}
           </>
         )}
       </p>

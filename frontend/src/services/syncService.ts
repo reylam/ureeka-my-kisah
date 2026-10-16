@@ -43,8 +43,8 @@ function skipReason(item: SyncQueueItem): SyncSkipReason | null {
 }
 
 export const SKIP_COPY: Record<SyncSkipReason, string> = {
-  'draft-incomplete': 'Draft is incomplete and was left on the device',
-  'needs-manual-retry': 'Previously failed, retry it individually',
+  'draft-incomplete': 'Draf belum lengkap dan dibiarkan di perangkat',
+  'needs-manual-retry': 'Sebelumnya gagal, coba kirim ulang satu per satu',
 };
 
 /**

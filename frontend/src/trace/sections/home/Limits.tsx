@@ -18,9 +18,9 @@ export function Limits() {
         <SectionHeading
           id="limits-heading"
           index="04"
-          eyebrow="Being straight about it"
-          title="Where a tool like this falls short"
-          standfirst="Not small print. These are the specific reasons software that reads X-rays can look impressive in a demo and still let people down in a clinic."
+          eyebrow="Jujur apa adanya"
+          title="Di mana tools seperti ini kurang andal"
+          standfirst="Bukan sekadar catatan kecil. Ini alasan-alasan spesifik kenapa software pembaca X-ray bisa tampak mengesankan di demo tapi tetap mengecewakan di klinik."
         />
 
         <div className="mt-11 grid gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:gap-14">
@@ -34,7 +34,7 @@ export function Limits() {
           </dl>
 
           <div className="rounded-2xl border border-trace-line bg-trace-card p-6">
-            <h3 className="trace-label text-trace-dim">What exists today</h3>
+            <h3 className="trace-label text-trace-dim">Yang sudah ada saat ini</h3>
             <ul className="mt-5 space-y-3.5">
               {BUILD_STATUS.map((row) => (
                 <li key={row.label} className="flex items-start gap-3">

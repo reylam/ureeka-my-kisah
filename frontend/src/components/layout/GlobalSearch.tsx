@@ -50,7 +50,7 @@ export function GlobalSearch({ className }: { className?: string }) {
         id: patient.id,
         kind: 'patient',
         title: patient.name,
-        subtitle: `${patient.mrn} · ${ageFromBirthDate(patient.birthDate)} yrs · ${patient.village}`,
+        subtitle: `${patient.mrn} · ${ageFromBirthDate(patient.birthDate)} thn · ${patient.village}`,
         to: `/patients/${patient.id}`,
       }));
 
@@ -79,7 +79,7 @@ export function GlobalSearch({ className }: { className?: string }) {
         id: facility.id,
         kind: 'facility',
         title: facility.name,
-        subtitle: `${facility.region} · sample directory entry`,
+        subtitle: `${facility.region} · contoh entri direktori`,
         to: `/facilities?focus=${facility.id}`,
       }));
 
@@ -138,8 +138,8 @@ export function GlobalSearch({ className }: { className?: string }) {
         aria-expanded={showPanel}
         aria-controls="global-search-results"
         aria-autocomplete="list"
-        aria-label="Search patients, referrals and facilities"
-        placeholder="Search patients, referrals, facilities"
+        aria-label="Cari pasien, referral, dan fasilitas"
+        placeholder="Cari pasien, referral, fasilitas"
         value={query}
         onChange={(event) => {
           setQuery(event.target.value);
@@ -178,7 +178,7 @@ export function GlobalSearch({ className }: { className?: string }) {
         >
           {results.length === 0 ? (
             <p className="px-3 py-6 text-center text-[13px] text-obsidian-500">
-              Nothing matches &ldquo;{query.trim()}&rdquo;.
+              Tidak ada yang cocok dengan &ldquo;{query.trim()}&rdquo;.
             </p>
           ) : (
             results.map((result, index) => (

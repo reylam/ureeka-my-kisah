@@ -25,6 +25,23 @@ import {
   uuid,
 } from './common.js';
 
+/* ── Registration ───────────────────────────────────────────────────────── */
+
+// Same rules the sign-up form shows (frontend/src/lib/passwordRules.ts). There
+// is no role field and `strict` rejects one: every self-registered account is a
+// patient, assigned by the database trigger.
+export const registerBody = strict({
+  name: shortText(200).min(2),
+  email: z.email().max(254),
+  password: z
+    .string()
+    .min(8, 'Password needs at least 8 characters.')
+    .max(72, 'Password is too long.')
+    .refine((value) => /[a-z]/.test(value), 'Password needs a lower-case letter.')
+    .refine((value) => /[A-Z]/.test(value), 'Password needs an upper-case letter.')
+    .refine((value) => /\d/.test(value), 'Password needs a number.'),
+});
+
 /* ── Accounts ───────────────────────────────────────────────────────────── */
 
 export const accountListQuery = paginationSchema.extend({

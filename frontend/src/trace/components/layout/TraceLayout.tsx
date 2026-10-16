@@ -51,7 +51,7 @@ export function TraceLayout() {
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-trace-accent focus:px-4 focus:py-2 focus:text-[13px] focus:font-medium focus:text-trace-ink"
       >
-        Skip to content
+        Lewati ke konten utama
       </a>
 
       <Navbar />
@@ -76,7 +76,7 @@ function RouteFallback() {
   return (
     <Container className="py-24">
       <p role="status" className="trace-label text-trace-dim">
-        Loading section…
+        Memuat bagian…
       </p>
     </Container>
   );

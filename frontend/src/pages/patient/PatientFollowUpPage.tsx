@@ -32,18 +32,18 @@ export function PatientFollowUpPage() {
     <div className="space-y-5">
       <PageHeader
         title="Follow-up"
-        description="Appointments, referrals and contact arranged by the people looking after you."
+        description="Janji temu, referral, dan kontak yang diatur oleh tim yang merawat kamu."
       />
 
       <Card>
-        <CardHeader title="Scheduled" icon={<CalendarClock />} />
+        <CardHeader title="Terjadwal" icon={<CalendarClock />} />
         <CardBody className="space-y-3">
           {open.length === 0 ? (
             <EmptyState
               compact
               icon={<CalendarClock />}
-              title="Nothing scheduled"
-              description="When your care team plans a visit, a test or a call, it will appear here."
+              title="Belum ada jadwal"
+              description="Saat tim yang merawat kamu merencanakan kunjungan, tes, atau telepon, jadwalnya akan muncul di sini."
             />
           ) : (
             open.map((followUp) => {
@@ -60,12 +60,12 @@ export function PatientFollowUpPage() {
                     </span>
                   </div>
                   <dl className="mt-2.5 divide-y divide-obsidian-100">
-                    <DetailRow label="Due">
+                    <DetailRow label="Jatuh tempo">
                       {formatDate(followUp.dueDate)} · {formatDueLabel(followUp.dueDate)}
                     </DetailRow>
-                    {worker ? <DetailRow label="Contact">{worker.name}</DetailRow> : null}
+                    {worker ? <DetailRow label="Kontak">{worker.name}</DetailRow> : null}
                     {worker?.phone ? (
-                      <DetailRow label="Phone">
+                      <DetailRow label="Telepon">
                         <a
                           href={`tel:${worker.phone.replace(/\s|-/g, '')}`}
                           className="inline-flex items-center gap-1.5 text-ct-700 underline underline-offset-2"
@@ -85,17 +85,17 @@ export function PatientFollowUpPage() {
 
       <Card>
         <CardHeader
-          title="Referrals"
+          title="Referral"
           icon={<Send />}
-          description="Where you have been sent for further testing or treatment."
+          description="Tempat kamu dirujuk untuk tes lanjutan atau pengobatan."
         />
         <CardBody className="space-y-3">
           {referrals.length === 0 ? (
             <EmptyState
               compact
               icon={<Send />}
-              title="No referrals"
-              description="A referral is created when your care team wants another facility to run a test or take over part of your care."
+              title="Belum ada referral"
+              description="Referral dibuat saat tim yang merawat kamu ingin fasilitas lain menjalankan tes atau mengambil alih sebagian perawatan."
             />
           ) : (
             referrals.map((referral) => {
@@ -108,19 +108,19 @@ export function PatientFollowUpPage() {
                     <span className="font-mono text-[12px] text-obsidian-500">{referral.code}</span>
                   </div>
                   <dl className="mt-2.5 divide-y divide-obsidian-100">
-                    <DetailRow label="Going to">
-                      {destination ? `${destination.name}, ${destination.region}` : 'A facility'}
+                    <DetailRow label="Tujuan">
+                      {destination ? `${destination.name}, ${destination.region}` : 'Sebuah fasilitas'}
                     </DetailRow>
-                    <DetailRow label="For">
+                    <DetailRow label="Untuk">
                       {facilityServiceLabel[referral.requestedService]}
                     </DetailRow>
                     {referral.appointmentDate ? (
-                      <DetailRow label="Appointment">
+                      <DetailRow label="Janji temu">
                         {formatDate(referral.appointmentDate)}
                       </DetailRow>
                     ) : null}
                     {destination?.phone ? (
-                      <DetailRow label="Facility phone">{destination.phone}</DetailRow>
+                      <DetailRow label="Telepon fasilitas">{destination.phone}</DetailRow>
                     ) : null}
                   </dl>
                 </div>
@@ -132,7 +132,7 @@ export function PatientFollowUpPage() {
 
       {done.length > 0 ? (
         <Card>
-          <CardHeader title="Completed" description={`${done.length} earlier follow-ups.`} />
+          <CardHeader title="Selesai" description={`${done.length} follow-up sebelumnya.`} />
           <CardBody>
             <ul className="space-y-2">
               {done.map((followUp) => (
@@ -154,8 +154,8 @@ export function PatientFollowUpPage() {
       ) : null}
 
       <Notice tone="info" compact>
-        Appointments are arranged by your care team, not from this page. If a date does not suit
-        you, call the contact shown above rather than waiting.
+        Janji temu diatur oleh tim yang merawat kamu, bukan dari halaman ini. Kalau tanggalnya
+        tidak cocok, hubungi kontak di atas, jangan hanya menunggu.
       </Notice>
     </div>
   );

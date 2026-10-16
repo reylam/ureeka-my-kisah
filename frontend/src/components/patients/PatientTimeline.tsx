@@ -23,7 +23,7 @@ export function PatientTimeline({ entries }: { entries: TimelineEntry[] }) {
   if (entries.length === 0) {
     return (
       <p className="px-4 py-8 text-center text-[13px] text-obsidian-500">
-        Nothing has been recorded for this patient yet.
+        Belum ada catatan apa pun untuk pasien ini.
       </p>
     );
   }

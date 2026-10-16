@@ -108,7 +108,7 @@ declare
 begin
   for rec in
     select * from (values
-      ('a0000000-0000-4000-8000-000000000001'::uuid, 'patient@pulmo.test', 'Patient123!', 'Siti Rahmawati'),
+      ('a0000000-0000-4000-8000-000000000001'::uuid, 'patient@pulmo.test', 'x ', 'Siti Rahmawati'),
       ('a0000000-0000-4000-8000-000000000002'::uuid, 'doctor@pulmo.test',  'Doctor123!',  'dr. Hanif Ramadhan'),
       ('a0000000-0000-4000-8000-000000000003'::uuid, 'chw@pulmo.test',     'Worker123!',  'Ayu Lestari'),
       ('a0000000-0000-4000-8000-000000000004'::uuid, 'admin@pulmo.test',   'Admin123!',   'Rina Hartati')

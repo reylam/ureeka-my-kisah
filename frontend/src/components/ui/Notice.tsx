@@ -104,8 +104,8 @@ export function SimulatedResultNotice({
           {connected ? MODEL_RESULT_NOTICE : SIMULATED_RESULT_NOTICE}
         </span>{' '}
         {connected
-          ? 'Model output supports a clinician’s read and never replaces it.'
-          : 'Records go to a clinician without model output.'}
+          ? 'Output model membantu pembacaan klinisi dan tidak pernah menggantikannya.'
+          : 'Data diteruskan ke klinisi tanpa output model.'}
       </Notice>
     );
   }
@@ -118,8 +118,8 @@ export function SimulatedResultNotice({
     >
       <p>
         {connected
-          ? 'Any model output on this page comes from a trained classifier. It has not been clinically validated here, no performance figure is claimed, and it supports a clinician’s read without replacing it.'
-          : 'No model has analysed this radiograph. A clinician reviews the image directly and records the decision.'}
+          ? 'Semua output model di halaman ini berasal dari classifier terlatih. Model ini belum divalidasi secara klinis di sini, tidak ada klaim angka performa, dan hanya membantu pembacaan klinisi tanpa menggantikannya.'
+          : 'Belum ada model yang menganalisis radiograf ini. Klinisi meninjau gambar secara langsung dan mencatat keputusannya.'}
       </p>
       <p className="mt-2 border-l-2 border-obsidian-300 pl-2.5 text-xs text-obsidian-600">
         {SCREENING_DISCLAIMER}
@@ -132,7 +132,7 @@ export function SimulatedResultNotice({
 export function PrototypeNotice({ className }: { className?: string }) {
   return (
     <Notice tone="demo" compact className={className}>
-      Demonstration prototype. Every patient, facility and result in this application is synthetic.
+      Prototipe demonstrasi. Semua pasien, fasilitas, dan hasil di aplikasi ini adalah data sintetis.
     </Notice>
   );
 }

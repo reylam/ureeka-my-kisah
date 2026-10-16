@@ -43,24 +43,24 @@ export function AdminAuditPage() {
   const columns: Column<AuditEntry>[] = [
     {
       id: 'at',
-      header: 'When',
+      header: 'Waktu',
       cell: (entry) => <span className="text-obsidian-600">{formatDateTime(entry.at)}</span>,
     },
     {
       id: 'action',
-      header: 'Action',
+      header: 'Aksi',
       cell: (entry) => (
         <StackedCell primary={AUDIT_LABEL[entry.action]} secondary={entry.detail ?? undefined} />
       ),
     },
     {
       id: 'subject',
-      header: 'Subject',
+      header: 'Subjek',
       cell: (entry) => <span className="text-obsidian-700">{entry.subject}</span>,
     },
     {
       id: 'actor',
-      header: 'By',
+      header: 'Oleh',
       hideBelow: 'md',
       cell: (entry) => <span className="text-obsidian-600">{entry.actorName}</span>,
     },
@@ -70,34 +70,34 @@ export function AdminAuditPage() {
     <div className="space-y-5">
       <PageHeader
         title="Audit log"
-        description="Role changes, account status and facility edits, with who made them."
+        description="Perubahan role, status akun, dan perubahan fasilitas, lengkap dengan siapa yang melakukannya."
       />
 
       <Notice tone="info" compact>
-        Written by the server and append-only: entries cannot be edited or removed. It covers
-        administrative changes and also records when a patient's record or X-ray was opened. This
-        view shows the most recent 200 entries.
+        Ditulis oleh server dan bersifat append-only: entri tidak bisa diubah atau dihapus. Log ini
+        mencakup perubahan administratif dan juga mencatat saat rekam atau X-ray pasien dibuka.
+        Tampilan ini menampilkan 200 entri terbaru.
       </Notice>
 
       <Card>
         <CardHeader
-          title={`${rows.length} of ${audit.length} entries`}
+          title={`${rows.length} dari ${audit.length} entri`}
           icon={<ScrollText />}
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <SearchInput
-                label="Search the audit log"
+                label="Cari di audit log"
                 value={query}
                 onChange={setQuery}
-                placeholder="Subject or actor"
+                placeholder="Subjek atau pelaku"
               />
               <Select
-                aria-label="Filter by action"
+                aria-label="Filter berdasarkan aksi"
                 value={action}
                 onChange={(event) => setAction(event.target.value as AuditAction | 'all')}
                 className="max-w-56"
               >
-                <option value="all">All actions</option>
+                <option value="all">Semua aksi</option>
                 {(Object.keys(AUDIT_LABEL) as AuditAction[]).map((value) => (
                   <option key={value} value={value}>
                     {AUDIT_LABEL[value]}
@@ -112,14 +112,14 @@ export function AdminAuditPage() {
             <div className="p-4">
               <EmptyState
                 icon={<ScrollText />}
-                title="Nothing logged yet"
-                description="Changing someone's role, suspending an account or editing a facility will add an entry."
+                title="Belum ada yang tercatat"
+                description="Mengubah role seseorang, menangguhkan akun, atau mengubah fasilitas akan menambah entri baru."
               />
             </div>
           ) : rows.length === 0 ? (
             <div className="p-4">
               <NoMatchesState
-                entity="entries"
+                entity="entri"
                 onClear={() => {
                   setQuery('');
                   setAction('all');
@@ -131,7 +131,7 @@ export function AdminAuditPage() {
               rows={rows}
               columns={columns}
               rowKey={(entry) => entry.id}
-              caption="Administrative actions recorded on this platform"
+              caption="Aksi administratif yang tercatat di platform ini"
               renderMobileCard={(entry) => (
                 <div className="space-y-1.5">
                   <StackedCell

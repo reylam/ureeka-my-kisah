@@ -32,7 +32,7 @@ export function TopBar({ onOpenNav }: { onOpenNav: () => void }) {
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-obsidian-200 bg-white/95 px-3 backdrop-blur-sm sm:gap-3 sm:px-4">
       <IconButton
-        label="Open navigation"
+        label="Buka navigasi"
         icon={<Menu className="size-4.5" />}
         onClick={onOpenNav}
         className="lg:hidden"
@@ -40,7 +40,7 @@ export function TopBar({ onOpenNav }: { onOpenNav: () => void }) {
 
       {/* `/app` resolves to each role's own home, so this works for a patient
           and an admin as well as a professional. */}
-      <Link to="/app" className="lg:hidden" aria-label="PULMO home">
+      <Link to="/app" className="lg:hidden" aria-label="Beranda PULMO">
         <LogoMark className="size-7" />
       </Link>
 

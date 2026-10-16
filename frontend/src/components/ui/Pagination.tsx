@@ -34,7 +34,7 @@ export function Pagination({
 
   return (
     <nav
-      aria-label="Pagination"
+      aria-label="Paginasi"
       className={cn(
         'flex flex-col-reverse items-center justify-between gap-3 border-t border-obsidian-200 px-4 py-2.5 sm:flex-row',
         className,
@@ -42,16 +42,16 @@ export function Pagination({
     >
       <div className="flex items-center gap-3">
         <p className="text-[13px] text-obsidian-500 tabular">
-          {from}–{to} of {totalItems}
+          {from}–{to} dari {totalItems}
         </p>
         {onPageSizeChange ? (
           <label className="flex items-center gap-1.5 text-[13px] text-obsidian-500">
-            <span className="sr-only sm:not-sr-only">Rows</span>
+            <span className="sr-only sm:not-sr-only">Baris</span>
             <Select
               value={String(pageSize)}
               onChange={(event) => onPageSizeChange(Number(event.target.value))}
               className="h-7 w-auto py-0 pr-7 pl-2 text-[13px]"
-              aria-label="Rows per page"
+              aria-label="Baris per halaman"
             >
               {pageSizeOptions.map((size) => (
                 <option key={size} value={size}>
@@ -66,7 +66,7 @@ export function Pagination({
       {pageCount > 1 ? (
         <div className="flex items-center gap-1">
           <PageButton
-            label="Previous page"
+            label="Halaman sebelumnya"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
           >
@@ -101,7 +101,7 @@ export function Pagination({
           )}
 
           <PageButton
-            label="Next page"
+            label="Halaman berikutnya"
             disabled={page >= pageCount}
             onClick={() => onPageChange(page + 1)}
           >

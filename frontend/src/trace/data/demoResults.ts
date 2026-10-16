@@ -33,27 +33,27 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
   {
     id: 'low',
     score: 0.08,
-    note: 'A low score would still not mean someone is in the clear. Chest X-rays miss cases, especially early tuberculosis and TB in people living with HIV.',
+    note: 'Score rendah pun tidak berarti seseorang aman. Chest X-ray bisa melewatkan kasus, terutama tuberkulosis tahap awal dan TB pada orang dengan HIV.',
   },
   {
     id: 'low-mid',
     score: 0.24,
-    note: 'Below the cut-off, but not by much. Set the cut-off a little lower and this same picture would have been flagged, which is why the cut-off has to be shown alongside the answer.',
+    note: 'Di bawah cut-off, tapi selisihnya tipis. Kalau cut-off diturunkan sedikit, gambar yang sama ini akan ditandai, makanya cut-off harus ditampilkan bersama jawabannya.',
   },
   {
     id: 'borderline',
     score: 0.37,
-    note: 'Only just above the cut-off. A result this close to the line carries almost no information on its own, and a score of 0.37 does not mean "37% likely".',
+    note: 'Hanya sedikit di atas cut-off. Hasil sedekat ini dengan garis batas hampir tidak membawa informasi apa pun, dan score 0.37 tidak berarti "kemungkinan 37%".',
   },
   {
     id: 'mid',
     score: 0.58,
-    note: 'Above the cut-off. In a general population, where tuberculosis is uncommon, most pictures flagged like this one would turn out not to be TB at all.',
+    note: 'Di atas cut-off. Pada populasi umum, di mana tuberkulosis jarang ditemukan, sebagian besar gambar yang ditandai seperti ini ternyata bukan TB sama sekali.',
   },
   {
     id: 'high',
     score: 0.86,
-    note: 'A high score. It still would not mean someone has tuberculosis. That is settled by a laboratory test, not by a picture.',
+    note: 'Score tinggi. Ini tetap tidak berarti seseorang menderita tuberkulosis. Hal itu ditentukan lewat tes laboratorium, bukan lewat gambar.',
   },
 ];
 
@@ -78,36 +78,36 @@ export function scenarioForKey(key: string): DemoScenario {
 /* ─────────────────── fixed copy for the result panel ─────────────────── */
 
 export const RESULT_DISCLOSURES = {
-  panelLabel: 'Example result · not a medical finding',
-  modelStatus: 'No trained model is connected to this build.',
-  scoreLabel: 'Example score',
+  panelLabel: 'Contoh hasil · bukan temuan medis',
+  modelStatus: 'Belum ada model terlatih yang terhubung ke build ini.',
+  scoreLabel: 'Contoh score',
   scoreCaution:
-    'This is a stand-in number on a scale from 0 to 1. It is not the chance that anyone has tuberculosis. Turning a score into a real chance of illness needs a tested model and knowledge of how common TB is in that population, and neither exists here.',
+    'Ini angka placeholder pada skala 0 sampai 1. Angka ini bukan peluang seseorang menderita tuberkulosis. Mengubah score menjadi peluang sakit yang sebenarnya butuh model yang sudah diuji dan pengetahuan tentang seberapa umum TB di populasi tersebut, dan keduanya belum ada di sini.',
   interpretation:
-    'What you are looking at is how a screening result would be presented. It is a stand-in response to the file you chose, and it says nothing about whether tuberculosis is present or absent.',
+    'Yang kamu lihat ini adalah gambaran bagaimana hasil screening akan ditampilkan. Ini respons placeholder terhadap file yang kamu pilih, dan tidak menunjukkan apa pun tentang ada atau tidaknya tuberkulosis.',
   limitations: [
-    'A real tool would miss people. Early tuberculosis, and TB in people living with HIV, can be very hard to see on an X-ray.',
-    'A real tool would raise false alarms. Pneumonia, old scarring and other lung conditions can look similar.',
-    'Picture quality changes the answer. Exposure, position and the machine used all shift what the software sees.',
-    'A score is not a risk. Without proper testing, it cannot be read as a percentage chance of being ill.',
+    'Tools sungguhan akan melewatkan sebagian orang. Tuberkulosis tahap awal, dan TB pada orang dengan HIV, bisa sangat sulit terlihat di X-ray.',
+    'Tools sungguhan akan memicu alarm palsu. Pneumonia, bekas luka lama, dan kondisi paru lain bisa tampak mirip.',
+    'Kualitas gambar memengaruhi jawaban. Eksposur, posisi, dan mesin yang dipakai semuanya mengubah apa yang dilihat software.',
+    'Score bukan risiko. Tanpa pengujian yang layak, score tidak bisa dibaca sebagai persentase peluang sakit.',
   ],
   nextStep:
-    'If tuberculosis is a real concern for a real person, the next step is a health professional. A diagnosis comes from a clinical assessment together with a laboratory test on a sputum sample, never from a picture on its own.',
+    'Kalau tuberkulosis memang jadi kekhawatiran nyata bagi seseorang, langkah berikutnya adalah menemui tenaga kesehatan. Diagnosis berasal dari penilaian klinis bersama tes laboratorium pada sampel dahak, tidak pernah dari gambar semata.',
 } as const;
 
 /* ───────────────────────── output glossary copy ───────────────────────── */
 
 export const OUTPUT_GLOSSARY: { term: string; body: string }[] = [
   {
-    term: 'What the software computed',
-    body: 'A number worked out from the pixels, and the category that number falls into once a cut-off is applied. It describes the software, not the person. Move the cut-off and the category changes while the picture does not.',
+    term: 'Yang dihitung software',
+    body: 'Sebuah angka yang dihitung dari piksel, beserta kategori tempat angka itu jatuh setelah cut-off diterapkan. Ini menggambarkan software, bukan orangnya. Geser cut-off dan kategorinya berubah, sementara gambarnya tidak.',
   },
   {
-    term: 'How sure it claims to be',
-    body: 'A high number is not the same as being right. Software can be confident and wrong, and a number only becomes a trustworthy measure of certainty after it has been checked against cases where the real answer was already known.',
+    term: 'Seberapa yakin klaimnya',
+    body: 'Angka tinggi tidak sama dengan benar. Software bisa yakin tapi salah, dan sebuah angka baru jadi ukuran keyakinan yang bisa dipercaya setelah diuji pada kasus yang jawaban sebenarnya sudah diketahui.',
   },
   {
-    term: 'What is actually wrong',
-    body: 'A conclusion about one person at one moment, reached by a clinician from symptoms, history, imaging and a laboratory test. It carries a treatment decision and someone accountable for it. No piece of software produces one of these.',
+    term: 'Apa yang sebenarnya terjadi',
+    body: 'Kesimpulan tentang satu orang pada satu waktu, yang ditarik dokter dari gejala, riwayat, imaging, dan tes laboratorium. Kesimpulan ini membawa keputusan pengobatan dan ada pihak yang bertanggung jawab atasnya. Tidak ada software yang menghasilkan hal seperti ini.',
   },
 ];

@@ -79,7 +79,7 @@ export function SampleRadiograph({
     <svg
       viewBox="0 0 800 800"
       role="img"
-      aria-label="Synthetic sample chest radiograph used for demonstration"
+      aria-label="Sampel radiograf dada sintetis untuk demonstrasi"
       className={cn('block h-full w-full', className)}
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -252,7 +252,7 @@ export function SampleRadiograph({
             fill="#8DB8E8"
             fontFamily="ui-monospace, monospace"
           >
-            SYNTHETIC SAMPLE
+            SAMPEL SINTETIS
           </text>
           <text
             x="400"
@@ -263,7 +263,7 @@ export function SampleRadiograph({
             fill="#6a7686"
             fontFamily="ui-monospace, monospace"
           >
-            not a real radiograph
+            bukan radiograf asli
           </text>
         </g>
       ) : null}

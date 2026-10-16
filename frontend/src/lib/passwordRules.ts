@@ -13,9 +13,9 @@ export interface PasswordStrength {
 
 export function checkPasswordStrength(password: string): PasswordStrength {
   const problems: string[] = [];
-  if (password.length < 8) problems.push('at least 8 characters');
-  if (!/[a-z]/.test(password)) problems.push('a lower-case letter');
-  if (!/[A-Z]/.test(password)) problems.push('an upper-case letter');
-  if (!/\d/.test(password)) problems.push('a number');
+  if (password.length < 8) problems.push('minimal 8 karakter');
+  if (!/[a-z]/.test(password)) problems.push('huruf kecil');
+  if (!/[A-Z]/.test(password)) problems.push('huruf besar');
+  if (!/\d/.test(password)) problems.push('angka');
   return { ok: problems.length === 0, problems };
 }

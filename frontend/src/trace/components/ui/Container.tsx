@@ -1,12 +1,15 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/utils/cn';
+import { Reveal } from './Reveal';
 
 /**
  * Layout atoms for the research site.
  *
  * `Container` is the one measure every section shares, so nothing drifts.
  * `SectionBand` is the full-width dark band that separates research chapters:
- * a background change and a hairline, never a shadow.
+ * a background change and a hairline, never a shadow. Its content fades in the
+ * first time it is scrolled into view; the band itself (background and
+ * hairline) is always drawn, so the page never shows holes while it waits.
  */
 
 export function Container({
@@ -39,6 +42,7 @@ export function SectionBand({
   className,
   bordered = true,
   labelledBy,
+  reveal = true,
 }: {
   children: ReactNode;
   id?: string;
@@ -46,6 +50,8 @@ export function SectionBand({
   className?: string;
   bordered?: boolean;
   labelledBy?: string;
+  /** Fade the content in on first scroll into view. */
+  reveal?: boolean;
 }) {
   return (
     <section
@@ -59,7 +65,7 @@ export function SectionBand({
         className,
       )}
     >
-      {children}
+      {reveal ? <Reveal>{children}</Reveal> : children}
     </section>
   );
 }

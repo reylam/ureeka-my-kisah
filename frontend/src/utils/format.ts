@@ -18,10 +18,10 @@ export function formatDistance(km: number): string {
 }
 
 export function formatTravelTime(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
+  if (minutes < 60) return `${minutes} menit`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  return rest === 0 ? `${hours} hr` : `${hours} hr ${rest} min`;
+  return rest === 0 ? `${hours} jam` : `${hours} jam ${rest} menit`;
 }
 
 export function initials(name: string): string {
@@ -33,11 +33,11 @@ export function initials(name: string): string {
     .join('');
 }
 
-/** Joins as "a, b and c". Used for risk factors and service lists. */
+/** Joins as "a, b dan c". Used for risk factors and service lists. */
 export function joinWithAnd(items: string[]): string {
   if (items.length === 0) return '';
   if (items.length === 1) return items[0]!;
-  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+  return `${items.slice(0, -1).join(', ')} dan ${items[items.length - 1]}`;
 }
 
 export function pluralise(count: number, singular: string, plural?: string): string {

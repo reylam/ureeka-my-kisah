@@ -8,19 +8,27 @@ import { UploadDropzone } from '@/trace/components/demo/UploadDropzone';
 import { ImagePreview } from '@/trace/components/demo/ImagePreview';
 import { InferenceStatus } from '@/trace/components/demo/InferenceStatus';
 import { SimulatedResultPanel } from '@/trace/components/demo/SimulatedResultPanel';
+import { ModelResultPanel } from '@/trace/components/demo/ModelResultPanel';
 import { OutputGlossary } from '@/trace/components/demo/OutputGlossary';
 import { SampleRadiograph } from '@/components/screening/SampleRadiograph';
 import { Mascot } from '@/trace/components/visuals/Mascot';
 import { MAX_BYTES, MIN_EDGE_PX, useImageUpload } from '@/trace/hooks/useImageUpload';
-import { useSimulatedInference } from '@/trace/hooks/useSimulatedInference';
+import { useDemoInference } from '@/trace/hooks/useDemoInference';
 import { useSyntheticSample } from '@/trace/hooks/useSyntheticSample';
+import { useModelStore } from '@/stores/modelStore';
 
 /**
  * Model Demo.
  *
  * The page is arranged so that the disclosures arrive before the upload box,
  * not after the result. A reader who stops halfway down has still been told
- * that nothing here diagnoses anything and that no image leaves the device.
+ * that nothing here diagnoses anything and what happens to the image.
+ *
+ * Two modes, chosen from the API's own health report and never assumed. With
+ * the screening model connected the image is sent to the server, analysed and
+ * discarded, and the page says so. Without it the page runs the stand-in, where
+ * nothing leaves the device, and says that instead. The privacy banner is the
+ * part that must never be wrong, so it is written per mode.
  *
  * All state lives in two hooks, selection and run, and the page wires them
  * together. Selecting a new image resets the run, so a stale report can never
@@ -28,10 +36,20 @@ import { useSyntheticSample } from '@/trace/hooks/useSyntheticSample';
  */
 export function TraceModelDemo() {
   const upload = useImageUpload();
-  const inference = useSimulatedInference();
+
+  // `null` until the API has answered. The run button waits for it, so the
+  // mode cannot change under a run that has already started.
+  const modelConnected = useModelStore((state) => state.connected);
+  const loadModelStatus = useModelStore((state) => state.load);
+  const live = modelConnected === true;
+  const inference = useDemoInference(live);
 
   useEffect(() => {
-    document.title = 'Model Demo · PULMO-TRACE';
+    void loadModelStatus();
+  }, [loadModelStatus]);
+
+  useEffect(() => {
+    document.title = 'Demo Model · PULMO-TRACE';
   }, []);
 
   const { select, clear } = upload;
@@ -53,7 +71,8 @@ export function TraceModelDemo() {
 
   const sample = useSyntheticSample(selectAndReset);
 
-  const canAnalyse = Boolean(upload.image) && inference.state !== 'running';
+  const canAnalyse =
+    Boolean(upload.image) && inference.state !== 'running' && modelConnected !== null;
 
   return (
     <>
@@ -61,27 +80,38 @@ export function TraceModelDemo() {
       <section className="relative overflow-hidden border-b border-trace-line">
         <div aria-hidden className="trace-grid trace-grid-mask absolute inset-0" />
         <Container className="relative py-14 sm:py-16">
-          <Eyebrow>Screening demo</Eyebrow>
+          <Eyebrow>Demo screening</Eyebrow>
           <h1 className="mt-5 max-w-2xl text-[32px] leading-[1.1] font-semibold tracking-[-0.03em] sm:text-[40px]">
-            Walk through the whole flow
+            Telusuri seluruh alurnya
           </h1>
           <p className="mt-5 max-w-2xl text-[16px] leading-7 text-trace-muted">
-            Pick a chest X-ray and see what the screening step would look like: the checks on the
-            image, the result it produces, and the wording that has to come with it. Takes about a
-            minute.
+            Pilih chest X-ray dan lihat seperti apa langkah screening-nya: pengecekan gambar, hasil
+            yang dihasilkan, dan kata-kata yang harus menyertainya. Cuma butuh sekitar satu menit.
           </p>
 
           <div className="mt-8 grid gap-3 lg:max-w-4xl lg:grid-cols-2">
-            <DisclaimerBanner tone="caution" title="This cannot tell you if you have TB">
-              It is a demonstration of an interface. No trained model is connected to it, so the
-              result below is a clearly marked stand-in and not a judgement about any image. If you
-              are worried about tuberculosis, see a health professional.
+            <DisclaimerBanner tone="caution" title="Ini tidak bisa memberitahumu apakah kamu menderita TB">
+              {live
+                ? 'Model terlatih membaca gambar dan memberi tiga score serta satu risk point, tetapi belum divalidasi secara klinis di sini dan tidak ada angka akurasi yang diklaim. Ini alat bantu screening, bukan penilaian tentang seseorang. Kalau kamu khawatir soal tuberkulosis, temui tenaga kesehatan.'
+                : 'Ini hanya demonstrasi antarmuka. Belum ada model terlatih yang terhubung, jadi hasil di bawah adalah placeholder yang diberi label jelas dan bukan penilaian atas gambar mana pun. Kalau kamu khawatir soal tuberkulosis, temui tenaga kesehatan.'}
             </DisclaimerBanner>
-            <DisclaimerBanner tone="privacy" title="Your file stays on your device">
-              The image is read by your own browser to draw the preview. Nothing is uploaded, and
-              nothing is stored. Even so, please do not use a file that carries someone’s name or
-              patient number.
-            </DisclaimerBanner>
+            {live ? (
+              <DisclaimerBanner
+                tone="privacy"
+                title="Gambarmu dianalisis di server, lalu tidak disimpan"
+              >
+                Setelah kamu menekan tombol periksa, gambar dikirim ke server situs ini, dibaca
+                model, lalu dibuang begitu jawabannya dikirim kembali. Tidak ada yang disimpan,
+                tetapi gambarnya memang keluar dari perangkatmu. Jangan pakai file yang memuat nama
+                atau nomor pasien seseorang.
+              </DisclaimerBanner>
+            ) : (
+              <DisclaimerBanner tone="privacy" title="File kamu tetap ada di perangkatmu">
+                Gambar dibaca oleh browser-mu sendiri untuk menampilkan preview. Tidak ada yang
+                di-upload, dan tidak ada yang disimpan. Tetap saja, jangan pakai file yang memuat
+                nama atau nomor pasien seseorang.
+              </DisclaimerBanner>
+            )}
           </div>
         </Container>
       </section>
@@ -91,37 +121,40 @@ export function TraceModelDemo() {
         <Container>
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
             <SectionHeading
-              eyebrow="What you need"
-              title="One chest X-ray image"
+              eyebrow="Yang kamu butuhkan"
+              title="Satu gambar chest X-ray"
               level={3}
-              standfirst="A single front-facing chest X-ray, the ordinary kind. Only one picture is needed, and you do not need a side view."
+              standfirst="Satu chest X-ray tampak depan, yang biasa saja. Cukup satu gambar, tidak perlu tampak samping."
             />
 
             <div className="grid gap-3 sm:grid-cols-2">
               <RequirementCard
                 icon={FileImage}
-                label="Accepted"
+                label="Diterima"
                 lines={[
-                  'JPG, JPEG or PNG',
-                  `Up to ${MAX_BYTES / 1_000_000} MB`,
-                  `Shorter edge ≥ ${MIN_EDGE_PX} px`,
+                  'JPG, JPEG, atau PNG',
+                  `Hingga ${MAX_BYTES / 1_000_000} MB`,
+                  `Sisi terpendek ≥ ${MIN_EDGE_PX} px`,
                 ]}
               />
               <RequirementCard
                 icon={Microscope}
-                label="Recommended"
+                label="Disarankan"
                 lines={[
-                  'Clear frontal (PA) projection',
-                  'Whole thorax in frame',
-                  'Original file, not a photo of a screen',
+                  'Proyeksi frontal (PA) yang jelas',
+                  'Seluruh toraks masuk dalam frame',
+                  'File asli, bukan foto layar',
                 ]}
               />
               <div className="relative rounded-2xl border border-trace-line bg-trace-card p-5 sm:col-span-2">
-                <p className="trace-label text-trace-dim">No X-ray to hand?</p>
+                <p className="trace-label text-trace-dim">Tidak punya X-ray?</p>
                 <p className="mt-2.5 text-[13.5px] leading-6 text-trace-muted">
-                  Use a drawn one instead. It is generated in code, marked as an illustration, and
-                  goes through exactly the same checks as your own file. No real patient’s X-ray is
-                  included anywhere on this site.
+                  Pakai yang digambar saja. Gambar ini dibuat lewat kode, diberi label sebagai
+                  ilustrasi, dan melewati pengecekan yang persis sama dengan file milikmu. Tidak ada
+                  X-ray pasien sungguhan di mana pun di situs ini.
+                  {live
+                    ? ' Model tetap akan memberinya score, tetapi gambar bukan paru-paru, jadi score itu tidak berarti apa-apa.'
+                    : ''}
                 </p>
                 <TraceButton
                   variant="secondary"
@@ -131,7 +164,7 @@ export function TraceModelDemo() {
                   disabled={sample.isBuilding}
                 >
                   <Sparkles aria-hidden className="size-3.5" />
-                  {sample.isBuilding ? 'Preparing…' : 'Use a drawn example'}
+                  {sample.isBuilding ? 'Menyiapkan…' : 'Pakai contoh gambar'}
                 </TraceButton>
                 {sample.error ? (
                   <p role="alert" className="mt-2 text-[12.5px] text-trace-flag">
@@ -173,24 +206,24 @@ export function TraceModelDemo() {
               <div className="flex flex-wrap items-center gap-3">
                 <TraceButton
                   disabled={!canAnalyse}
-                  onClick={() => upload.image && inference.run(upload.image.key)}
+                  onClick={() => upload.image && inference.run(upload.image)}
                 >
-                  Check this X-ray
+                  Periksa X-ray ini
                   <ArrowRight aria-hidden className="size-4" />
                 </TraceButton>
 
                 {inference.state === 'done' || inference.state === 'error' ? (
                   <TraceButton variant="secondary" onClick={inference.reset}>
                     <RotateCcw aria-hidden className="size-4" />
-                    Start over
+                    Mulai ulang
                   </TraceButton>
                 ) : null}
               </div>
 
               {!upload.image ? (
                 <p className="text-[12.5px] leading-5 text-trace-dim">
-                  The button stays switched off until an image is loaded, since there is nothing to
-                  show without one.
+                  Tombol ini nonaktif sampai ada gambar yang dimuat, karena tanpa gambar tidak ada
+                  yang bisa ditampilkan.
                 </p>
               ) : null}
             </div>
@@ -203,6 +236,8 @@ export function TraceModelDemo() {
                 stageIndex={inference.stageIndex}
                 progress={inference.progress}
                 errorMessage={inference.errorMessage}
+                stages={inference.stages}
+                live={inference.mode === 'live'}
               />
 
               {/* Waiting state only. Once there is an image, and certainly once
@@ -211,8 +246,8 @@ export function TraceModelDemo() {
                 <div className="flex items-center gap-4 rounded-2xl border border-trace-line bg-trace-card p-5">
                   <Mascot size="sm" />
                   <p className="text-[13px] leading-6 text-trace-muted">
-                    Nothing loaded yet. Pick an X-ray on the left, or use the drawn example if you
-                    do not have one to hand.
+                    Belum ada yang dimuat. Pilih X-ray di sebelah kiri, atau pakai contoh gambar
+                    kalau kamu tidak punya.
                   </p>
                 </div>
               ) : null}
@@ -220,12 +255,20 @@ export function TraceModelDemo() {
           </div>
 
           {/* Result */}
-          {inference.state === 'done' && inference.result && upload.image ? (
-            <SimulatedResultPanel
-              scenario={inference.result}
-              image={upload.image}
-              className="mt-6"
-            />
+          {inference.state === 'done' && upload.image ? (
+            inference.analysis ? (
+              <ModelResultPanel
+                analysis={inference.analysis}
+                image={upload.image}
+                className="mt-6"
+              />
+            ) : inference.scenario ? (
+              <SimulatedResultPanel
+                scenario={inference.scenario}
+                image={upload.image}
+                className="mt-6"
+              />
+            ) : null
           ) : null}
         </Container>
       </SectionBand>
@@ -235,9 +278,9 @@ export function TraceModelDemo() {
         <Container>
           <SectionHeading
             id="glossary-heading"
-            eyebrow="Reading the output"
-            title="What does this output actually mean?"
-            standfirst="Three terms that get used as though they were the same thing."
+            eyebrow="Membaca output"
+            title="Sebenarnya apa arti output ini?"
+            standfirst="Tiga istilah yang sering dipakai seolah-olah sama."
           />
           <div className="mt-9">
             <OutputGlossary />
@@ -248,21 +291,21 @@ export function TraceModelDemo() {
       {/* ── G · onward ───────────────────────────────────────────────── */}
       <SectionBand labelledBy="demo-cta-heading">
         <Container width="narrow" className="text-center">
-          <Eyebrow className="justify-center">Next</Eyebrow>
+          <Eyebrow className="justify-center">Selanjutnya</Eyebrow>
           <h2
             id="demo-cta-heading"
             className="mt-5 text-[26px] leading-tight font-semibold tracking-[-0.025em] sm:text-[32px]"
           >
-            Curious how it would actually work?
+            Penasaran bagaimana sebenarnya cara kerjanya?
           </h2>
           <p className="mt-5 text-[15px] leading-7 text-trace-muted">
-            The explainer goes through the whole idea in plain language: how software learns to
-            recognise patterns in an X-ray, why a score is not a percentage chance, and where this
-            sits in the path from screening to treatment.
+            Halaman penjelasan membahas seluruh idenya dengan bahasa sederhana: bagaimana software
+            belajar mengenali pola di X-ray, kenapa score bukan peluang dalam persen, dan di mana
+            posisi tools ini dalam alur dari screening sampai pengobatan.
           </p>
           <TraceLinkButton to="/how-it-works" className="mt-8">
             <BookOpen aria-hidden className="size-4" />
-            How it works
+            Cara kerja
           </TraceLinkButton>
         </Container>
       </SectionBand>

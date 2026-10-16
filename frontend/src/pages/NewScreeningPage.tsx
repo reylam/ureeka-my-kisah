@@ -49,11 +49,11 @@ import type {
  */
 
 const STEPS = [
-  { id: 'patient', label: 'Patient', hint: 'Select or register' },
-  { id: 'details', label: 'Screening details', hint: 'Vitals and context' },
-  { id: 'symptoms', label: 'Symptoms', hint: 'What the patient reports' },
-  { id: 'image', label: 'Chest X-ray', hint: 'Upload the radiograph' },
-  { id: 'review', label: 'Review', hint: 'Confirm and submit' },
+  { id: 'patient', label: 'Pasien', hint: 'Pilih atau daftarkan' },
+  { id: 'details', label: 'Detail screening', hint: 'Tanda vital dan konteks' },
+  { id: 'symptoms', label: 'Gejala', hint: 'Keluhan dari pasien' },
+  { id: 'image', label: 'X-ray dada', hint: 'Upload hasil rontgen' },
+  { id: 'review', label: 'Review', hint: 'Konfirmasi dan kirim' },
 ];
 
 const EMPTY_SYMPTOMS: SymptomSet = {
@@ -172,21 +172,21 @@ export function NewScreeningPage() {
 
     if (index === 0) {
       if (mode === 'existing') {
-        if (!patientId) next.patient = 'Choose a patient from the register, or register a new one.';
+        if (!patientId) next.patient = 'Pilih pasien dari daftar, atau daftarkan pasien baru.';
       } else {
-        if (!newPatient.name.trim()) next.name = 'Enter the patient’s full name.';
-        else if (newPatient.name.trim().length < 3) next.name = 'That name looks too short.';
+        if (!newPatient.name.trim()) next.name = 'Isi nama lengkap pasien.';
+        else if (newPatient.name.trim().length < 3) next.name = 'Nama terlalu pendek.';
 
-        if (!newPatient.birthDate) next.birthDate = 'Enter a date of birth.';
+        if (!newPatient.birthDate) next.birthDate = 'Isi tanggal lahir.';
         else {
           const age = ageFromBirthDate(newPatient.birthDate);
           if (newPatient.birthDate > toISODate(startOfToday()))
-            next.birthDate = 'Date of birth cannot be in the future.';
-          else if (age > 120) next.birthDate = 'That date of birth is not plausible.';
+            next.birthDate = 'Tanggal lahir tidak boleh di masa depan.';
+          else if (age > 120) next.birthDate = 'Tanggal lahir ini tidak masuk akal.';
         }
 
         if (newPatient.phone && !/^[\d\s+()-]{7,20}$/.test(newPatient.phone))
-          next.phone = 'Enter a usable phone number, or leave it blank.';
+          next.phone = 'Isi nomor telepon yang valid, atau kosongkan saja.';
       }
     }
 
@@ -196,30 +196,30 @@ export function NewScreeningPage() {
       const temperature = Number(vitals.temperatureC);
       const respiratory = Number(vitals.respiratoryRate);
 
-      if (!vitals.weightKg) next.weightKg = 'Weight is needed for the screening record.';
+      if (!vitals.weightKg) next.weightKg = 'Berat badan wajib diisi untuk record screening.';
       else if (Number.isNaN(weight) || weight < 2 || weight > 250)
-        next.weightKg = 'Enter a weight between 2 and 250 kg.';
+        next.weightKg = 'Isi berat badan antara 2 dan 250 kg.';
 
       if (vitals.heightCm && (Number.isNaN(height) || height < 40 || height > 230))
-        next.heightCm = 'Enter a height between 40 and 230 cm.';
+        next.heightCm = 'Isi tinggi badan antara 40 dan 230 cm.';
 
       if (vitals.temperatureC && (Number.isNaN(temperature) || temperature < 30 || temperature > 44))
-        next.temperatureC = 'Enter a temperature between 30 and 44 °C.';
+        next.temperatureC = 'Isi suhu tubuh antara 30 dan 44 °C.';
 
       if (
         vitals.respiratoryRate &&
         (Number.isNaN(respiratory) || respiratory < 6 || respiratory > 70)
       )
-        next.respiratoryRate = 'Enter a respiratory rate between 6 and 70 breaths/min.';
+        next.respiratoryRate = 'Isi laju napas antara 6 dan 70 napas/menit.';
     }
 
     if (index === 2) {
       if (symptoms.coughWeeks < 0 || symptoms.coughWeeks > 104)
-        next.coughWeeks = 'Enter a cough duration between 0 and 104 weeks.';
+        next.coughWeeks = 'Isi durasi batuk antara 0 dan 104 minggu.';
     }
 
     if (index === 3) {
-      if (!image) next.image = 'Attach a chest X-ray, or save this record as a draft to finish later.';
+      if (!image) next.image = 'Lampirkan X-ray dada, atau simpan record ini sebagai draf untuk dilanjutkan nanti.';
     }
 
     setErrors(next);
@@ -276,7 +276,7 @@ export function NewScreeningPage() {
     try {
       const patient = await resolvePatient();
       if (!patient) {
-        setErrors({ patient: 'Could not resolve the patient record.' });
+        setErrors({ patient: 'Data pasien tidak ditemukan.' });
         setStep(0);
         return;
       }
@@ -322,8 +322,8 @@ export function NewScreeningPage() {
       if (contextNote.trim()) {
         if (heldOnDevice) {
           toast.attention(
-            'Your context note was not saved.',
-            'Notes need a connection. Add it from the patient record once this screening has been sent.',
+            'Catatan konteks belum tersimpan.',
+            'Catatan butuh koneksi. Tambahkan dari data pasien setelah screening ini terkirim.',
           );
         } else {
           try {
@@ -331,7 +331,7 @@ export function NewScreeningPage() {
               .getState()
               .addPatientNote(patient.id, contextNote, 'screening', screening.id);
           } catch (cause) {
-            toast.error('The screening was saved, but the note was not.', errorMessage(cause));
+            toast.error('Screening tersimpan, tapi catatannya belum.', errorMessage(cause));
           }
         }
       }
@@ -339,13 +339,13 @@ export function NewScreeningPage() {
       if (asDraft) {
         toast.success(
           heldOnDevice
-            ? 'Saved as a draft on this device.'
+            ? 'Disimpan sebagai draf di perangkat ini.'
             : draft
-              ? 'Draft updated.'
-              : 'Saved as a draft.',
+              ? 'Draf diperbarui.'
+              : 'Disimpan sebagai draf.',
           heldOnDevice
-            ? 'Finish it from the offline queue when you are ready.'
-            : 'Open it from the screening history to finish it.',
+            ? 'Lanjutkan dari offline queue kapan pun kamu siap.'
+            : 'Buka dari riwayat screening untuk menyelesaikannya.',
         );
         navigate(heldOnDevice ? '/offline' : '/reports?status=draft');
         return;
@@ -353,10 +353,10 @@ export function NewScreeningPage() {
 
       if (heldOnDevice) {
         toast.attention(
-          'Record queued on this device.',
+          'Record masuk antrean di perangkat ini.',
           connected
-            ? 'It could not be sent just now. Retry it from the offline queue.'
-            : 'It will be sent when a connection is available. Image analysis needs a connection.',
+            ? 'Record belum bisa dikirim saat ini. Coba lagi dari offline queue.'
+            : 'Record akan dikirim saat koneksi tersedia. Analisis gambar butuh koneksi.',
         );
         navigate('/offline');
         return;
@@ -377,12 +377,12 @@ export function NewScreeningPage() {
       } catch (cause) {
         if (cause instanceof ApiError && cause.code === 'MODEL_NOT_CONNECTED') {
           toast.info(
-            'Record saved.',
-            'The screening model is not connected, so it goes to a clinician without model output.',
+            'Record tersimpan.',
+            'Model screening belum terhubung, jadi record diteruskan ke tenaga medis tanpa output model.',
           );
         } else {
           // Analysis failing must not lose the record.
-          toast.error('Analysis could not be completed.', errorMessage(cause));
+          toast.error('Analisis tidak bisa diselesaikan.', errorMessage(cause));
         }
       } finally {
         window.clearInterval(ticker);
@@ -391,13 +391,13 @@ export function NewScreeningPage() {
       if (analysed) {
         toast.custom({
           tone: 'success',
-          title: 'Screening record created.',
-          description: 'The model has finished and the record needs a clinical review.',
+          title: 'Record screening berhasil dibuat.',
+          description: 'Model sudah selesai dan record perlu review klinis.',
         });
       }
       navigate(`/screenings/${screening.id}`);
     } catch (cause) {
-      toast.error('Could not save the screening.', errorMessage(cause));
+      toast.error('Screening gagal disimpan.', errorMessage(cause));
     } finally {
       setSubmitting(false);
       setAnalysisProgress(null);
@@ -407,35 +407,35 @@ export function NewScreeningPage() {
   /* ── Render ─────────────────────────────────────────────────────────────── */
 
   const reviewPatientName =
-    mode === 'existing' ? (selectedPatient?.name ?? 'Not selected') : newPatient.name || 'Not entered';
+    mode === 'existing' ? (selectedPatient?.name ?? 'Belum dipilih') : newPatient.name || 'Belum diisi';
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       <PageHeader
-        title={draft ? 'Finish saved screening' : 'New screening'}
+        title={draft ? 'Selesaikan screening tersimpan' : 'Screening baru'}
         description={
           draft
-            ? 'Resuming a saved draft. The record keeps its original reference.'
-            : 'Record a TB screening encounter and attach the chest radiograph. It is saved to the PULMO server, or held on this device if you are offline.'
+            ? 'Melanjutkan draf yang tersimpan. Record tetap memakai referensi aslinya.'
+            : 'Catat pertemuan screening TB dan lampirkan X-ray dada. Data disimpan ke server PULMO, atau ditahan di perangkat ini kalau kamu sedang offline.'
         }
         actions={
           <Button variant="ghost" onClick={() => navigate(-1)}>
-            Cancel
+            Batal
           </Button>
         }
       />
 
       {draft ? (
-        <Notice tone="info" title="Resuming a saved draft">
-          Symptoms, vitals and the image-quality rating were restored from the draft. Attach the
-          radiograph to complete it.
+        <Notice tone="info" title="Melanjutkan draf tersimpan">
+          Gejala, tanda vital, dan penilaian kualitas gambar sudah dipulihkan dari draf. Lampirkan
+          X-ray untuk menyelesaikannya.
         </Notice>
       ) : null}
 
       {!connected ? (
-        <Notice tone="attention" title="You are offline">
-          The form works normally and the record will be stored on this device. Image analysis
-          cannot run until a connection is available.
+        <Notice tone="attention" title="Kamu sedang offline">
+          Form tetap berfungsi normal dan record akan disimpan di perangkat ini. Analisis gambar
+          baru bisa jalan setelah koneksi tersedia.
         </Notice>
       ) : null}
 
@@ -457,26 +457,26 @@ export function NewScreeningPage() {
           <CardBody className="space-y-4">
             <div
               role="group"
-              aria-label="Patient source"
+              aria-label="Sumber data pasien"
               className="flex gap-1 rounded-md bg-obsidian-100 p-0.5"
             >
               <ModeTab
                 active={mode === 'existing'}
                 onClick={() => setMode('existing')}
                 icon={<Users className="size-4" />}
-                label="Existing patient"
+                label="Pasien terdaftar"
               />
               <ModeTab
                 active={mode === 'new'}
                 onClick={() => setMode('new')}
                 icon={<UserPlus className="size-4" />}
-                label="Register new"
+                label="Daftarkan baru"
               />
             </div>
 
             {mode === 'existing' ? (
               <div>
-                <Field label="Find the patient" error={errors.patient ?? null} required>
+                <Field label="Cari pasien" error={errors.patient ?? null} required>
                   {({ id, describedBy, invalid }) => (
                     <TextInput
                       id={id}
@@ -485,7 +485,7 @@ export function NewScreeningPage() {
                       describedBy={describedBy}
                       invalid={invalid}
                       leadingIcon={<Search />}
-                      placeholder="Name, record number or village"
+                      placeholder="Nama, nomor rekam medis, atau desa"
                     />
                   )}
                 </Field>
@@ -493,13 +493,13 @@ export function NewScreeningPage() {
                 <ul className="mt-3 max-h-80 divide-y divide-obsidian-100 overflow-y-auto rounded-md border border-obsidian-200">
                   {matchingPatients.length === 0 ? (
                     <li className="px-3 py-6 text-center text-[13px] text-obsidian-500">
-                      No patient matches that search.{' '}
+                      Tidak ada pasien yang cocok dengan pencarian ini.{' '}
                       <button
                         type="button"
                         onClick={() => setMode('new')}
                         className="font-medium text-ct-700 underline decoration-ct-300 underline-offset-2"
                       >
-                        Register a new patient
+                        Daftarkan pasien baru
                       </button>
                       .
                     </li>
@@ -522,7 +522,7 @@ export function NewScreeningPage() {
                               </span>
                               <span className="mt-0.5 block truncate text-xs text-obsidian-500">
                                 <span className="font-mono">{patient.mrn}</span> ·{' '}
-                                {ageFromBirthDate(patient.birthDate)} yrs · {patient.village}
+                                {ageFromBirthDate(patient.birthDate)} thn · {patient.village}
                               </span>
                             </span>
                             {active ? (
@@ -537,7 +537,7 @@ export function NewScreeningPage() {
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Full name" error={errors.name ?? null} required className="sm:col-span-2">
+                <Field label="Nama lengkap" error={errors.name ?? null} required className="sm:col-span-2">
                   {({ id, describedBy, invalid }) => (
                     <TextInput
                       id={id}
@@ -548,12 +548,12 @@ export function NewScreeningPage() {
                       describedBy={describedBy}
                       invalid={invalid}
                       autoComplete="off"
-                      placeholder="As written on the patient’s ID"
+                      placeholder="Sesuai yang tertulis di KTP pasien"
                     />
                   )}
                 </Field>
 
-                <Field label="Sex" required>
+                <Field label="Jenis kelamin" required>
                   {({ id }) => (
                     <Select
                       id={id}
@@ -565,13 +565,13 @@ export function NewScreeningPage() {
                         }))
                       }
                     >
-                      <option value="female">Female</option>
-                      <option value="male">Male</option>
+                      <option value="female">Perempuan</option>
+                      <option value="male">Laki-laki</option>
                     </Select>
                   )}
                 </Field>
 
-                <Field label="Date of birth" error={errors.birthDate ?? null} required>
+                <Field label="Tanggal lahir" error={errors.birthDate ?? null} required>
                   {({ id, describedBy, invalid }) => (
                     <TextInput
                       id={id}
@@ -588,10 +588,10 @@ export function NewScreeningPage() {
                 </Field>
 
                 <Field
-                  label="Phone"
+                  label="Telepon"
                   error={errors.phone ?? null}
                   optional
-                  hint="Used for follow-up contact."
+                  hint="Dipakai untuk menghubungi saat follow-up."
                 >
                   {({ id, describedBy, invalid }) => (
                     <TextInput
@@ -608,7 +608,7 @@ export function NewScreeningPage() {
                   )}
                 </Field>
 
-                <Field label="Household contacts" hint="People sharing the same dwelling.">
+                <Field label="Kontak serumah" hint="Orang yang tinggal di rumah yang sama.">
                   {({ id }) => (
                     <TextInput
                       id={id}
@@ -626,7 +626,7 @@ export function NewScreeningPage() {
                   )}
                 </Field>
 
-                <Field label="District" required>
+                <Field label="Kecamatan" required>
                   {({ id }) => (
                     <Select
                       id={id}
@@ -649,7 +649,7 @@ export function NewScreeningPage() {
                   )}
                 </Field>
 
-                <Field label="Village" required>
+                <Field label="Desa" required>
                   {({ id }) => (
                     <Select
                       id={id}
@@ -668,8 +668,8 @@ export function NewScreeningPage() {
                 </Field>
 
                 <Fieldset
-                  legend="Risk factors"
-                  hint="Recorded for context; they do not change the screening output."
+                  legend="Faktor risiko"
+                  hint="Dicatat sebagai konteks; tidak mengubah output screening."
                   className="sm:col-span-2"
                 >
                   <div className="grid gap-0.5 sm:grid-cols-2">
@@ -699,7 +699,7 @@ export function NewScreeningPage() {
         {step === 1 ? (
           <CardBody className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Field label="Weight" error={errors.weightKg ?? null} required>
+              <Field label="Berat badan" error={errors.weightKg ?? null} required>
                 {({ id, describedBy, invalid }) => (
                   <TextInput
                     id={id}
@@ -715,7 +715,7 @@ export function NewScreeningPage() {
                   />
                 )}
               </Field>
-              <Field label="Height" error={errors.heightCm ?? null} optional>
+              <Field label="Tinggi badan" error={errors.heightCm ?? null} optional>
                 {({ id, describedBy, invalid }) => (
                   <TextInput
                     id={id}
@@ -730,7 +730,7 @@ export function NewScreeningPage() {
                   />
                 )}
               </Field>
-              <Field label="Temperature" error={errors.temperatureC ?? null} optional>
+              <Field label="Suhu tubuh" error={errors.temperatureC ?? null} optional>
                 {({ id, describedBy, invalid }) => (
                   <TextInput
                     id={id}
@@ -746,7 +746,7 @@ export function NewScreeningPage() {
                   />
                 )}
               </Field>
-              <Field label="Respiratory rate" error={errors.respiratoryRate ?? null} optional>
+              <Field label="Laju napas" error={errors.respiratoryRate ?? null} optional>
                 {({ id, describedBy, invalid }) => (
                   <TextInput
                     id={id}
@@ -757,15 +757,15 @@ export function NewScreeningPage() {
                     }
                     describedBy={describedBy}
                     invalid={invalid}
-                    suffix="/min"
+                    suffix="/menit"
                   />
                 )}
               </Field>
             </div>
 
             <Fieldset
-              legend="Radiograph quality"
-              hint="Your assessment of the image you are about to attach. An inadequate image cannot produce a usable screening result."
+              legend="Kualitas X-ray"
+              hint="Penilaianmu atas gambar yang akan dilampirkan. Gambar yang kurang layak tidak akan menghasilkan hasil screening yang bisa dipakai."
             >
               <RadioGroup<ImageQuality>
                 name="image-quality"
@@ -774,27 +774,27 @@ export function NewScreeningPage() {
                 options={[
                   {
                     value: 'adequate',
-                    label: 'Adequate',
-                    description: 'Full lung fields visible, good inspiration, no motion blur.',
+                    label: 'Layak',
+                    description: 'Seluruh lapang paru terlihat, inspirasi baik, tidak ada blur akibat gerakan.',
                   },
                   {
                     value: 'borderline',
-                    label: 'Borderline',
-                    description: 'Readable but compromised by slight rotation, exposure or blur.',
+                    label: 'Batas layak',
+                    description: 'Masih terbaca, tapi terganggu rotasi, eksposur, atau blur ringan.',
                   },
                   {
                     value: 'inadequate',
-                    label: 'Inadequate',
-                    description: 'Not interpretable. The record will be marked inconclusive.',
+                    label: 'Tidak layak',
+                    description: 'Tidak bisa diinterpretasi. Record akan ditandai tidak meyakinkan.',
                   },
                 ]}
               />
             </Fieldset>
 
             <Field
-              label="Encounter note"
+              label="Catatan kunjungan"
               optional
-              hint="Added to the patient’s timeline. Anything the next person should know."
+              hint="Ditambahkan ke timeline pasien. Apa pun yang perlu diketahui petugas berikutnya."
             >
               {({ id, describedBy }) => (
                 <TextArea
@@ -803,7 +803,7 @@ export function NewScreeningPage() {
                   onChange={(event) => setContextNote(event.target.value)}
                   describedBy={describedBy}
                   rows={3}
-                  placeholder="e.g. Patient travelled 2 hours; prefers contact through the village cadre."
+                  placeholder="mis. Pasien menempuh perjalanan 2 jam; lebih suka dihubungi lewat kader desa."
                 />
               )}
             </Field>
@@ -814,9 +814,9 @@ export function NewScreeningPage() {
         {step === 2 ? (
           <CardBody className="space-y-5">
             <Field
-              label="How long has the cough lasted?"
+              label="Sudah berapa lama batuk?"
               error={errors.coughWeeks ?? null}
-              hint="Enter 0 if the patient has no cough. A cough of two weeks or more is the usual trigger for TB screening."
+              hint="Isi 0 kalau pasien tidak batuk. Batuk dua minggu atau lebih biasanya jadi pemicu screening TB."
             >
               {({ id, describedBy, invalid }) => (
                 <TextInput
@@ -834,14 +834,14 @@ export function NewScreeningPage() {
                   }
                   describedBy={describedBy}
                   invalid={invalid}
-                  suffix="weeks"
+                  suffix="minggu"
                 />
               )}
             </Field>
 
             <Fieldset
-              legend="Other symptoms reported"
-              hint="Tick everything the patient describes."
+              legend="Gejala lain yang dilaporkan"
+              hint="Centang semua yang disampaikan pasien."
             >
               <div className="grid gap-0.5 sm:grid-cols-2">
                 {BOOLEAN_SYMPTOMS.map((key) => (
@@ -858,8 +858,8 @@ export function NewScreeningPage() {
             </Fieldset>
 
             <Notice tone="info" compact>
-              Symptoms are part of the clinical record and are read by the clinician who reviews
-              this screening.
+              Gejala adalah bagian dari rekam klinis dan dibaca oleh tenaga medis yang me-review
+              screening ini.
             </Notice>
           </CardBody>
         ) : null}
@@ -879,30 +879,30 @@ export function NewScreeningPage() {
             <div className="grid gap-4 lg:grid-cols-2">
               <section className="rounded-md border border-obsidian-200 p-3.5">
                 <h3 className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-                  Patient
+                  Pasien
                 </h3>
                 <dl className="mt-2 divide-y divide-obsidian-100">
-                  <DetailRow label="Name">{reviewPatientName}</DetailRow>
+                  <DetailRow label="Nama">{reviewPatientName}</DetailRow>
                   {mode === 'existing' && selectedPatient ? (
                     <>
-                      <DetailRow label="Record no.">
+                      <DetailRow label="No. rekam medis">
                         <span className="font-mono text-xs">{selectedPatient.mrn}</span>
                       </DetailRow>
-                      <DetailRow label="Age">
-                        {ageFromBirthDate(selectedPatient.birthDate)} years
+                      <DetailRow label="Usia">
+                        {ageFromBirthDate(selectedPatient.birthDate)} tahun
                       </DetailRow>
-                      <DetailRow label="Village">
+                      <DetailRow label="Desa">
                         {selectedPatient.village}, {selectedPatient.district}
                       </DetailRow>
                     </>
                   ) : (
                     <>
-                      <DetailRow label="Date of birth">{newPatient.birthDate || 'Not entered'}</DetailRow>
-                      <DetailRow label="Village">
+                      <DetailRow label="Tanggal lahir">{newPatient.birthDate || 'Belum diisi'}</DetailRow>
+                      <DetailRow label="Desa">
                         {newPatient.village}, {newPatient.district}
                       </DetailRow>
                       <DetailRow label="Status">
-                        <span className="text-ct-700">Will be registered on submit</span>
+                        <span className="text-ct-700">Akan didaftarkan saat dikirim</span>
                       </DetailRow>
                     </>
                   )}
@@ -914,32 +914,32 @@ export function NewScreeningPage() {
                   Screening
                 </h3>
                 <dl className="mt-2 divide-y divide-obsidian-100">
-                  <DetailRow label="Weight">
-                    {vitals.weightKg ? `${vitals.weightKg} kg` : 'Not entered'}
+                  <DetailRow label="Berat badan">
+                    {vitals.weightKg ? `${vitals.weightKg} kg` : 'Belum diisi'}
                   </DetailRow>
-                  <DetailRow label="Temperature">
-                    {vitals.temperatureC ? `${vitals.temperatureC} °C` : 'Not recorded'}
+                  <DetailRow label="Suhu tubuh">
+                    {vitals.temperatureC ? `${vitals.temperatureC} °C` : 'Tidak dicatat'}
                   </DetailRow>
-                  <DetailRow label="Cough">
+                  <DetailRow label="Batuk">
                     {symptoms.coughWeeks > 0
-                      ? `${symptoms.coughWeeks} week${symptoms.coughWeeks === 1 ? '' : 's'}`
-                      : 'None reported'}
+                      ? `${symptoms.coughWeeks} minggu`
+                      : 'Tidak ada keluhan'}
                   </DetailRow>
-                  <DetailRow label="Other symptoms">
+                  <DetailRow label="Gejala lain">
                     {BOOLEAN_SYMPTOMS.filter((key) => symptoms[key]).length === 0
-                      ? 'None reported'
+                      ? 'Tidak ada keluhan'
                       : BOOLEAN_SYMPTOMS.filter((key) => symptoms[key])
                           .map((key) => symptomLabel[key] ?? key)
                           .join(', ')}
                   </DetailRow>
-                  <DetailRow label="Image quality">
+                  <DetailRow label="Kualitas gambar">
                     <ImageQualityBadge quality={imageQuality} size="sm" />
                   </DetailRow>
-                  <DetailRow label="Radiograph">
+                  <DetailRow label="X-ray">
                     {image ? (
                       <span className="truncate">{image.meta.fileName}</span>
                     ) : (
-                      <span className="text-attention-800">Not attached</span>
+                      <span className="text-attention-800">Belum dilampirkan</span>
                     )}
                   </DetailRow>
                 </dl>
@@ -950,11 +950,11 @@ export function NewScreeningPage() {
               <div className="rounded-md border border-ct-200 bg-ct-50 px-3.5 py-3">
                 <ProgressBar
                   value={analysisProgress}
-                  label="Running the screening model"
+                  label="Menjalankan model screening"
                 />
                 <p className="mt-2 text-xs text-obsidian-600">
-                  The radiograph has been saved and is being sent to the screening model. If no
-                  model is connected, the record goes straight to a clinician for review.
+                  X-ray sudah disimpan dan sedang dikirim ke model screening. Kalau belum ada model
+                  yang terhubung, record langsung diteruskan ke tenaga medis untuk review.
                 </p>
               </div>
             ) : null}
@@ -969,7 +969,7 @@ export function NewScreeningPage() {
             leadingIcon={<ArrowLeft className="size-4" />}
             onClick={goBack}
           >
-            Back
+            Kembali
           </Button>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -979,7 +979,7 @@ export function NewScreeningPage() {
               leadingIcon={<Save className="size-4" />}
               onClick={() => void submit(true)}
             >
-              Save as draft
+              Simpan sebagai draf
             </Button>
 
             {step < STEPS.length - 1 ? (
@@ -989,7 +989,7 @@ export function NewScreeningPage() {
                 disabled={submitting}
                 trailingIcon={<ArrowRight className="size-4" />}
               >
-                Continue
+                Lanjut
               </Button>
             ) : (
               <Button
@@ -1000,7 +1000,7 @@ export function NewScreeningPage() {
                 }
                 onClick={() => void submit(false)}
               >
-                {connected ? 'Submit screening' : 'Save and queue'}
+                {connected ? 'Kirim screening' : 'Simpan dan antrekan'}
               </Button>
             )}
           </div>

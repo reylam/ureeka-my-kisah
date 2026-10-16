@@ -96,12 +96,12 @@ export function FollowUpFormDialog({
 
   const validate = () => {
     const next: Record<string, string> = {};
-    if (!effectivePatientId) next.patient = 'Choose the patient this task is for.';
-    if (!dueDate) next.dueDate = 'Pick a due date.';
+    if (!effectivePatientId) next.patient = 'Pilih pasien untuk tugas ini.';
+    if (!dueDate) next.dueDate = 'Pilih tanggal jatuh tempo.';
     else if (!editing && dueDate < dateOffset(0))
-      next.dueDate = 'A new follow-up cannot be due in the past.';
+      next.dueDate = 'Follow-up baru tidak bisa jatuh tempo di masa lalu.';
     if (editing && note.trim().length > 0 && note.trim().length < 5)
-      next.note = 'Either leave the note blank or write something useful.';
+      next.note = 'Kosongkan catatan, atau tulis sesuatu yang berguna.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -116,7 +116,7 @@ export function FollowUpFormDialog({
           await recordsApi.updateFollowUp(followUp.id, { assignedWorkerId });
         }
         toast.success(
-          `${followUp.code} moved to ${formatDueLabel(dueDate).toLowerCase()}.`,
+          `${followUp.code} dijadwalkan ulang ke ${formatDueLabel(dueDate).toLowerCase()}.`,
         );
       } else {
         const created = await recordsApi.createFollowUp({
@@ -128,13 +128,13 @@ export function FollowUpFormDialog({
           assignedWorkerId,
         });
         toast.success(
-          `Follow-up ${created.code} scheduled.`,
+          `Follow-up ${created.code} dijadwalkan.`,
           `${followUpReasonLabel[reason]} · ${formatDueLabel(dueDate).toLowerCase()}.`,
         );
       }
       onClose();
     } catch (cause) {
-      toast.error('The follow-up could not be saved.', cause instanceof Error ? cause.message : undefined);
+      toast.error('Follow-up gagal disimpan.', cause instanceof Error ? cause.message : undefined);
     } finally {
       setSaving(false);
     }
@@ -144,12 +144,12 @@ export function FollowUpFormDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={editing ? `Reschedule ${followUp?.code}` : 'Schedule a follow-up'}
+      title={editing ? `Jadwalkan ulang ${followUp?.code}` : 'Jadwalkan follow-up'}
       description={patient ? `${patient.name} · ${patient.mrn}` : undefined}
       footer={
         <>
           <Button variant="ghost" onClick={onClose} disabled={saving}>
-            Cancel
+            Batal
           </Button>
           <Button
             variant="primary"
@@ -157,7 +157,7 @@ export function FollowUpFormDialog({
             leadingIcon={<CalendarClock className="size-4" />}
             onClick={() => void submit()}
           >
-            {editing ? 'Reschedule' : 'Schedule follow-up'}
+            {editing ? 'Jadwalkan ulang' : 'Jadwalkan follow-up'}
           </Button>
         </>
       }
@@ -165,7 +165,7 @@ export function FollowUpFormDialog({
       <div className="space-y-4">
         {/* Only shown when opened without a patient in context. */}
         {!patientId && !editing ? (
-          <Field label="Patient" error={errors.patient ?? null} required>
+          <Field label="Pasien" error={errors.patient ?? null} required>
             {({ id, describedBy, invalid }) =>
               patient ? (
                 <div className="flex items-center gap-3 rounded-md border border-ct-300 bg-ct-50 px-3 py-2.5">
@@ -178,7 +178,7 @@ export function FollowUpFormDialog({
                     </span>
                   </span>
                   <Button size="sm" variant="ghost" onClick={() => setChosenPatientId(null)}>
-                    Change
+                    Ganti
                   </Button>
                 </div>
               ) : (
@@ -190,12 +190,12 @@ export function FollowUpFormDialog({
                     describedBy={describedBy}
                     invalid={invalid}
                     leadingIcon={<Search />}
-                    placeholder="Search by name, record number or village"
+                    placeholder="Cari berdasarkan nama, nomor rekam medis, atau desa"
                   />
                   <ul className="mt-2 max-h-56 divide-y divide-obsidian-100 overflow-y-auto rounded-md border border-obsidian-200">
                     {matchingPatients.length === 0 ? (
                       <li className="px-3 py-5 text-center text-[13px] text-obsidian-500">
-                        No patient matches that search.
+                        Tidak ada pasien yang cocok dengan pencarian itu.
                       </li>
                     ) : (
                       matchingPatients.map((item) => (
@@ -222,7 +222,7 @@ export function FollowUpFormDialog({
           </Field>
         ) : null}
 
-        <Field label="Reason" required>
+        <Field label="Alasan" required>
           {({ id }) => (
             <Select
               id={id}
@@ -240,7 +240,7 @@ export function FollowUpFormDialog({
         </Field>
 
         <Field
-          label="Due date"
+          label="Tanggal jatuh tempo"
           error={errors.dueDate ?? null}
           required
           hint={dueDate ? formatDueLabel(dueDate) : undefined}
@@ -257,7 +257,7 @@ export function FollowUpFormDialog({
           )}
         </Field>
 
-        <Field label="Assigned to" required>
+        <Field label="Ditugaskan ke" required>
           {({ id }) => (
             <Select
               id={id}
@@ -277,7 +277,7 @@ export function FollowUpFormDialog({
         </Field>
 
         {editing ? (
-          <Field label="Why is it moving?" optional error={errors.note ?? null}>
+          <Field label="Kenapa dijadwalkan ulang?" optional error={errors.note ?? null}>
             {({ id, describedBy, invalid }) => (
               <TextArea
                 id={id}
@@ -286,15 +286,15 @@ export function FollowUpFormDialog({
                 describedBy={describedBy}
                 invalid={invalid}
                 rows={2}
-                placeholder="e.g. Patient asked to move it because of harvest work."
+                placeholder="mis. Pasien minta diundur karena sedang musim panen."
               />
             )}
           </Field>
         ) : null}
 
         <Notice tone="demo" compact>
-          Follow-ups are a local work list. No reminder, SMS or call is sent to the patient by this
-          prototype.
+          Follow-up hanyalah daftar kerja lokal. Prototipe ini tidak mengirim pengingat, SMS, atau
+          panggilan ke pasien.
         </Notice>
       </div>
     </Dialog>

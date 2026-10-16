@@ -45,7 +45,19 @@ export function buildRouter({ config, inference }) {
     controllers.facilities.list,
   );
 
+  // The research site's demo: one image in, the model's analysis out, nothing
+  // stored. Public, like the demo page itself.
+  router.post(
+    '/demo/analyze',
+    imageUpload(config.storage.maxUploadBytes),
+    controllers.demo({ inference }).analyze,
+  );
+
   /* ── Session ──────────────────────────────────────────────────────────── */
+
+  // Fallback sign-up for when Supabase Auth's own limits refuse the browser.
+  // Public by necessity: the caller has no account yet.
+  router.post('/auth/register', validate({ body: v.registerBody }), controllers.auth.register);
 
   router.get('/auth/me', requireAuth(), controllers.auth.me);
   router.post('/auth/logout', requireAuth(), controllers.auth.logout);

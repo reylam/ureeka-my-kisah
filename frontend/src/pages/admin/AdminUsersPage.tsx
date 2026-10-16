@@ -80,18 +80,18 @@ export function AdminUsersPage() {
   const changeRole = async (account: Account, role: AccountRole) => {
     if (!actor) return;
     if (account.id === actor.id) {
-      toast.error('You cannot change your own role.', 'Ask another administrator to do it.');
+      toast.error('Kamu tidak bisa mengubah role sendiri.', 'Minta administrator lain untuk melakukannya.');
       return;
     }
     if (account.role === 'admin' && role !== 'admin' && adminCount <= 1) {
-      toast.error('This is the last active administrator.', 'Promote someone else first.');
+      toast.error('Ini administrator aktif terakhir.', 'Jadikan orang lain administrator terlebih dahulu.');
       return;
     }
     try {
       await setRole(account.id, role);
-      toast.success(`${account.name} is now a ${ROLE_LABEL[role].toLowerCase()}.`);
+      toast.success(`${account.name} sekarang berperan sebagai ${ROLE_LABEL[role].toLowerCase()}.`);
     } catch (cause) {
-      toast.error('Could not change the role.', errorMessage(cause));
+      toast.error('Role tidak bisa diubah.', errorMessage(cause));
     }
   };
 
@@ -111,7 +111,7 @@ export function AdminUsersPage() {
   const saveStaff = async () => {
     if (!staffTarget) return;
     if (!staffDraft.facilityId) {
-      setStaffError('Choose the facility this person works at.');
+      setStaffError('Pilih fasilitas tempat orang ini bekerja.');
       return;
     }
     setStaffSaving(true);
@@ -121,7 +121,7 @@ export function AdminUsersPage() {
         // Administrative access is never clinical, whatever the box says.
         canReview: staffTarget.role === 'professional' && staffDraft.canReview,
       });
-      toast.success('Staff record saved.');
+      toast.success('Data staf disimpan.');
       setStaffTarget(null);
     } catch (cause) {
       setStaffError(errorMessage(cause));
@@ -135,7 +135,7 @@ export function AdminUsersPage() {
     setStaffSaving(true);
     try {
       await removeStaffProfile(staffTarget.id);
-      toast.success('Staff record removed.');
+      toast.success('Data staf dihapus.');
       setStaffTarget(null);
     } catch (cause) {
       setStaffError(errorMessage(cause));
@@ -149,11 +149,11 @@ export function AdminUsersPage() {
     try {
       await placePatient(account.patientId, facilityId || null);
       toast.success(
-        facilityId ? `${account.name} placed at the facility.` : `${account.name} is no longer placed.`,
-        facilityId ? 'Professionals there can now see this patient.' : undefined,
+        facilityId ? `${account.name} ditempatkan di fasilitas.` : `${account.name} tidak lagi ditempatkan.`,
+        facilityId ? 'Petugas kesehatan di sana sekarang bisa melihat pasien ini.' : undefined,
       );
     } catch (cause) {
-      toast.error('Could not place the patient.', errorMessage(cause));
+      toast.error('Pasien tidak bisa ditempatkan.', errorMessage(cause));
     }
   };
 
@@ -162,9 +162,9 @@ export function AdminUsersPage() {
     const next = pendingSuspend.status === 'active' ? 'suspended' : 'active';
     try {
       await setStatus(pendingSuspend.id, next);
-      toast.success(next === 'suspended' ? 'Account suspended.' : 'Account reactivated.');
+      toast.success(next === 'suspended' ? 'Akun ditangguhkan.' : 'Akun diaktifkan kembali.');
     } catch (cause) {
-      toast.error('Could not change the account status.', errorMessage(cause));
+      toast.error('Status akun tidak bisa diubah.', errorMessage(cause));
     }
     setPendingSuspend(null);
   };
@@ -172,7 +172,7 @@ export function AdminUsersPage() {
   const columns: Column<Account>[] = [
     {
       id: 'name',
-      header: 'Name',
+      header: 'Nama',
       cell: (account) => <StackedCell primary={account.name} secondary={account.email} />,
     },
     {
@@ -180,7 +180,7 @@ export function AdminUsersPage() {
       header: 'Role',
       cell: (account) => (
         <Select
-          aria-label={`Role for ${account.name}`}
+          aria-label={`Role untuk ${account.name}`}
           value={account.role}
           onChange={(event) => void changeRole(account, event.target.value as AccountRole)}
           disabled={account.id === actor?.id}
@@ -194,22 +194,22 @@ export function AdminUsersPage() {
     },
     {
       id: 'staff',
-      header: 'Staff record / facility',
+      header: 'Data staf / fasilitas',
       hideBelow: 'lg',
       cell: (account) => {
         if (account.role === 'patient') {
           // A patient is placed at a facility by an administrator; that is what
           // decides which professionals can see their record.
           const record = patients.find((patient) => patient.id === account.patientId);
-          if (!record) return <span className="text-obsidian-400">No clinical record yet</span>;
+          if (!record) return <span className="text-obsidian-400">Belum ada rekam klinis</span>;
           return (
             <Select
-              aria-label={`Home facility for ${account.name}`}
+              aria-label={`Fasilitas asal untuk ${account.name}`}
               value={record.homeFacilityId}
               onChange={(event) => void place(account, event.target.value)}
               className="max-w-56"
             >
-              <option value="">Not placed at a facility</option>
+              <option value="">Belum ditempatkan di fasilitas</option>
               {facilityList.map((facility) => (
                 <option key={facility.id} value={facility.id}>
                   {facility.name}
@@ -226,19 +226,19 @@ export function AdminUsersPage() {
                 primary={staff.name}
                 secondary={
                   account.role === 'admin'
-                    ? 'Administrative, not clinical'
+                    ? 'Administratif, bukan klinis'
                     : staff.canReview
-                      ? 'Can sign off reviews'
-                      : 'Cannot sign off reviews'
+                      ? 'Bisa menyetujui review'
+                      : 'Tidak bisa menyetujui review'
                 }
               />
             ) : (
               <Badge tone="attention" size="sm" icon={<ShieldAlert />}>
-                Not linked
+                Belum terhubung
               </Badge>
             )}
             <Button variant="ghost" size="sm" onClick={() => openStaff(account)}>
-              {staff ? 'Edit' : 'Set up'}
+              {staff ? 'Ubah' : 'Atur'}
             </Button>
           </div>
         );
@@ -250,23 +250,23 @@ export function AdminUsersPage() {
       cell: (account) =>
         account.status === 'active' ? (
           <Badge tone="complete" size="sm" icon={<ShieldCheck />}>
-            Active
+            Aktif
           </Badge>
         ) : (
           <Badge tone="urgent" size="sm" icon={<ShieldAlert />}>
-            Suspended
+            Ditangguhkan
           </Badge>
         ),
     },
     {
       id: 'created',
-      header: 'Joined',
+      header: 'Bergabung',
       hideBelow: 'md',
       cell: (account) => (
         <StackedCell
           primary={formatDate(account.createdAt)}
           secondary={
-            account.lastSignInAt ? `Last in ${formatDate(account.lastSignInAt)}` : 'Never signed in'
+            account.lastSignInAt ? `Terakhir masuk ${formatDate(account.lastSignInAt)}` : 'Belum pernah masuk'
           }
         />
       ),
@@ -274,7 +274,7 @@ export function AdminUsersPage() {
     {
       id: 'actions',
       header: '',
-      srHeader: 'Actions',
+      srHeader: 'Aksi',
       align: 'right',
       cell: (account) => (
         <Button
@@ -283,7 +283,7 @@ export function AdminUsersPage() {
           disabled={account.id === actor?.id}
           onClick={() => setPendingSuspend(account)}
         >
-          {account.status === 'active' ? 'Suspend' : 'Reactivate'}
+          {account.status === 'active' ? 'Tangguhkan' : 'Aktifkan kembali'}
         </Button>
       ),
     },
@@ -292,34 +292,35 @@ export function AdminUsersPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Accounts"
-        description="Everyone with a sign-in, their role and whether they can still use it."
+        title="Akun"
+        description="Semua orang yang punya akun masuk, role-nya, dan apakah akunnya masih bisa dipakai."
       />
 
       <Notice tone="info" compact>
-        Anyone who registers through the public form becomes a patient. Promoting someone to health
-        professional is a deliberate act here, and every change is written to the audit log.
+        Siapa pun yang mendaftar lewat form publik otomatis menjadi pasien. Menaikkan seseorang
+        menjadi petugas kesehatan adalah tindakan yang disengaja di sini, dan setiap perubahan
+        dicatat di audit log.
       </Notice>
 
       <Card>
         <CardHeader
-          title={`${rows.length} of ${accounts.length} accounts`}
+          title={`${rows.length} dari ${accounts.length} akun`}
           icon={<Users />}
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <SearchInput
-                label="Search accounts"
+                label="Cari akun"
                 value={query}
                 onChange={setQuery}
-                placeholder="Name or email"
+                placeholder="Nama atau email"
               />
               <Select
-                aria-label="Filter by role"
+                aria-label="Filter berdasarkan role"
                 value={roleFilter}
                 onChange={(event) => setRoleFilter(event.target.value as AccountRole | 'all')}
                 className="max-w-48"
               >
-                <option value="all">All roles</option>
+                <option value="all">Semua role</option>
                 <option value="patient">{ROLE_LABEL.patient}</option>
                 <option value="professional">{ROLE_LABEL.professional}</option>
                 <option value="admin">{ROLE_LABEL.admin}</option>
@@ -331,7 +332,7 @@ export function AdminUsersPage() {
           {rows.length === 0 ? (
             <div className="p-4">
               <NoMatchesState
-                entity="accounts"
+                entity="akun"
                 onClear={() => {
                   setQuery('');
                   setRoleFilter('all');
@@ -343,7 +344,7 @@ export function AdminUsersPage() {
               rows={rows}
               columns={columns}
               rowKey={(account) => account.id}
-              caption="Registered accounts with their role and status"
+              caption="Akun terdaftar beserta role dan statusnya"
               renderMobileCard={(account) => (
                 <div className="space-y-2">
                   <StackedCell primary={account.name} secondary={account.email} />
@@ -353,7 +354,7 @@ export function AdminUsersPage() {
                     </Badge>
                     {account.status === 'suspended' ? (
                       <Badge tone="urgent" size="sm" icon={<ShieldAlert />}>
-                        Suspended
+                        Ditangguhkan
                       </Badge>
                     ) : null}
                   </div>
@@ -369,19 +370,19 @@ export function AdminUsersPage() {
         onClose={() => setPendingSuspend(null)}
         onConfirm={() => void confirmSuspend()}
         title={
-          pendingSuspend?.status === 'active' ? 'Suspend this account?' : 'Reactivate this account?'
+          pendingSuspend?.status === 'active' ? 'Tangguhkan akun ini?' : 'Aktifkan kembali akun ini?'
         }
-        confirmLabel={pendingSuspend?.status === 'active' ? 'Suspend' : 'Reactivate'}
+        confirmLabel={pendingSuspend?.status === 'active' ? 'Tangguhkan' : 'Aktifkan kembali'}
         tone={pendingSuspend?.status === 'active' ? 'danger' : 'default'}
       >
         {pendingSuspend?.status === 'active' ? (
           <>
-            <strong>{pendingSuspend?.name}</strong> will not be able to sign in. Their records are
-            kept and nothing is deleted.
+            <strong>{pendingSuspend?.name}</strong> tidak akan bisa masuk. Datanya tetap
+            tersimpan dan tidak ada yang dihapus.
           </>
         ) : (
           <>
-            <strong>{pendingSuspend?.name}</strong> will be able to sign in again.
+            <strong>{pendingSuspend?.name}</strong> akan bisa masuk lagi.
           </>
         )}
       </ConfirmDialog>
@@ -389,30 +390,30 @@ export function AdminUsersPage() {
       <Dialog
         open={Boolean(staffTarget)}
         onClose={() => setStaffTarget(null)}
-        title="Staff record"
+        title="Data staf"
         description={
           staffTarget
-            ? `${staffTarget.name}. The facility decides which patients this person is assigned to.`
+            ? `${staffTarget.name}. Fasilitas menentukan pasien mana yang ditugaskan ke orang ini.`
             : undefined
         }
         footer={
           <>
             {staffTarget?.staff ? (
               <Button variant="ghost" onClick={() => void clearStaff()} disabled={staffSaving}>
-                Remove record
+                Hapus data
               </Button>
             ) : null}
             <Button variant="ghost" onClick={() => setStaffTarget(null)} disabled={staffSaving}>
-              Cancel
+              Batal
             </Button>
             <Button variant="primary" loading={staffSaving} onClick={() => void saveStaff()}>
-              Save record
+              Simpan data
             </Button>
           </>
         }
       >
         <div className="space-y-4">
-          <Field label="Clinical role" required>
+          <Field label="Role klinis" required>
             {({ id }) => (
               <Select
                 id={id}
@@ -433,7 +434,7 @@ export function AdminUsersPage() {
             )}
           </Field>
 
-          <Field label="Facility" error={staffError} required>
+          <Field label="Fasilitas" error={staffError} required>
             {({ id, describedBy, invalid }) => (
               <Select
                 id={id}
@@ -442,7 +443,7 @@ export function AdminUsersPage() {
                 invalid={invalid}
                 onChange={(event) => setStaffDraft((c) => ({ ...c, facilityId: event.target.value }))}
               >
-                <option value="">Choose a facility</option>
+                <option value="">Pilih fasilitas</option>
                 {facilityList.map((facility) => (
                   <option key={facility.id} value={facility.id}>
                     {facility.name} ({facilityTypeLabel[facility.type]})
@@ -454,8 +455,8 @@ export function AdminUsersPage() {
 
           {staffTarget?.role === 'professional' ? (
             <Checkbox
-              label="Can sign off screening reviews"
-              description="Only nurses and physicians should have this. Community health workers record screenings but do not sign them off."
+              label="Bisa menyetujui review screening"
+              description="Sebaiknya hanya perawat dan dokter yang punya akses ini. Kader kesehatan mencatat screening tetapi tidak menyetujuinya."
               checked={staffDraft.canReview}
               onChange={(checked) => setStaffDraft((c) => ({ ...c, canReview: checked }))}
             />

@@ -18,14 +18,14 @@ import { cn } from '@/utils/cn';
 
 const RESOURCES: { label: string; href: string; detail: string }[] = [
   {
-    label: 'GitHub repository',
+    label: 'Repository GitHub',
     href: 'https://github.com/reylam/ureeka-my-kisah',
     detail: 'Source code',
   },
   {
     label: 'Sample dataset',
     href: 'https://www.kaggle.com/datasets/usmanshams/tbx-11',
-    detail: 'Public chest X-ray collection',
+    detail: 'Koleksi chest X-ray publik',
   },
 ];
 
@@ -37,15 +37,15 @@ export function Footer() {
           <div>
             <TraceFooterMark />
             <p className="mt-5 max-w-sm text-[13.5px] leading-6 text-trace-muted">
-              A research prototype exploring how software could help spot signs of tuberculosis in
-              a chest X-ray, and how a result like that should be explained to the person reading
-              it.
+              Prototipe riset yang mengeksplorasi bagaimana software bisa membantu mengenali tanda
+              tuberkulosis di chest X-ray, dan bagaimana hasil seperti itu seharusnya dijelaskan
+              kepada orang yang membacanya.
             </p>
           </div>
 
           <nav aria-labelledby="footer-nav">
             <h2 id="footer-nav" className="trace-label text-trace-dim">
-              Navigation
+              Navigasi
             </h2>
             <ul className="mt-4 space-y-3">
               {NAV_ITEMS.map((item) => (
@@ -57,14 +57,14 @@ export function Footer() {
               ))}
               <li>
                 <Link to="/how-it-works#sources" className={footerLink}>
-                  Sources
+                  Sumber
                 </Link>
               </li>
             </ul>
           </nav>
 
           <div>
-            <h2 className="trace-label text-trace-dim">Resources</h2>
+            <h2 className="trace-label text-trace-dim">Sumber daya</h2>
             <ul className="mt-4 space-y-3">
               {RESOURCES.map((resource) => (
                 <li key={resource.href}>

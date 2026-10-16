@@ -101,7 +101,7 @@ export async function request<T>(
     });
   } catch (cause) {
     if (cause instanceof DOMException && cause.name === 'AbortError') throw cause;
-    throw new ApiError(0, 'NETWORK_ERROR', 'Could not reach the server. Check your connection and try again.');
+    throw new ApiError(0, 'NETWORK_ERROR', 'Server tidak bisa dijangkau. Cek koneksi kamu lalu coba lagi.');
   }
 
   if (response.status === 204) return { data: undefined as T };
@@ -124,7 +124,7 @@ export async function request<T>(
     throw new ApiError(
       response.status,
       error?.code ?? 'HTTP_ERROR',
-      error?.message ?? 'The server could not complete that request.',
+      error?.message ?? 'Server tidak bisa menyelesaikan permintaan itu.',
       error?.details,
     );
   }
@@ -160,6 +160,6 @@ export async function fetchAllPages<T>(path: string, query: Query = {}, pageSize
 }
 
 /** Message for UI: the error's own text if there is one, otherwise a fallback. */
-export function errorMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {
+export function errorMessage(error: unknown, fallback = 'Terjadi kesalahan. Coba lagi ya.'): string {
   return error instanceof Error && error.message ? error.message : fallback;
 }

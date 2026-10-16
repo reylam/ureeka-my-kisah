@@ -21,7 +21,7 @@ import { SOURCE_LIST } from '@/trace/data/sources';
  */
 export function TraceHowItWorks() {
   useEffect(() => {
-    document.title = 'How it works · PULMO-TRACE';
+    document.title = 'Cara kerja · PULMO-TRACE';
   }, []);
 
   return (
@@ -30,14 +30,14 @@ export function TraceHowItWorks() {
       <div className="relative overflow-hidden border-b border-trace-line">
         <div aria-hidden className="trace-grid trace-grid-mask absolute inset-0" />
         <Container className="relative py-14 sm:py-16">
-          <Eyebrow>How it works</Eyebrow>
+          <Eyebrow>Cara kerja</Eyebrow>
           <h1 className="mt-5 max-w-3xl text-[32px] leading-[1.1] font-semibold tracking-[-0.03em] sm:text-[42px]">
-            What is actually going on behind a screening result
+            Apa yang sebenarnya terjadi di balik hasil screening
           </h1>
           <p className="mt-5 max-w-2xl text-[16px] leading-7 text-trace-muted">
-            No medical or computing background needed. If you have five minutes, this explains the
-            whole idea, including the parts that are not built and the parts that would never be
-            safe to trust on their own.
+            Tidak perlu latar belakang medis atau komputasi. Kalau kamu punya lima menit, halaman
+            ini menjelaskan seluruh idenya, termasuk bagian yang belum dibuat dan bagian yang tidak
+            akan pernah aman dipercaya begitu saja.
           </p>
         </Container>
       </div>
@@ -49,37 +49,37 @@ export function TraceHowItWorks() {
             <SectionHeading
               id="pattern-heading"
               index="01"
-              eyebrow="The idea"
-              title="Software that has seen a lot of X-rays"
+              eyebrow="Idenya"
+              title="Software yang sudah melihat banyak X-ray"
             />
 
             <div className="space-y-5 text-[15px] leading-7 text-trace-muted">
               <p>
-                Think of someone who has sorted photographs for a living for twenty years. Show
-                them a new photo and they can tell you instantly which pile it belongs in. They
-                are not reasoning it out, they are recognising something.
+                Bayangkan seseorang yang selama dua puluh tahun kerjanya memilah foto. Tunjukkan
+                foto baru, dan ia bisa langsung bilang foto itu masuk ke tumpukan yang mana. Ia
+                tidak menalar jawabannya, ia mengenali sesuatu.
               </p>
               <p>
-                That is roughly what this kind of software does. It is shown thousands of chest
-                X-rays that have already been labelled by people who knew the answer, and it
-                gradually learns which arrangements of light and shadow tend to go with which
-                label. Afterwards, given a new X-ray, it produces a number saying how much this
-                one looks like the ones labelled tuberculosis.
+                Kurang lebih begitulah cara kerja software jenis ini. Ia diperlihatkan ribuan chest
+                X-ray yang sudah diberi label oleh orang yang tahu jawabannya, lalu perlahan belajar
+                susunan terang dan bayangan seperti apa yang cenderung berpasangan dengan label
+                tertentu. Setelah itu, diberi X-ray baru, ia menghasilkan angka yang menunjukkan
+                seberapa mirip gambar itu dengan yang berlabel tuberkulosis.
               </p>
               <p>
-                Two things follow from that, and they matter more than anything else on this page.
-                The software only knows what was in the pile it learned from. And it recognises
-                patterns, which is not the same as understanding a disease.
+                Ada dua hal yang menyusul dari sini, dan keduanya lebih penting daripada hal lain
+                di halaman ini. Software hanya tahu apa yang ada di tumpukan tempat ia belajar. Dan
+                ia mengenali pola, yang tidak sama dengan memahami penyakit.
               </p>
             </div>
           </div>
 
-          <Callout label="Why that second point is not a technicality" tone="caution" className="mt-12 max-w-3xl">
-            Software like this has been caught, more than once, picking up on things that had
-            nothing to do with illness: a marker a particular hospital puts in the corner, the way
-            one brand of machine processes its images, even the border of the picture. It scored
-            brilliantly in testing and then failed completely somewhere else. Recognising a pattern
-            is not the same as knowing what the pattern means.
+          <Callout label="Kenapa poin kedua itu bukan soal teknis belaka" tone="caution" className="mt-12 max-w-3xl">
+            Software seperti ini pernah beberapa kali ketahuan menangkap hal-hal yang tidak ada
+            hubungannya dengan penyakit: penanda yang dipasang rumah sakit tertentu di sudut
+            gambar, cara satu merek mesin memproses gambarnya, bahkan pinggiran gambar. Skornya
+            bagus sekali saat diuji, lalu gagal total di tempat lain. Mengenali pola tidak sama
+            dengan tahu apa arti pola itu.
           </Callout>
         </Container>
       </SectionBand>
@@ -90,9 +90,9 @@ export function TraceHowItWorks() {
           <SectionHeading
             id="steps-heading"
             index="02"
-            eyebrow="The flow"
-            title="From an X-ray to a next step"
-            standfirst="The same four steps as on the home page. Here they are worth reading slowly, because the notes underneath say which parts exist."
+            eyebrow="Alurnya"
+            title="Dari X-ray ke langkah berikutnya"
+            standfirst="Empat langkah yang sama seperti di beranda. Di sini layak dibaca pelan-pelan, karena catatan di bawahnya menjelaskan bagian mana yang sudah ada."
           />
           <div className="mt-11 rounded-2xl border border-trace-line bg-trace-card p-6 sm:p-8">
             <StepFlow steps={STEPS} />
@@ -100,13 +100,13 @@ export function TraceHowItWorks() {
 
           <DisclaimerBanner
             tone="caution"
-            title="Steps three and four are the honest gap in this project."
+            title="Langkah tiga dan empat adalah celah yang kami akui di proyek ini."
             className="mt-6 max-w-3xl"
           >
-            Step three needs a trained model, and there is not one. Step four shows a stand-in
-            result so the format can be judged. Everything the demo displays is clearly marked as a
-            placeholder, and the number it shows comes from the file’s name and size, not from the
-            picture.
+            Langkah tiga butuh model terlatih, dan modelnya belum ada. Langkah empat menampilkan
+            hasil placeholder agar formatnya bisa dinilai. Semua yang ditampilkan demo diberi label
+            jelas sebagai placeholder, dan angka yang muncul berasal dari nama dan ukuran file,
+            bukan dari gambarnya.
           </DisclaimerBanner>
         </Container>
       </SectionBand>
@@ -118,43 +118,45 @@ export function TraceHowItWorks() {
             <SectionHeading
               id="score-heading"
               index="03"
-              eyebrow="The number"
-              title="Why a score is not a “chance of having TB”"
+              eyebrow="Angkanya"
+              title="Kenapa score bukan “peluang terkena TB”"
             />
 
             <div className="space-y-5 text-[15px] leading-7 text-trace-muted">
               <p>
-                A screening tool usually reports a number between 0 and 1. It is tempting to read
-                0.80 as “an 80% chance this person has tuberculosis”. That reading is wrong, and
-                the difference is not academic.
+                Tools screening biasanya melaporkan angka antara 0 sampai 1. Memang menggoda untuk
+                membaca 0.80 sebagai “peluang 80% orang ini menderita tuberkulosis”. Pembacaan itu
+                salah, dan bedanya bukan sekadar teori.
               </p>
               <p>
-                The score only says how strongly this image resembles the ones the software learned
-                to flag. Whether a particular person actually has TB also depends on how common TB
-                is where they live, what symptoms they have, and their history. The same 0.80 means
-                something very different in a TB clinic, where many patients do have it, and in a
-                routine workplace check, where almost nobody does.
+                Score hanya menunjukkan seberapa kuat gambar ini menyerupai gambar yang dipelajari
+                software untuk ditandai. Apakah seseorang benar-benar menderita TB juga bergantung
+                pada seberapa umum TB di tempat tinggalnya, gejala yang dialaminya, dan riwayatnya.
+                Angka 0.80 yang sama berarti sangat berbeda di klinik TB, di mana banyak pasien
+                memang menderitanya, dan di pemeriksaan rutin di tempat kerja, di mana hampir tidak
+                ada yang menderitanya.
               </p>
               <p>
-                This is why a screening tool cannot be shipped with one fixed cut-off and used
-                everywhere. The cut-off is a decision about which mistake you would rather make,
-                and that decision belongs to the people running the clinic, not to the software.
+                Itu sebabnya tools screening tidak bisa dirilis dengan satu cut-off tetap lalu
+                dipakai di mana-mana. Cut-off adalah keputusan tentang kesalahan mana yang lebih
+                rela kamu terima, dan keputusan itu milik pihak yang menjalankan klinik, bukan milik
+                software.
               </p>
             </div>
           </div>
 
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <TradeoffCard
-              title="Set the cut-off low"
-              body="Almost nobody with TB is missed, but a lot of healthy people get flagged and sent for tests they did not need."
+              title="Cut-off dibuat rendah"
+              body="Hampir tidak ada penderita TB yang terlewat, tetapi banyak orang sehat ikut ditandai dan dikirim untuk tes yang sebenarnya tidak perlu."
             />
             <TradeoffCard
-              title="Set it high"
-              body="Nearly everyone flagged really does need testing, but more people with TB slip through unnoticed."
+              title="Cut-off dibuat tinggi"
+              body="Hampir semua yang ditandai memang perlu dites, tetapi lebih banyak penderita TB yang lolos tanpa terdeteksi."
             />
             <TradeoffCard
-              title="There is no setting that avoids both"
-              body="Which way you lean depends on how reachable the follow-up test is, and on what a missed case costs in that community."
+              title="Tidak ada pengaturan yang menghindari keduanya"
+              body="Ke arah mana kamu condong bergantung pada seberapa mudah tes lanjutan dijangkau, dan seberapa besar akibat dari kasus yang terlewat di komunitas itu."
               tone="accent"
             />
           </div>
@@ -167,30 +169,30 @@ export function TraceHowItWorks() {
           <SectionHeading
             id="path-heading"
             index="04"
-            eyebrow="Where this sits"
-            title="Screening, testing, treating"
-            standfirst="Three different jobs, done by different people, in this order. Software can only ever help with the first one."
+            eyebrow="Posisinya di mana"
+            title="Screening, tes, pengobatan"
+            standfirst="Tiga pekerjaan berbeda, dikerjakan orang yang berbeda, dalam urutan ini. Software hanya bisa membantu yang pertama."
           />
 
           <ol className="mt-11 grid gap-5 lg:grid-cols-3">
             {[
               {
-                step: 'First',
+                step: 'Pertama',
                 title: 'Screening',
-                body: 'Who should be tested? Symptom questions and a chest X-ray. Quick, cheap, approximate, and the only place this kind of software belongs.',
-                who: 'Health worker, or software helping one',
+                body: 'Siapa yang perlu dites? Pertanyaan soal gejala dan chest X-ray. Cepat, murah, perkiraan kasar, dan satu-satunya tempat yang cocok untuk software jenis ini.',
+                who: 'Tenaga kesehatan, atau software yang membantunya',
               },
               {
-                step: 'Then',
-                title: 'Testing',
-                body: 'Does this person have the bacteria? A sputum sample goes to a rapid molecular test, a culture, or a microscope. This is what actually confirms tuberculosis.',
-                who: 'Laboratory',
+                step: 'Lalu',
+                title: 'Tes',
+                body: 'Apakah orang ini membawa bakterinya? Sampel dahak dibawa ke tes molekuler cepat, kultur, atau mikroskop. Inilah yang benar-benar mengonfirmasi tuberkulosis.',
+                who: 'Laboratorium',
               },
               {
-                step: 'Finally',
-                title: 'Diagnosis and treatment',
-                body: 'The test result read together with symptoms and history, then a course of treatment that typically runs for months and has to be completed.',
-                who: 'Doctor, with the patient',
+                step: 'Terakhir',
+                title: 'Diagnosis dan pengobatan',
+                body: 'Hasil tes dibaca bersama gejala dan riwayat, lalu dilanjutkan dengan pengobatan yang biasanya berlangsung berbulan-bulan dan harus dituntaskan.',
+                who: 'Dokter, bersama pasien',
               },
             ].map((stage) => (
               <li
@@ -219,8 +221,8 @@ export function TraceHowItWorks() {
             <SectionHeading
               id="faq-heading"
               index="05"
-              eyebrow="Questions"
-              title="The things people ask first"
+              eyebrow="Pertanyaan"
+              title="Hal-hal yang paling sering ditanyakan"
             />
             <Mascot size="md" className="hidden sm:flex" />
           </div>
@@ -247,27 +249,27 @@ export function TraceHowItWorks() {
               id="worried-heading"
               className="mt-4 text-[22px] leading-snug font-medium tracking-[-0.015em]"
             >
-              If you are worried about tuberculosis, do not use this site
+              Kalau kamu khawatir soal tuberkulosis, jangan andalkan situs ini
             </h2>
             <p className="mt-4 text-[15px] leading-7 text-trace-muted">
-              See a health professional instead. A cough that has lasted more than two weeks, fever,
-              night sweats, or losing weight without trying are all reasons to get checked. TB is
-              curable, and in many countries testing and treatment are free. Getting tested early
-              also protects the people around you.
+              Temui tenaga kesehatan. Batuk yang berlangsung lebih dari dua minggu, demam, keringat
+              malam, atau berat badan turun tanpa sebab adalah alasan untuk periksa. TB bisa
+              disembuhkan, dan di banyak negara tes serta pengobatannya gratis. Tes sejak dini juga
+              melindungi orang-orang di sekitarmu.
             </p>
             <p className="mt-4 text-[14px] leading-6 text-trace-dim">
-              Nothing on this site can tell you whether you have tuberculosis, and it is not
-              intended to try.
+              Tidak ada yang ada di situs ini yang bisa memberitahumu apakah kamu menderita
+              tuberkulosis, dan situs ini memang tidak dimaksudkan untuk itu.
             </p>
           </div>
 
           <div className="mt-10 flex flex-wrap justify-center gap-3">
             <TraceLinkButton to="/demo">
               <Play aria-hidden className="size-4" />
-              Open the screening demo
+              Buka demo screening
             </TraceLinkButton>
             <TraceLinkButton to="/" variant="secondary">
-              Back to the overview
+              Kembali ke ringkasan
               <ArrowRight aria-hidden className="size-4" />
             </TraceLinkButton>
           </div>
@@ -279,9 +281,9 @@ export function TraceHowItWorks() {
         <Container>
           <SectionHeading
             id="sources-heading"
-            eyebrow="Sources"
-            title="Where the facts on this site come from"
-            standfirst="Three World Health Organization documents. There is no entry here for a study of PULMO-TRACE, because none exists."
+            eyebrow="Sumber"
+            title="Dari mana fakta-fakta di situs ini berasal"
+            standfirst="Tiga dokumen World Health Organization. Tidak ada entri untuk studi tentang PULMO-TRACE di sini, karena memang belum ada."
           />
           <SourceList sources={SOURCE_LIST} className="mt-10 max-w-3xl" />
         </Container>

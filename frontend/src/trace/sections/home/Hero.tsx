@@ -25,7 +25,7 @@ export function Hero() {
       <Container className="relative py-16 sm:py-20 lg:py-28">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           <div className="trace-rise">
-            <Eyebrow>AI-assisted TB screening · Research prototype</Eyebrow>
+            <Eyebrow>Screening TB berbantuan AI · Prototipe riset</Eyebrow>
 
             <h1 className="mt-5 max-w-xl text-[36px] leading-[1.06] font-semibold tracking-[-0.03em] sm:text-[46px] lg:text-[54px]">
               See beyond
@@ -34,18 +34,19 @@ export function Hero() {
             </h1>
 
             <p className="mt-6 max-w-lg text-[16px] leading-7 text-trace-muted">
-              Tuberculosis often shows on a chest X-ray before anyone is sure about it.
-              PULMO-TRACE explores how software could help flag those signs earlier, and it is
-              built to be straight with you about what a result does and does not mean.
+              Tuberculosis sering sudah terlihat di chest X-ray sebelum ada yang yakin soal itu.
+              PULMO-TRACE mengeksplorasi bagaimana software bisa membantu menandai tanda-tanda
+              tersebut lebih awal, dan dibuat untuk jujur soal apa arti dan bukan arti sebuah
+              hasil.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <TraceLinkButton to="/demo">
                 <Play aria-hidden className="size-4" />
-                Try the screening demo
+                Coba demo screening
               </TraceLinkButton>
               <TraceLinkButton to="/how-it-works" variant="secondary">
-                How it works
+                Cara kerja
                 <ArrowRight aria-hidden className="size-4" />
               </TraceLinkButton>
             </div>
@@ -55,16 +56,16 @@ export function Hero() {
           <RadiographFigure
             variant="sample-a"
             annotations={[
-              { label: 'upper zone', x: 0.33, y: 0.3, r: 0.1 },
-              { label: 'mid zone', x: 0.63, y: 0.42, r: 0.08 },
+              { label: 'zona atas', x: 0.33, y: 0.3, r: 0.1 },
+              { label: 'zona tengah', x: 0.63, y: 0.42, r: 0.08 },
             ]}
-            annotationLabel="Drawn by hand, not by a model"
+            annotationLabel="Digambar manual, bukan oleh model"
             metadata={[
-              { label: 'View', value: 'Front-facing' },
-              { label: 'Image', value: 'Illustration' },
-              { label: 'Analysed', value: 'No' },
+              { label: 'Tampilan', value: 'Tampak depan' },
+              { label: 'Gambar', value: 'Ilustrasi' },
+              { label: 'Dianalisis', value: 'Tidak' },
             ]}
-            caption="A chest X-ray drawn in code, so that no real patient’s image is used as decoration. The circles mark the areas doctors usually describe. Nothing has examined this picture."
+            caption="Chest X-ray yang digambar lewat kode, supaya tidak ada gambar pasien sungguhan yang dipakai sebagai hiasan. Lingkaran menandai area yang biasanya dijelaskan dokter. Tidak ada yang memeriksa gambar ini."
           />
         </div>
       </Container>

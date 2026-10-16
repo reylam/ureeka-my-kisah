@@ -62,7 +62,7 @@ export interface AuthState {
   loadWorkspace: () => Promise<void>;
 }
 
-const GENERIC_SIGN_IN_ERROR = 'Those credentials do not match an account.';
+const GENERIC_SIGN_IN_ERROR = 'Email atau password tidak cocok dengan akun mana pun.';
 
 const signedOut = {
   account: null,
@@ -77,6 +77,53 @@ function isSuspended(error: unknown): boolean {
 
 function isNetworkError(error: AuthError | Error): boolean {
   return /fetch|network|failed to/i.test(error.message);
+}
+
+const SIGN_UP_BUSY: RegisterResult = {
+  ok: false,
+  field: 'form',
+  message: 'Terlalu banyak percobaan pendaftaran saat ini. Tunggu beberapa menit lalu coba lagi.',
+};
+
+/**
+ * Fallback for a sign-up Supabase Auth refused because of its own limits.
+ *
+ * The API creates the account with the Admin API (confirmed, no e-mail), then
+ * this signs in with the same credentials so the person lands in a session just
+ * as if the browser sign-up had worked. Any failure that is not the person's
+ * to fix (route switched off, API unreachable) falls back to the plain
+ * "try again later" message the browser path would have shown.
+ */
+async function registerThroughServer(
+  { name, email, password }: RegisterInput,
+  signIn: AuthState['signIn'],
+): Promise<RegisterResult> {
+  try {
+    await api.post('/auth/register', { name: name.trim(), email: email.trim(), password });
+  } catch (cause) {
+    if (cause instanceof ApiError) {
+      if (cause.status === 409) {
+        return { ok: false, field: 'email', message: 'Sudah ada akun dengan alamat email itu.' };
+      }
+      if (cause.status === 422) {
+        for (const field of ['email', 'password', 'name'] as const) {
+          const message = cause.fieldError(field);
+          if (message) return { ok: false, field, message };
+        }
+      }
+    }
+    return SIGN_UP_BUSY;
+  }
+
+  const result = await signIn(email, password);
+  if (!result.ok) {
+    return {
+      ok: false,
+      field: 'form',
+      message: 'Akun kamu sudah dibuat, tapi proses masuk gagal. Silakan masuk lewat halaman masuk.',
+    };
+  }
+  return { ok: true, confirmationRequired: false };
 }
 
 /** Empty everything that belonged to the previous person. */
@@ -127,7 +174,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       return {
         ok: false,
         message:
-          'Sign-in is not configured for this build. Set the Supabase variables in frontend/.env.',
+          'Fitur masuk belum dikonfigurasi untuk build ini. Isi variabel Supabase di frontend/.env.',
       };
     }
     const client = requireSupabase();
@@ -136,13 +183,13 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       // A suspended account is banned in Supabase Auth; the service says so only
       // after the password was right, so this does not reveal who has an account.
       if (error.code === 'user_banned' || /banned/i.test(error.message)) {
-        return { ok: false, message: 'This account has been suspended. Contact an administrator.' };
+        return { ok: false, message: 'Akun ini ditangguhkan. Hubungi administrator.' };
       }
       // One message for every other cause, so the form cannot be used to find out
       // which addresses have accounts. Only a network failure is told apart.
       return {
         ok: false,
-        message: isNetworkError(error) ? 'Could not reach the sign-in service.' : GENERIC_SIGN_IN_ERROR,
+        message: isNetworkError(error) ? 'Layanan masuk tidak bisa dijangkau.' : GENERIC_SIGN_IN_ERROR,
       };
     }
 
@@ -156,13 +203,13 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       clearLocalSession();
       set({ ...signedOut });
       if (isSuspended(cause)) {
-        return { ok: false, message: 'This account has been suspended. Contact an administrator.' };
+        return { ok: false, message: 'Akun ini ditangguhkan. Hubungi administrator.' };
       }
       return {
         ok: false,
         message:
           cause instanceof ApiError && cause.status === 0
-            ? 'Signed in, but the PULMO server could not be reached.'
+            ? 'Berhasil masuk, tapi server PULMO tidak bisa dijangkau.'
             : GENERIC_SIGN_IN_ERROR,
       };
     }
@@ -174,7 +221,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         ok: false,
         field: 'form',
         message:
-          'Sign-up is not configured for this build. Set the Supabase variables in frontend/.env.',
+          'Fitur pendaftaran belum dikonfigurasi untuk build ini. Isi variabel Supabase di frontend/.env.',
       };
     }
     const client = requireSupabase();
@@ -189,24 +236,22 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     if (error) {
       const message = error.message.toLowerCase();
       if (message.includes('already') || message.includes('registered')) {
-        return { ok: false, field: 'email', message: 'An account already exists for that email address.' };
+        return { ok: false, field: 'email', message: 'Sudah ada akun dengan alamat email itu.' };
       }
       if (message.includes('password')) {
         return { ok: false, field: 'password', message: error.message };
       }
-      // Supabase Auth limits sign-up e-mails and requests per hour. That limit
-      // lives in the Auth service, not in the PULMO API.
+      // Supabase Auth limits sign-up e-mails and requests per address. That
+      // limit lives in the Auth service, so the browser cannot get past it.
+      // The PULMO API can create the account itself (no e-mail is sent), so
+      // hand the same details to it instead of making the person wait.
       if (error.status === 429 || message.includes('rate limit') || /over_.*_rate_limit/.test(String(error.code))) {
-        return {
-          ok: false,
-          field: 'form',
-          message: 'Too many sign-up attempts right now. Please wait a few minutes and try again.',
-        };
+        return registerThroughServer({ name, email, password }, get().signIn);
       }
       return {
         ok: false,
         field: 'form',
-        message: isNetworkError(error) ? 'Could not reach the sign-up service.' : error.message,
+        message: isNetworkError(error) ? 'Layanan pendaftaran tidak bisa dijangkau.' : error.message,
       };
     }
 
@@ -258,7 +303,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       set({
         workspace: 'error',
         workspaceError:
-          cause instanceof Error && cause.message ? cause.message : 'Could not load your workspace.',
+          cause instanceof Error && cause.message ? cause.message : 'Workspace kamu gagal dimuat.',
       });
     }
   },

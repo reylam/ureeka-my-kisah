@@ -1,4 +1,5 @@
 import * as serialize from './serializers.js';
+import { ApiError } from '../utils/ApiError.js';
 import { unwrap, unwrapOne } from './db.js';
 import { tokenIssuedAt } from '../middleware/auth.js';
 import { pageMeta, sanitizeSearch, toRange } from '../utils/pagination.js';
@@ -55,6 +56,42 @@ export async function signOut(ctx) {
   const { error } = await ctx.admin.auth.admin.signOut(ctx.token, 'global');
   // A token that is already gone is not a failure of logging out.
   if (error && !/not found|invalid|expired/i.test(error.message ?? '')) throw error;
+}
+
+/**
+ * Create a patient account on the server.
+ *
+ * This is the fallback for when Supabase Auth refuses a browser sign-up (its
+ * e-mail and per-address limits). It goes through the Admin API with the e-mail
+ * marked confirmed, so no message is sent and the limits on sending do not
+ * apply. There is deliberately no role parameter: the database trigger turns
+ * every new auth user into a patient, whatever metadata arrives.
+ */
+export async function register(admin, { name, email, password }) {
+  const { data, error } = await admin.auth.admin.createUser({
+    email: email.trim().toLowerCase(),
+    password,
+    email_confirm: true,
+    user_metadata: { full_name: name.trim() },
+  });
+
+  if (error) {
+    const text = `${error.code ?? ''} ${error.message ?? ''}`.toLowerCase();
+    if (text.includes('email_exists') || text.includes('already') || text.includes('registered')) {
+      throw ApiError.conflict('An account already exists for that email address.', {
+        email: ['An account already exists for that email address.'],
+      });
+    }
+    if (text.includes('weak_password') || text.includes('password')) {
+      throw ApiError.validation({ password: [error.message] });
+    }
+    if (text.includes('email_address_invalid') || text.includes('invalid')) {
+      throw ApiError.validation({ email: ['Enter a valid email address.'] });
+    }
+    throw ApiError.unavailable('AUTH_UNAVAILABLE', 'The sign-up service could not create the account.');
+  }
+
+  return { id: data.user.id };
 }
 
 /* ── Administration ─────────────────────────────────────────────────────── */

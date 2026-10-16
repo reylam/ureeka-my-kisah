@@ -152,13 +152,13 @@ export function ReferralsPage() {
     () => [
       {
         id: 'patient',
-        header: 'Patient',
+        header: 'Pasien',
         sortable: true,
         cell: (referral) => {
           const patient = patientsById.get(referral.patientId);
           return (
             <StackedCell
-              primary={patient?.name ?? 'Unknown patient'}
+              primary={patient?.name ?? 'Pasien tidak dikenal'}
               secondary={patient?.mrn}
             />
           );
@@ -174,12 +174,12 @@ export function ReferralsPage() {
       },
       {
         id: 'destination',
-        header: 'Destination',
+        header: 'Tujuan',
         cell: (referral) => {
           const destination = facilities.find((f) => f.id === referral.toFacilityId);
           return (
             <StackedCell
-              primary={destination?.name ?? 'Unknown facility'}
+              primary={destination?.name ?? 'Fasilitas tidak dikenal'}
               secondary={facilityServiceLabel[referral.requestedService]}
             />
           );
@@ -187,7 +187,7 @@ export function ReferralsPage() {
       },
       {
         id: 'created',
-        header: 'Created',
+        header: 'Dibuat',
         sortable: true,
         width: 'w-28',
         hideBelow: 'xl',
@@ -195,7 +195,7 @@ export function ReferralsPage() {
       },
       {
         id: 'appointment',
-        header: 'Appointment',
+        header: 'Jadwal temu',
         sortable: true,
         width: 'w-32',
         hideBelow: 'lg',
@@ -203,7 +203,7 @@ export function ReferralsPage() {
           referral.appointmentDate ? (
             <span className="tabular">{formatDate(referral.appointmentDate)}</span>
           ) : (
-            <span className="text-obsidian-400">Not booked</span>
+            <span className="text-obsidian-400">Belum dijadwalkan</span>
           ),
       },
       {
@@ -215,26 +215,26 @@ export function ReferralsPage() {
       },
       {
         id: 'priority',
-        header: 'Priority',
+        header: 'Prioritas',
         width: 'w-28',
         hideBelow: 'xl',
         cell: (referral) => <ReferralPriorityBadge priority={referral.priority} size="sm" />,
       },
       {
         id: 'worker',
-        header: 'Assigned',
+        header: 'Penanggung jawab',
         width: 'w-36',
         hideBelow: 'xl',
         cell: (referral) => (
           <span className="truncate text-obsidian-600">
-            {users.find((u) => u.id === referral.assignedWorkerId)?.name ?? 'Unassigned'}
+            {users.find((u) => u.id === referral.assignedWorkerId)?.name ?? 'Belum ditugaskan'}
           </span>
         ),
       },
       {
         id: 'open',
         header: '',
-        srHeader: 'Open referral',
+        srHeader: 'Buka referral',
         align: 'right',
         width: 'w-10',
         cell: () => (
@@ -256,13 +256,13 @@ export function ReferralsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Referrals"
-        description="Patients escalated to a facility that can confirm or exclude TB, and where each one has got to."
+        title="Referral"
+        description="Pasien yang dirujuk ke fasilitas yang bisa memastikan atau menyingkirkan TB, beserta perkembangan tiap referral."
         meta={
           <>
             <HeaderMeta label="Total" value={allReferrals.length} />
-            <HeaderMeta label="Open" value={openCount} />
-            <HeaderMeta label="Urgent and open" value={urgentCount} />
+            <HeaderMeta label="Masih berjalan" value={openCount} />
+            <HeaderMeta label="Mendesak dan berjalan" value={urgentCount} />
           </>
         }
         actions={
@@ -271,7 +271,7 @@ export function ReferralsPage() {
             leadingIcon={<Plus className="size-4" />}
             onClick={() => setCreateOpen(true)}
           >
-            New referral
+            Referral baru
           </Button>
         }
       />
@@ -282,8 +282,8 @@ export function ReferralsPage() {
           onClearFilters={controls.clearAll}
           search={
             <SearchInput
-              label="Search referrals by patient, code, destination or reason"
-              placeholder="Patient, code or destination"
+              label="Cari referral berdasarkan pasien, kode, tujuan, atau alasan"
+              placeholder="Pasien, kode, atau tujuan"
               value={controls.term}
               onChange={controls.setTerm}
             />
@@ -292,10 +292,10 @@ export function ReferralsPage() {
             <>
               <FilterSelect
                 label="Status"
-                allLabel="Any status"
+                allLabel="Semua status"
                 value={controls.filterValues.status}
                 options={[
-                  { value: 'open', label: 'Open only', count: openCount },
+                  { value: 'open', label: 'Yang masih berjalan', count: openCount },
                   ...STATUS_FLOW.map((status) => ({
                     value: status,
                     label: referralStatusLabel[status],
@@ -305,8 +305,8 @@ export function ReferralsPage() {
                 onChange={(value) => controls.setFilter('status', value)}
               />
               <FilterSelect
-                label="Priority"
-                allLabel="Any priority"
+                label="Prioritas"
+                allLabel="Semua prioritas"
                 value={controls.filterValues.priority as ReferralPriority | 'all'}
                 options={(['urgent', 'soon', 'routine'] as ReferralPriority[]).map((priority) => ({
                   value: priority,
@@ -315,8 +315,8 @@ export function ReferralsPage() {
                 onChange={(value) => controls.setFilter('priority', value)}
               />
               <FilterSelect
-                label="Destination"
-                allLabel="All destinations"
+                label="Tujuan"
+                allLabel="Semua tujuan"
                 value={controls.filterValues.facility}
                 options={Array.from(new Set(allReferrals.map((r) => r.toFacilityId))).map(
                   (id) => ({
@@ -327,8 +327,8 @@ export function ReferralsPage() {
                 onChange={(value) => controls.setFilter('facility', value)}
               />
               <FilterSelect
-                label="Assigned"
-                allLabel="Anyone"
+                label="Penanggung jawab"
+                allLabel="Semua orang"
                 value={controls.filterValues.worker}
                 options={Array.from(new Set(allReferrals.map((r) => r.assignedWorkerId))).map(
                   (id) => ({
@@ -344,7 +344,7 @@ export function ReferralsPage() {
             <ResultCount
               shown={controls.filtered.length}
               total={allReferrals.length}
-              noun="referrals"
+              noun="referral"
             />
           }
         />
@@ -356,20 +356,20 @@ export function ReferralsPage() {
         ) : allReferrals.length === 0 ? (
           <EmptyState
             icon={<Send />}
-            title="No referrals yet"
-            description="Referrals are usually raised from a screening result once a clinician has reviewed the image."
+            title="Belum ada referral"
+            description="Referral biasanya dibuat dari hasil screening setelah klinisi meninjau gambarnya."
             action={
               <Button variant="primary" onClick={() => setCreateOpen(true)}>
-                Create a referral
+                Buat referral
               </Button>
             }
           />
         ) : controls.filtered.length === 0 ? (
-          <NoMatchesState entity="referrals" onClear={controls.clearAll} />
+          <NoMatchesState entity="referral" onClear={controls.clearAll} />
         ) : (
           <>
             <DataTable
-              caption="Referral register"
+              caption="Daftar referral"
               rows={controls.visible}
               columns={columns}
               rowKey={(referral) => referral.id}
@@ -394,7 +394,7 @@ export function ReferralsPage() {
                   <div className="flex items-start gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-obsidian-900">
-                        {patient?.name ?? 'Unknown patient'}
+                        {patient?.name ?? 'Pasien tidak dikenal'}
                       </p>
                       <p className="mt-0.5 truncate font-mono text-[11px] text-obsidian-500">
                         {referral.code} · {patient?.mrn}
@@ -448,21 +448,21 @@ export function ReferralsPage() {
                   navigate(`/patients/${focused.patientId}`);
                 }}
               >
-                Open patient
+                Buka data pasien
               </Button>
               <Button
                 variant="outline"
                 leadingIcon={<Pencil className="size-4" />}
                 onClick={() => setEditing(focused)}
               >
-                Edit details
+                Ubah detail
               </Button>
               <Button
                 variant="outline"
                 leadingIcon={<CalendarClock className="size-4" />}
                 onClick={() => setFollowUpFor(focused)}
               >
-                Schedule follow-up
+                Jadwalkan follow-up
               </Button>
             </>
           ) : null
@@ -481,24 +481,24 @@ export function ReferralsPage() {
             </div>
 
             <dl className="divide-y divide-obsidian-100">
-              <DetailRow label="Destination">
-                {focusedDestination?.name ?? 'Unknown facility'}
+              <DetailRow label="Tujuan">
+                {focusedDestination?.name ?? 'Fasilitas tidak dikenal'}
                 {focusedDestination ? (
                   <span className="mt-0.5 block text-xs text-obsidian-500 tabular">
                     {formatDistance(focusedDestination.distanceKm)} ·{' '}
-                    {formatTravelTime(focusedDestination.travelTimeMinutes)} travel ·{' '}
+                    {formatTravelTime(focusedDestination.travelTimeMinutes)} perjalanan ·{' '}
                     {focusedDestination.phone}
                   </span>
                 ) : null}
               </DetailRow>
-              <DetailRow label="Requested">
+              <DetailRow label="Layanan diminta">
                 {facilityServiceLabel[focused.requestedService]}
               </DetailRow>
-              <DetailRow label="Reason">
+              <DetailRow label="Alasan">
                 <span className="leading-relaxed">{focused.reason}</span>
               </DetailRow>
-              <DetailRow label="Created">{formatDate(focused.createdAt)}</DetailRow>
-              <DetailRow label="Appointment">
+              <DetailRow label="Dibuat">{formatDate(focused.createdAt)}</DetailRow>
+              <DetailRow label="Jadwal temu">
                 {focused.appointmentDate ? (
                   <>
                     {formatDate(focused.appointmentDate)}
@@ -507,16 +507,18 @@ export function ReferralsPage() {
                     </span>
                   </>
                 ) : (
-                  'Not booked yet'
+                  'Belum dijadwalkan'
                 )}
               </DetailRow>
-              <DetailRow label="Assigned to">
+              <DetailRow label="Ditugaskan ke">
                 {(() => {
                   const worker = users.find((u) => u.id === focused.assignedWorkerId);
-                  return worker ? `${worker.name} (${userRoleLabel[worker.role]})` : 'Unassigned';
+                  return worker
+                    ? `${worker.name} (${userRoleLabel[worker.role]})`
+                    : 'Belum ditugaskan';
                 })()}
               </DetailRow>
-              <DetailRow label="From screening">
+              <DetailRow label="Dari screening">
                 {focused.screeningId ? (
                   <button
                     type="button"
@@ -526,11 +528,11 @@ export function ReferralsPage() {
                     }}
                     className="inline-flex items-center gap-1.5 text-ct-700 underline decoration-ct-300 underline-offset-2 transition-colors hover:text-ct-800"
                   >
-                    Open screening result
+                    Buka hasil screening
                     <ExternalLink aria-hidden className="size-3" />
                   </button>
                 ) : (
-                  'Raised without a linked screening'
+                  'Dibuat tanpa screening terkait'
                 )}
               </DetailRow>
             </dl>
@@ -540,7 +542,7 @@ export function ReferralsPage() {
             </div>
 
             <Notice tone="demo" compact>
-              Status changes are stored on this device. The destination facility is not contacted.
+              Perubahan status disimpan di perangkat ini. Fasilitas tujuan tidak dihubungi.
             </Notice>
           </div>
         ) : null}

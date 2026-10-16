@@ -136,7 +136,7 @@ export function Dialog({
                 ) : null}
               </div>
               <IconButton
-                label="Close dialog"
+                label="Tutup dialog"
                 icon={<X className="size-4" />}
                 onClick={onClose}
                 className="-mt-0.5 -mr-1 shrink-0"
@@ -168,8 +168,8 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel = 'Konfirmasi',
+  cancelLabel = 'Batal',
   tone = 'default',
   loading = false,
   children,

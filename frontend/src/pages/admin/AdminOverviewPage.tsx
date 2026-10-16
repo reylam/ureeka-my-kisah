@@ -31,53 +31,52 @@ export function AdminOverviewPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Administration"
-        description="Platform totals, account activity and the directory that the public pages read from."
+        title="Administrasi"
+        description="Total platform, aktivitas akun, dan direktori yang jadi sumber data halaman publik."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric
           icon={<Users />}
-          label="Patient accounts"
+          label="Akun pasien"
           value={patientAccounts.length}
-          note={`${patients.length} clinical records in total`}
+          note={`${patients.length} rekam klinis secara total`}
         />
         <Metric
           icon={<Stethoscope />}
-          label="Health professionals"
+          label="Tenaga kesehatan"
           value={professionals.length}
-          note={`${admins.length} administrator${admins.length === 1 ? '' : 's'}`}
+          note={`${admins.length} administrator`}
         />
         <Metric
           icon={<Building2 />}
-          label="Facilities"
+          label="Fasilitas"
           value={facilities.length}
-          note="Hospitals, puskesmas and labs"
+          note="Rumah sakit, puskesmas, dan lab"
         />
         <Metric
           icon={<ClipboardList />}
-          label="Screening records"
+          label="Rekam screening"
           value={screenings.length}
-          note={`${screenings.filter((item) => item.status === 'awaiting-review').length} awaiting review`}
+          note={`${screenings.filter((item) => item.status === 'awaiting-review').length} menunggu review`}
         />
       </div>
 
       {suspended.length > 0 ? (
         <Notice tone="attention" compact>
-          {suspended.length} account{suspended.length === 1 ? ' is' : 's are'} suspended and cannot
-          sign in.
+          {suspended.length} akun ditangguhkan dan tidak bisa masuk.
         </Notice>
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
         <Card>
           <CardHeader
-            title="Recent activity"
+            title="Aktivitas terbaru"
             icon={<ScrollText />}
-            description="Role changes, account status and facility edits."
+            description="Perubahan role, status akun, dan perubahan fasilitas."
             actions={
               <ButtonLink to="/admin/audit" variant="ghost" size="sm">
-                Full log
+                Log lengkap
               </ButtonLink>
             }
           />
@@ -86,8 +85,8 @@ export function AdminOverviewPage() {
               <EmptyState
                 compact
                 icon={<ScrollText />}
-                title="Nothing logged yet"
-                description="Changing a role, suspending an account or editing a facility will record an entry here."
+                title="Belum ada yang tercatat"
+                description="Mengubah role, menangguhkan akun, atau mengubah fasilitas akan mencatat entri di sini."
               />
             ) : (
               <ul className="divide-y divide-obsidian-100">
@@ -111,20 +110,20 @@ export function AdminOverviewPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Common tasks" />
+          <CardHeader title="Tugas umum" />
           <CardBody className="space-y-2.5">
             <ButtonLink to="/admin/users" variant="outline" size="sm" fullWidth>
-              Accounts and roles
+              Akun dan role
             </ButtonLink>
             <ButtonLink to="/admin/facilities" variant="outline" size="sm" fullWidth>
-              Facility directory
+              Direktori fasilitas
             </ButtonLink>
             <ButtonLink to="/admin/screenings" variant="outline" size="sm" fullWidth>
-              Screening record metadata
+              Metadata rekam screening
             </ButtonLink>
             <p className="pt-1 text-[12px] leading-relaxed text-obsidian-500">
-              Administrative access is not clinical access. Patient images and reports stay with
-              the professionals assigned to that patient.
+              Akses administratif bukan akses klinis. Gambar dan report pasien hanya bisa diakses
+              petugas kesehatan yang ditugaskan untuk pasien tersebut.
             </p>
           </CardBody>
         </Card>

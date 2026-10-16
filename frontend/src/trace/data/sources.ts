@@ -17,7 +17,7 @@ export const SOURCES: Record<string, Source> = {
     publisher: 'World Health Organization',
     year: 2025,
     url: 'https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/tb-reports/global-tuberculosis-report-2025',
-    note: 'Where the figures on this page come from. Estimates are for 2024.',
+    note: 'Sumber angka-angka di halaman ini. Estimasi untuk tahun 2024.',
   },
   whoScreening2021: {
     id: 'whoScreening2021',
@@ -25,7 +25,7 @@ export const SOURCES: Record<string, Source> = {
     publisher: 'World Health Organization',
     year: 2021,
     url: 'https://www.who.int/publications/i/item/9789240022676',
-    note: 'How chest X-rays, and software that reads them, fit into TB screening.',
+    note: 'Peran chest X-ray, dan software yang membacanya, dalam screening TB.',
   },
   whoCxr2016: {
     id: 'whoCxr2016',
@@ -33,7 +33,7 @@ export const SOURCES: Record<string, Source> = {
     publisher: 'World Health Organization',
     year: 2016,
     url: 'https://www.who.int/publications/i/item/9789241511506',
-    note: 'What a chest X-ray can and cannot show about tuberculosis.',
+    note: 'Apa yang bisa dan tidak bisa ditunjukkan chest X-ray tentang tuberkulosis.',
   },
 };
 

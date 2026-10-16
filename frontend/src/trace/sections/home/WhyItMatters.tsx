@@ -18,9 +18,9 @@ export function WhyItMatters() {
         <SectionHeading
           id="why-heading"
           index="01"
-          eyebrow="The problem"
-          title="A curable disease that still kills, mostly because it is not found"
-          standfirst="Tuberculosis is treatable. The reason it remains one of the world’s deadliest infections is that millions of people with it are never diagnosed."
+          eyebrow="Masalahnya"
+          title="Penyakit yang bisa disembuhkan tapi tetap mematikan, terutama karena tidak ditemukan"
+          standfirst="Tuberkulosis bisa diobati. Alasan ia tetap menjadi salah satu infeksi paling mematikan di dunia adalah jutaan penderitanya tidak pernah didiagnosis."
         />
 
         {/* Three figures */}
@@ -39,8 +39,8 @@ export function WhyItMatters() {
         </dl>
 
         <p className="mt-4 text-xs text-trace-dim">
-          Figures for 2024, from the World Health Organization. Full sources are listed at the
-          bottom of this page.
+          Angka untuk 2024, dari World Health Organization. Daftar sumber lengkap ada di bagian
+          bawah halaman ini.
         </p>
 
         {/* Three paragraphs */}
@@ -63,17 +63,19 @@ export function WhyItMatters() {
           </ol>
 
           <div className="lg:pt-4">
-            <Callout label="The distinction everything here rests on">
-              <strong>Screening</strong> sorts people into “worth testing” and “probably not right
-              now”. <strong>Diagnosis</strong> works out what is actually wrong with one person,
-              and comes with a treatment decision and someone accountable for it. Software that
-              reads a picture can help with the first. It cannot do the second.
+            <Callout label="Pembedaan yang mendasari semuanya">
+              <strong>Screening</strong> memilah orang menjadi “layak dites” dan “untuk saat ini
+              kemungkinan tidak”. <strong>Diagnosis</strong> menentukan apa yang sebenarnya terjadi
+              pada satu orang, disertai keputusan pengobatan dan pihak yang bertanggung jawab
+              atasnya. Software yang membaca gambar bisa membantu yang pertama. Ia tidak bisa
+              melakukan yang kedua.
             </Callout>
 
-            <Callout label="So what would this be for?" tone="quiet" className="mt-8">
-              A tool like this would sit at the very front of the queue, helping decide whose X-ray
-              a clinician should look at first and who should be sent for the lab test that
-              actually confirms tuberculosis. It would never be the last word on anybody.
+            <Callout label="Jadi, untuk apa tools ini?" tone="quiet" className="mt-8">
+              Tools seperti ini akan berada di paling depan antrean, membantu menentukan X-ray siapa
+              yang perlu dilihat dokter lebih dulu dan siapa yang perlu dikirim untuk tes lab yang
+              benar-benar mengonfirmasi tuberkulosis. Ia tidak akan pernah menjadi keputusan akhir
+              untuk siapa pun.
             </Callout>
           </div>
         </div>

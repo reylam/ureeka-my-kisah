@@ -33,12 +33,12 @@ const FLOW: ReferralStatus[] = [
 
 /** Plain-language description of what advancing actually means. */
 const ADVANCE_COPY: Partial<Record<ReferralStatus, string>> = {
-  draft: 'Submit this referral so it appears in the register as pending.',
-  pending: 'Mark as sent to the destination facility.',
-  referred: 'Record that an appointment has been booked.',
-  'appointment-scheduled': 'Record that the patient attended.',
-  attended: 'Open a follow-up because a result is still outstanding.',
-  'followup-required': 'Close this referral episode.',
+  draft: 'Kirim referral ini agar muncul di register dengan status menunggu.',
+  pending: 'Tandai sudah dikirim ke fasilitas tujuan.',
+  referred: 'Catat bahwa janji temu sudah dijadwalkan.',
+  'appointment-scheduled': 'Catat bahwa pasien sudah datang.',
+  attended: 'Buka follow-up karena hasil masih ditunggu.',
+  'followup-required': 'Tutup episode referral ini.',
 };
 
 export function nextStatus(current: ReferralStatus): ReferralStatus | null {
@@ -64,11 +64,11 @@ export function ReferralStatusControls({
 
   const applyChange = async () => {
     if (target === referral.status) {
-      setError('Pick a status different from the current one.');
+      setError('Pilih status yang berbeda dari status saat ini.');
       return;
     }
     if (note.trim().length < 5) {
-      setError('Add a short note explaining the change.');
+      setError('Tambahkan catatan singkat yang menjelaskan perubahan ini.');
       return;
     }
     try {
@@ -76,9 +76,9 @@ export function ReferralStatusControls({
       setChangeOpen(false);
       setNote('');
       setError(null);
-      toast.success(`${referral.code} set to ${referralStatusLabel[target].toLowerCase()}.`);
+      toast.success(`${referral.code} diubah menjadi ${referralStatusLabel[target].toLowerCase()}.`);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'The status could not be changed.');
+      setError(cause instanceof Error ? cause.message : 'Status gagal diubah.');
     }
   };
 
@@ -101,22 +101,22 @@ export function ReferralStatusControls({
                 void setReferralStatus(referral.id, advance).then(
                   () =>
                     toast.success(
-                      `${referral.code} set to ${referralStatusLabel[advance].toLowerCase()}.`,
+                      `${referral.code} diubah menjadi ${referralStatusLabel[advance].toLowerCase()}.`,
                     ),
                   (cause: unknown) =>
                     toast.error(
-                      'The status could not be changed.',
+                      'Status gagal diubah.',
                       cause instanceof Error ? cause.message : undefined,
                     ),
                 );
               }}
             >
-              {referral.status === 'draft' ? 'Submit referral' : referralStatusLabel[advance]}
+              {referral.status === 'draft' ? 'Kirim referral' : referralStatusLabel[advance]}
             </Button>
           ) : (
             <span className="inline-flex items-center gap-1.5 text-[13px] text-obsidian-500">
               <CheckCircle2 aria-hidden className="size-4 text-complete-700" />
-              This referral is closed.
+              Referral ini sudah ditutup.
             </span>
           )}
 
@@ -129,7 +129,7 @@ export function ReferralStatusControls({
               setChangeOpen(true);
             }}
           >
-            Change status
+            Ubah status
           </Button>
         </div>
       </div>
@@ -137,26 +137,26 @@ export function ReferralStatusControls({
       <Dialog
         open={changeOpen}
         onClose={() => setChangeOpen(false)}
-        title={`Change status of ${referral.code}`}
-        description="Out-of-sequence changes need a reason so the history stays readable."
+        title={`Ubah status ${referral.code}`}
+        description="Perubahan di luar urutan perlu alasan agar riwayatnya tetap jelas."
         footer={
           <>
             <Button variant="ghost" onClick={() => setChangeOpen(false)}>
-              Cancel
+              Batal
             </Button>
             <Button variant="primary" onClick={applyChange}>
-              Apply change
+              Terapkan perubahan
             </Button>
           </>
         }
       >
         <div className="space-y-4">
           <div className="flex items-center gap-2 rounded-md border border-obsidian-200 bg-obsidian-50 px-3 py-2.5">
-            <span className="text-xs text-obsidian-500">Currently</span>
+            <span className="text-xs text-obsidian-500">Saat ini</span>
             <ReferralStatusBadge status={referral.status} size="sm" />
           </div>
 
-          <Field label="New status" required>
+          <Field label="Status baru" required>
             {({ id }) => (
               <Select
                 id={id}
@@ -172,7 +172,7 @@ export function ReferralStatusControls({
             )}
           </Field>
 
-          <Field label="Reason for the change" error={error} required>
+          <Field label="Alasan perubahan" error={error} required>
             {({ id, describedBy, invalid }) => (
               <TextArea
                 id={id}
@@ -181,7 +181,7 @@ export function ReferralStatusControls({
                 describedBy={describedBy}
                 invalid={invalid}
                 rows={3}
-                placeholder="e.g. Facility called to say the appointment was cancelled."
+                placeholder="mis. Fasilitas menelepon bahwa janji temu dibatalkan."
               />
             )}
           </Field>
@@ -197,7 +197,7 @@ export function ReferralHistory({ referral }: { referral: Referral }) {
     <div>
       <h3 className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
         <History aria-hidden className="size-3" />
-        Status history
+        Riwayat status
       </h3>
       <ol className="mt-2.5 space-y-2.5">
         {[...referral.history].reverse().map((event) => (
@@ -209,7 +209,7 @@ export function ReferralHistory({ referral }: { referral: Referral }) {
             <div className="min-w-0">
               <p className="text-[13px] text-obsidian-900">
                 {event.from
-                  ? `${referralStatusLabel[event.from]} to ${referralStatusLabel[event.to]}`
+                  ? `${referralStatusLabel[event.from]} menjadi ${referralStatusLabel[event.to]}`
                   : referralStatusLabel[event.to]}
               </p>
               {event.note ? (
@@ -217,7 +217,7 @@ export function ReferralHistory({ referral }: { referral: Referral }) {
               ) : null}
               <p className="mt-0.5 text-[11px] text-obsidian-400">
                 {formatDateTime(event.at)} ·{' '}
-                {users.find((user) => user.id === event.actorId)?.name ?? 'Unknown user'}
+                {users.find((user) => user.id === event.actorId)?.name ?? 'Pengguna tidak dikenal'}
               </p>
             </div>
           </li>

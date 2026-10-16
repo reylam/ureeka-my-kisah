@@ -17,7 +17,7 @@ import { formatBytes } from '@/utils/format';
  */
 
 const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp'] as const;
-const ACCEPTED_LABEL = 'PNG, JPEG or WebP';
+const ACCEPTED_LABEL = 'PNG, JPEG, atau WebP';
 const MAX_BYTES = 12 * 1024 * 1024;
 const MIN_DIMENSION = 256;
 
@@ -66,18 +66,18 @@ export function ImageUpload({
 
       if (!ACCEPTED.includes(file.type as (typeof ACCEPTED)[number])) {
         reject(
-          `${file.name || 'That file'} is a ${file.type || 'unrecognised'} file. Use ${ACCEPTED_LABEL}.`,
+          `${file.name || 'File itu'} berformat ${file.type || 'tidak dikenali'}. Gunakan ${ACCEPTED_LABEL}.`,
         );
         return;
       }
       if (file.size > MAX_BYTES) {
         reject(
-          `${formatBytes(file.size)} is over the ${formatBytes(MAX_BYTES)} limit. Export the radiograph at a smaller size.`,
+          `Ukuran ${formatBytes(file.size)} melebihi batas ${formatBytes(MAX_BYTES)}. Ekspor radiograf dengan ukuran lebih kecil.`,
         );
         return;
       }
       if (file.size === 0) {
-        reject('That file is empty.');
+        reject('File itu kosong.');
         return;
       }
 
@@ -96,13 +96,13 @@ export function ImageUpload({
 
       if (!dimensions) {
         URL.revokeObjectURL(url);
-        reject('That file could not be decoded as an image. It may be corrupted.');
+        reject('File itu tidak bisa dibaca sebagai gambar. Mungkin file rusak.');
         return;
       }
       if (dimensions.width < MIN_DIMENSION || dimensions.height < MIN_DIMENSION) {
         URL.revokeObjectURL(url);
         reject(
-          `The image is ${dimensions.width}×${dimensions.height}px. A radiograph should be at least ${MIN_DIMENSION}×${MIN_DIMENSION}px.`,
+          `Gambar berukuran ${dimensions.width}×${dimensions.height}px. Radiograf minimal berukuran ${MIN_DIMENSION}×${MIN_DIMENSION}px.`,
         );
         return;
       }
@@ -161,7 +161,7 @@ export function ImageUpload({
           <div className="viewer-grid flex aspect-video items-center justify-center p-3">
             <img
               src={value.previewUrl}
-              alt={`Preview of ${value.meta.fileName}`}
+              alt={`Pratinjau ${value.meta.fileName}`}
               className="max-h-full max-w-full object-contain"
             />
           </div>
@@ -183,7 +183,7 @@ export function ImageUpload({
                 leadingIcon={<Replace className="size-3.5" />}
                 onClick={() => inputRef.current?.click()}
               >
-                Replace
+                Ganti
               </Button>
               <Button
                 size="sm"
@@ -191,7 +191,7 @@ export function ImageUpload({
                 leadingIcon={<Trash2 className="size-3.5" />}
                 onClick={clear}
               >
-                Remove
+                Hapus
               </Button>
             </div>
           </div>
@@ -221,9 +221,9 @@ export function ImageUpload({
         >
           {phase === 'reading' ? (
             <div className="mx-auto max-w-xs">
-              <ProgressBar value={progress} label="Reading image on this device" />
+              <ProgressBar value={progress} label="Membaca gambar di perangkat ini" />
               <p className="mt-2.5 text-xs text-obsidian-500">
-                The file is being decoded locally. Nothing is being uploaded.
+                File sedang dibaca secara lokal. Belum ada yang di-upload.
               </p>
             </div>
           ) : (
@@ -235,10 +235,10 @@ export function ImageUpload({
                 <Upload className="size-5" />
               </div>
               <p className="mt-3 text-sm font-medium text-obsidian-900">
-                Drop the chest X-ray here
+                Letakkan X-ray dada di sini
               </p>
               <p className="mt-1 text-[13px] text-obsidian-500">
-                {ACCEPTED_LABEL}, up to {formatBytes(MAX_BYTES)}
+                {ACCEPTED_LABEL}, maksimal {formatBytes(MAX_BYTES)}
               </p>
               <Button
                 className="mt-4"
@@ -247,7 +247,7 @@ export function ImageUpload({
                 leadingIcon={<FileImage className="size-4" />}
                 onClick={() => inputRef.current?.click()}
               >
-                Choose a file
+                Pilih file
               </Button>
             </>
           )}
@@ -265,9 +265,9 @@ export function ImageUpload({
       ) : null}
 
       <Notice tone="demo" compact className="mt-3">
-        The radiograph stays on this device until you submit the screening. It is then uploaded to
-        private storage, where only the treating team can open it. If you are offline it waits on
-        this device until it can be sent.
+        Radiograf tetap berada di perangkat ini sampai Anda mengirim screening. Setelah itu
+        radiograf di-upload ke penyimpanan privat yang hanya bisa dibuka oleh tim yang menangani.
+        Jika sedang offline, radiograf menunggu di perangkat ini sampai bisa dikirim.
       </Notice>
     </div>
   );

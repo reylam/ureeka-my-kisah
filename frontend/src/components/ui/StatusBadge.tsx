@@ -147,7 +147,7 @@ export function ImageQualityBadge({ quality, size }: { quality: ImageQuality; si
       size={size}
       icon={quality === 'adequate' ? <CheckCircle2 /> : <AlertTriangle />}
     >
-      Image {imageQualityLabel[quality].toLowerCase()}
+      Gambar {imageQualityLabel[quality].toLowerCase()}
     </Badge>
   );
 }
@@ -251,11 +251,11 @@ const bucketTone: Record<FollowUpBucket, BadgeTone> = {
 };
 
 const bucketLabel: Record<FollowUpBucket, string> = {
-  overdue: 'Overdue',
-  'due-today': 'Due today',
-  upcoming: 'Upcoming',
-  completed: 'Completed',
-  unresolved: 'Unresolved',
+  overdue: 'Terlambat',
+  'due-today': 'Jatuh tempo hari ini',
+  upcoming: 'Akan datang',
+  completed: 'Selesai',
+  unresolved: 'Belum terselesaikan',
 };
 
 export function FollowUpBucketBadge({

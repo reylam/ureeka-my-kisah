@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -34,83 +34,83 @@ import { PROVINCE } from '@/data/geography';
  */
 
 const NAV = [
-  { href: '#features', label: 'Features' },
-  { href: '#workflow', label: 'Workflow' },
-  { href: '#scope', label: 'Scope' },
+  { href: '#features', label: 'Fitur' },
+  { href: '#workflow', label: 'Alur kerja' },
+  { href: '#scope', label: 'Cakupan' },
 ];
 
 const FEATURES = [
   {
     icon: ScanLine,
-    title: 'Chest X-ray screening record',
-    body: 'Capture an encounter in grouped steps: patient, vitals, symptoms, radiograph. The image is held on the device and previewed locally, never uploaded.',
+    title: 'Record screening X-ray dada',
+    body: 'Catat satu kunjungan lewat beberapa langkah terkelompok: pasien, tanda vital, gejala, radiograf. Gambar disimpan di perangkat dan dipreview secara lokal, tidak pernah di-upload.',
   },
   {
     icon: Stethoscope,
-    title: 'Output routed to a human',
-    body: 'Screening output is treated as a prompt to look, not an answer. Every record lands in a review queue and needs a nurse or physician to record a decision before it moves on.',
+    title: 'Output diteruskan ke manusia',
+    body: 'Output screening dianggap sebagai petunjuk untuk memeriksa lebih lanjut, bukan jawaban akhir. Setiap record masuk ke review queue dan perlu keputusan dari perawat atau dokter sebelum lanjut ke tahap berikutnya.',
   },
   {
     icon: FileSearch,
-    title: 'Explainable report',
-    body: 'Compare the original radiograph against an illustrative region overlay, with the modelâ€™s class scores, its limitations, the reviewerâ€™s note and a print layout.',
+    title: 'Report yang bisa dijelaskan',
+    body: 'Bandingkan radiograf asli dengan overlay area ilustratif, lengkap dengan score kelas dari model, keterbatasannya, catatan reviewer, dan layout siap cetak.',
   },
   {
     icon: Building2,
-    title: 'Referral to the right facility',
-    body: 'A facility directory with services, travel estimates and how stale each entry is. Destinations are filtered to places that actually offer the test being requested.',
+    title: 'Referral ke fasilitas yang tepat',
+    body: 'Direktori fasilitas lengkap dengan layanan, estimasi perjalanan, dan seberapa lama data tiap entri tidak diperbarui. Tujuan difilter hanya ke tempat yang benar-benar menyediakan pemeriksaan yang diminta.',
   },
   {
     icon: CalendarClock,
-    title: 'Follow-up tracker',
-    body: 'Overdue, due today and upcoming queues computed from real dates. Log contact attempts, reschedule, complete, or record why a patient could not be reached.',
+    title: 'Tracker follow-up',
+    body: 'Queue terlambat, jatuh tempo hari ini, dan mendatang dihitung dari tanggal sebenarnya. Catat percobaan kontak, jadwalkan ulang, selesaikan, atau tulis alasan pasien tidak berhasil dihubungi.',
   },
   {
     icon: CloudOff,
-    title: 'Offline-first behaviour',
-    body: 'Forms, drafts and record edits keep working without a connection. A queue shows what is pending, what failed and what conflicts, with the limits stated plainly.',
+    title: 'Dirancang offline-first',
+    body: 'Form, draf, dan perubahan record tetap jalan tanpa koneksi. Queue menunjukkan apa yang menunggu, apa yang gagal, dan apa yang konflik, dengan batasannya dijelaskan apa adanya.',
   },
 ];
 
 const WORKFLOW = [
   {
-    title: 'Screen',
-    body: 'A community health worker records symptoms and vitals and attaches the radiograph. If there is no connection the record is saved as a local draft.',
+    title: 'Screening',
+    body: 'Kader atau petugas kesehatan komunitas mencatat gejala dan tanda vital, lalu melampirkan radiograf. Kalau tidak ada koneksi, record disimpan sebagai draf lokal.',
   },
   {
-    title: 'Analyse',
-    body: 'The record enters the analysis queue. Output is a class distribution plus any marked regions, and it is clearly labelled whenever no model is connected.',
+    title: 'Analisis',
+    body: 'Record masuk ke analysis queue. Output berupa distribusi kelas plus area yang ditandai, dan diberi label jelas kalau belum ada model yang terhubung.',
   },
   {
     title: 'Review',
-    body: 'A clinician opens the image in a dark viewer, compares it against the overlay, and records whether they agree and what should happen next.',
+    body: 'Tenaga medis membuka gambar di viewer gelap, membandingkannya dengan overlay, lalu mencatat setuju atau tidak dan langkah selanjutnya.',
   },
   {
-    title: 'Refer',
-    body: 'If testing is needed, a referral is raised against a facility that offers it, with priority, appointment date and an assigned worker.',
+    title: 'Referral',
+    body: 'Jika perlu pemeriksaan, referral dibuat ke fasilitas yang menyediakannya, lengkap dengan prioritas, tanggal janji temu, dan petugas yang ditugaskan.',
   },
   {
-    title: 'Follow up',
-    body: 'A follow-up task tracks whether the patient actually attended, with contact attempts logged against the patient record.',
+    title: 'Follow-up',
+    body: 'Task follow-up memantau apakah pasien benar-benar datang, dengan percobaan kontak yang dicatat di record pasien.',
   },
 ];
 
 const IN_SCOPE = [
-  'Complete workflow across all screens, backed by an authenticated API and a Supabase database',
-  'Local radiograph upload with type, size and dimension validation',
-  'Referral and follow-up state that stays consistent across every page',
-  'Offline drafts, a synchronisation queue and conflict review',
-  'Printable screening report',
-  'Keyboard navigation, visible focus, and status colour paired with icon and text',
+  'Alur kerja lengkap di semua halaman, didukung API terautentikasi dan database Supabase',
+  'Upload radiograf lokal dengan validasi tipe, ukuran, dan dimensi',
+  'Status referral dan follow-up yang konsisten di setiap halaman',
+  'Draf offline, sync queue, dan review konflik',
+  'Report screening yang bisa dicetak',
+  'Navigasi keyboard, fokus yang terlihat, dan warna status yang dipasangkan dengan ikon dan teks',
 ];
 
 const OUT_OF_SCOPE = [
-  'No trained model runs in this build. Screening output comes from a labelled simulator',
-  'No backend, database server or authentication server. Sign-in is checked on the device',
-  'No real patient data. Every person, facility, contact detail and result is invented',
-  'No verified facility information. Distances, hours and phone numbers are illustrative',
-  'No messages, reminders or notifications are sent to anyone',
-  'No accuracy, sensitivity or specificity figures, because nothing has been evaluated',
+  'Belum ada model terlatih yang berjalan di build ini. Output screening berasal dari simulator yang diberi label',
+  'Tidak ada backend, database server, atau authentication server. Proses masuk dicek di perangkat',
+  'Tidak ada data pasien asli. Semua orang, fasilitas, kontak, dan hasil adalah rekaan',
+  'Tidak ada informasi fasilitas yang terverifikasi. Jarak, jam buka, dan nomor telepon hanya ilustrasi',
+  'Tidak ada pesan, pengingat, atau notifikasi yang dikirim ke siapa pun',
+  'Tidak ada angka akurasi, sensitivitas, atau spesifisitas, karena belum ada evaluasi',
 ];
 
 export function LandingPage() {
@@ -120,20 +120,20 @@ export function LandingPage() {
   return (
     <div className="min-h-dvh bg-cloud">
       {/* â”€â”€ Top bar â”€â”€ */}
-      <header className="sticky top-0 z-40 border-b border-white/5 bg-obsidian-950/95 backdrop-blur">
-        <div className="on-dark mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-obsidian-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
           {/* This overview now lives at /platform; the root is the PULMO-TRACE
               research site, so the wordmark links back here rather than away. */}
           <Link to="/platform" className="shrink-0">
-            <Logo tone="light" />
+            <Logo tone="dark" />
           </Link>
 
-          <nav aria-label="Page sections" className="ml-4 hidden items-center gap-1 md:flex">
+          <nav aria-label="Bagian halaman" className="ml-4 hidden items-center gap-1 md:flex">
             {NAV.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-md px-2.5 py-1.5 text-[13px] font-medium text-obsidian-300 transition-colors hover:bg-white/[0.06] hover:text-white"
+                className="rounded-md px-2.5 py-1.5 text-[13px] font-medium text-obsidian-600 transition-colors hover:bg-obsidian-100 hover:text-obsidian-950"
               >
                 {item.label}
               </a>
@@ -143,16 +143,16 @@ export function LandingPage() {
           <div className="ml-auto flex items-center gap-2">
             <Link
               to={signedIn ? '/dashboard' : '/login'}
-              className="inline-flex h-8 items-center gap-2 rounded-md bg-ct-400 px-3 text-[13px] font-semibold text-obsidian-950 transition-colors hover:bg-ct-300"
+              className="inline-flex h-8 items-center gap-2 rounded-md bg-obsidian-950 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-obsidian-800"
             >
               {signedIn ? (
                 <>
                   <LayoutDashboard aria-hidden className="size-4" />
-                  Open dashboard
+                  Buka dashboard
                 </>
               ) : (
                 <>
-                  Sign in
+                  Masuk
                   <ArrowRight aria-hidden className="size-4" />
                 </>
               )}
@@ -161,8 +161,8 @@ export function LandingPage() {
               type="button"
               onClick={() => setMenuOpen((value) => !value)}
               aria-expanded={menuOpen}
-              aria-label={menuOpen ? 'Close section menu' : 'Open section menu'}
-              className="inline-flex size-8 items-center justify-center rounded-md text-obsidian-300 transition-colors hover:bg-white/[0.06] hover:text-white md:hidden"
+              aria-label={menuOpen ? 'Tutup menu bagian' : 'Buka menu bagian'}
+              className="inline-flex size-8 items-center justify-center rounded-md text-obsidian-600 transition-colors hover:bg-obsidian-100 hover:text-obsidian-950 md:hidden"
             >
               {menuOpen ? <X aria-hidden className="size-4" /> : <Menu aria-hidden className="size-4" />}
             </button>
@@ -171,8 +171,8 @@ export function LandingPage() {
 
         {menuOpen ? (
           <nav
-            aria-label="Page sections"
-            className="on-dark border-t border-white/5 px-4 py-2 md:hidden"
+            aria-label="Bagian halaman"
+            className="border-t border-obsidian-200 px-4 py-2 md:hidden"
           >
             <ul>
               {NAV.map((item) => (
@@ -180,7 +180,7 @@ export function LandingPage() {
                   <a
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
-                    className="block rounded-md px-2.5 py-2 text-[13px] font-medium text-obsidian-300 active:bg-white/[0.06]"
+                    className="block rounded-md px-2.5 py-2 text-[13px] font-medium text-obsidian-600 active:bg-obsidian-100"
                   >
                     {item.label}
                   </a>
@@ -192,56 +192,57 @@ export function LandingPage() {
       </header>
 
       {/* â”€â”€ Hero â”€â”€ */}
-      <section className="on-dark relative overflow-hidden bg-obsidian-950">
+      <section className="relative overflow-hidden border-b border-obsidian-200 bg-ct-50">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:py-20">
           <div>
-            <h1 className="max-w-xl text-3xl leading-[1.15] font-semibold text-white sm:text-4xl">
-              TB screening and healthcare access for remote community health teams
+            <h1 className="max-w-xl text-3xl leading-[1.15] font-semibold text-obsidian-950 sm:text-4xl">
+              Screening TB dan akses layanan kesehatan untuk tim kesehatan komunitas di daerah
+              terpencil
             </h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-obsidian-300 sm:text-[15px]">
-              A working interface for the whole screening pathway: record a chest X-ray encounter,
-              route the result to a clinician, refer the patient to a facility that can test them,
-              and track whether they actually got there. Built to keep functioning when the
-              connection does not.
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-obsidian-600 sm:text-[15px]">
+              Antarmuka kerja untuk seluruh alur screening: catat kunjungan X-ray dada, teruskan
+              hasilnya ke tenaga medis, rujuk pasien ke fasilitas yang bisa memeriksanya, lalu
+              pantau apakah pasien benar-benar sampai di sana. Dibuat supaya tetap jalan saat
+              koneksi tidak ada.
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link
                 to={signedIn ? '/dashboard' : '/login'}
-                className="inline-flex h-11 items-center gap-2 rounded-md bg-ct-400 px-5 text-sm font-semibold text-obsidian-950 transition-colors hover:bg-ct-300"
+                className="inline-flex h-11 items-center gap-2 rounded-md bg-obsidian-950 px-5 text-sm font-semibold text-white transition-colors hover:bg-obsidian-800"
               >
-                {signedIn ? 'Open dashboard' : 'Enter the application'}
+                {signedIn ? 'Buka dashboard' : 'Masuk ke aplikasi'}
                 <ArrowRight aria-hidden className="size-4" />
               </Link>
               <a
                 href="#scope"
-                className="inline-flex h-11 items-center gap-2 rounded-md border border-white/15 px-5 text-sm font-medium text-obsidian-200 transition-colors hover:border-white/25 hover:text-white"
+                className="inline-flex h-11 items-center gap-2 rounded-md border border-obsidian-300 px-5 text-sm font-medium text-obsidian-700 transition-colors hover:border-obsidian-400 hover:text-obsidian-950"
               >
-                What this build does not do
+                Apa yang belum ada di build ini
               </a>
             </div>
 
             <p className="mt-6 max-w-lg text-xs leading-relaxed text-obsidian-500">
-              Demonstration software. Not a medical device, not validated, and not for clinical use.
-              The dataset describes a fictional facility in {PROVINCE}; every patient and result in
-              it is synthetic.
+              Software demonstrasi. Bukan alat medis, belum tervalidasi, dan tidak untuk penggunaan
+              klinis. Dataset menggambarkan fasilitas fiktif di {PROVINCE}; semua pasien dan hasil
+              di dalamnya adalah data sintetis.
             </p>
           </div>
 
           {/* Radiograph, framed as the product's subject matter */}
           <div className="relative">
-            <div className="viewer-grid overflow-hidden rounded-card border border-white/10">
+            <div className="viewer-grid overflow-hidden rounded-card border border-obsidian-300">
               <div className="flex items-center justify-between border-b border-white/8 px-3 py-2 font-mono text-[10px] tracking-wide text-obsidian-500">
                 <span>PA · UPRIGHT</span>
-                <span className="text-ct-400">SYNTHETIC SAMPLE</span>
+                <span className="text-ct-400">SAMPEL SINTETIS</span>
               </div>
               <div className="aspect-square">
                 <SampleRadiograph variant="sample-a" showWatermark={false} />
               </div>
               <div className="border-t border-white/8 px-3 py-2.5">
                 <p className="text-[11px] leading-relaxed text-obsidian-400">
-                  Sample radiographs in this prototype are drawn in SVG rather than taken from a
-                  patient dataset.
+                  Sampel radiograf di prototype ini digambar dengan SVG, bukan diambil dari dataset
+                  pasien.
                 </p>
               </div>
             </div>
@@ -255,13 +256,14 @@ export function LandingPage() {
           <ShieldAlert aria-hidden className="mt-0.5 size-5 shrink-0 text-attention-700" />
           <div className="min-w-0">
             <h2 className="text-[13px] font-semibold text-obsidian-950">
-              Screening, not diagnosis
+              Screening, bukan diagnosis
             </h2>
             <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-obsidian-600">
-              A screening tool narrows down who needs a confirmatory test. It cannot rule TB in or
-              out, and no screen in this product is ever labelled positive or negative for a
-              patient. Outputs are described by what they ask a clinician to do next, and the
-              absence of an alert is never presented as a clean result.
+              Alat screening membantu menyaring siapa yang perlu tes konfirmasi. Alat ini tidak
+              bisa memastikan ada atau tidaknya TB, dan tidak ada hasil screening di produk ini yang
+              pernah diberi label positif atau negatif untuk pasien. Output dijelaskan lewat
+              tindakan yang diminta dari tenaga medis selanjutnya, dan tidak adanya peringatan tidak
+              pernah ditampilkan sebagai hasil yang aman.
             </p>
           </div>
         </div>
@@ -270,9 +272,9 @@ export function LandingPage() {
       {/* â”€â”€ Features â”€â”€ */}
       <section id="features" className="mx-auto w-full max-w-6xl scroll-mt-16 px-4 py-14 sm:px-6">
         <SectionHeading
-          overline="Features"
-          title="Five capabilities, one register"
-          body="Each one exists because the pathway breaks somewhere specific: the image never gets read, the referral never gets made, or the patient is never found again."
+          overline="Fitur"
+          title="Lima kemampuan, satu register"
+          body="Masing-masing ada karena alurnya putus di titik tertentu: gambar tidak pernah dibaca, referral tidak pernah dibuat, atau pasien tidak pernah ditemukan lagi."
         />
 
         <ul className="mt-8 grid gap-px overflow-hidden rounded-card border border-obsidian-200 bg-obsidian-200 sm:grid-cols-2 lg:grid-cols-3">
@@ -300,9 +302,9 @@ export function LandingPage() {
       <section id="workflow" className="scroll-mt-16 border-y border-obsidian-200 bg-white">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6">
           <SectionHeading
-            overline="Workflow"
-            title="How a record moves"
-            body="The same record carries through all five stages, so nothing is retyped and the patient timeline reads as one story."
+            overline="Alur kerja"
+            title="Perjalanan sebuah record"
+            body="Record yang sama terbawa lewat kelima tahap, jadi tidak ada yang diketik ulang dan timeline pasien terbaca sebagai satu cerita."
           />
 
           <ol className="mt-8 grid gap-6 md:grid-cols-5">
@@ -335,39 +337,39 @@ export function LandingPage() {
       {/* â”€â”€ Scope â”€â”€ */}
       <section id="scope" className="mx-auto w-full max-w-6xl scroll-mt-16 px-4 py-14 sm:px-6">
         <SectionHeading
-          overline="Scope"
-          title="What is real here, and what is not"
-          body="This is a frontend build. Being precise about the boundary is more useful than implying more than exists."
+          overline="Cakupan"
+          title="Mana yang nyata, mana yang bukan"
+          body="Ini adalah build frontend. Menjelaskan batasnya dengan tepat lebih berguna daripada memberi kesan lebih dari yang sebenarnya ada."
         />
 
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
           <ScopeList
             tone="in"
-            title="Implemented in this build"
+            title="Sudah ada di build ini"
             items={IN_SCOPE}
           />
           <ScopeList
             tone="out"
-            title="Deliberately not included"
+            title="Sengaja tidak disertakan"
             items={OUT_OF_SCOPE}
           />
         </div>
       </section>
 
       {/* â”€â”€ Closing call to action â”€â”€ */}
-      <section className="on-dark bg-obsidian-950">
+      <section className="border-t border-obsidian-200 bg-ct-50">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-5 px-4 py-12 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-white">Open the application</h2>
-            <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-obsidian-300">
-              Sign in to see the records, referrals and follow-ups that belong to your role.
+            <h2 className="text-xl font-semibold text-obsidian-950">Buka aplikasi</h2>
+            <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-obsidian-600">
+              Masuk untuk melihat record, referral, dan follow-up sesuai peranmu.
             </p>
           </div>
           <Link
             to={signedIn ? '/dashboard' : '/login'}
-            className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-ct-400 px-5 text-sm font-semibold text-obsidian-950 transition-colors hover:bg-ct-300"
+            className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-obsidian-950 px-5 text-sm font-semibold text-white transition-colors hover:bg-obsidian-800"
           >
-            {signedIn ? 'Open dashboard' : 'Sign in'}
+            {signedIn ? 'Buka dashboard' : 'Masuk'}
             <ArrowRight aria-hidden className="size-4" />
           </Link>
         </div>
@@ -383,7 +385,7 @@ export function LandingPage() {
                 PULMO-TRACE
               </p>
               <p className="mt-1 text-xs leading-relaxed text-obsidian-500">
-                Screening and referral workflow for community health teams.
+                Alur screening dan referral untuk tim kesehatan komunitas.
               </p>
             </div>
           </div>
@@ -393,20 +395,20 @@ export function LandingPage() {
               to="/login"
               className="text-obsidian-600 transition-colors hover:text-obsidian-950"
             >
-              Sign in
+              Masuk
             </Link>
             <a
               href="#features"
               className="text-obsidian-600 transition-colors hover:text-obsidian-950"
             >
-              Features
+              Fitur
             </a>
             <a href="#scope" className="text-obsidian-600 transition-colors hover:text-obsidian-950">
-              Scope
+              Cakupan
             </a>
             <span className="inline-flex items-center gap-1.5 text-obsidian-400">
               <FlaskConical aria-hidden className="size-3.5" />
-              Prototype build
+              Build prototype
             </span>
           </div>
         </div>

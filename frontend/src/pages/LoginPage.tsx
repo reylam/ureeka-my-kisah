@@ -40,10 +40,10 @@ export function LoginPage() {
   const validate = () => {
     const next: typeof errors = {};
     const trimmed = email.trim();
-    if (!trimmed) next.email = 'Enter your email address.';
+    if (!trimmed) next.email = 'Masukkan alamat email kamu.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed))
-      next.email = 'That does not look like an email address.';
-    if (!password) next.password = 'Enter your password.';
+      next.email = 'Format email belum valid.';
+    if (!password) next.password = 'Masukkan password kamu.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -63,7 +63,7 @@ export function LoginPage() {
       return;
     }
 
-    toast.success(`Welcome back, ${result.account.name.split(' ')[0]}.`);
+    toast.success(`Selamat datang kembali, ${result.account.name.split(' ')[0]}.`);
     navigate(from ?? ROLE_HOME[result.account.role], { replace: true });
   };
 
@@ -72,27 +72,28 @@ export function LoginPage() {
       {/* Brand panel. Logo pinned top-left; the pitch sits centred in the
           remaining space, since the disclaimer that used to balance the
           bottom is gone. */}
-      <div className="on-dark relative flex shrink-0 flex-col bg-obsidian-950 px-6 py-7 sm:px-10 lg:w-[26rem] lg:py-10">
+      <div className="relative flex shrink-0 flex-col border-b border-obsidian-200 bg-white px-6 py-7 sm:px-10 lg:w-[26rem] lg:border-r lg:border-b-0 lg:py-10">
         <Link to="/" className="inline-flex w-fit">
-          <Logo tone="light" />
+          <Logo tone="dark" />
         </Link>
 
         <div className="mt-8 flex flex-col items-center text-center lg:mt-0 lg:flex-1 lg:justify-center">
-          <h1 className="text-xl leading-snug font-semibold text-white lg:text-2xl">
-            Sign in to PULMO
+          <h1 className="text-xl leading-snug font-semibold text-obsidian-950 lg:text-2xl">
+            Masuk ke PULMO
           </h1>
-          <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-obsidian-300">
-            Patients, health workers and administrators each see a different workspace.
+          <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-obsidian-600">
+            Pasien, petugas kesehatan, dan administrator masing-masing punya tampilan workspace
+            yang berbeda.
           </p>
 
-          <ul className="mt-6 space-y-2.5 text-[13px] text-obsidian-300">
+          <ul className="mt-6 space-y-2.5 text-[13px] text-obsidian-600">
             {[
-              'Browsing TB information and the facility directory needs no account',
-              'Signing up creates a patient account',
-              'Your records are only ever seen by you and your care team',
+              'Baca informasi TB dan direktori fasilitas tanpa perlu akun',
+              'Daftar akan membuat akun pasien',
+              'Datamu hanya bisa dilihat oleh kamu dan tim perawatmu',
             ].map((item) => (
               <li key={item} className="flex items-start gap-2.5 text-left">
-                <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ct-400" />
+                <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ct-600" />
                 {item}
               </li>
             ))}
@@ -108,17 +109,17 @@ export function LoginPage() {
             className="inline-flex items-center gap-1.5 text-[13px] text-obsidian-500 transition-colors hover:text-obsidian-900"
           >
             <ArrowLeft aria-hidden className="size-3.5" />
-            Back to PULMO
+            Kembali ke PULMO
           </Link>
 
-          <h2 className="mt-5 text-lg font-semibold text-obsidian-950">Sign in</h2>
+          <h2 className="mt-5 text-lg font-semibold text-obsidian-950">Masuk</h2>
           <p className="mt-1 text-[13px] text-obsidian-500">
-            New here?{' '}
+            Belum punya akun?{' '}
             <Link
               to="/register"
               className="font-medium text-ct-700 underline underline-offset-2 hover:text-ct-800"
             >
-              Create a patient account
+              Buat akun pasien
             </Link>
           </p>
 
@@ -128,12 +129,12 @@ export function LoginPage() {
               className="mt-4 flex items-start gap-2.5 rounded-xl border border-attention-300 bg-attention-50 px-3 py-2.5 text-[13px] text-attention-800"
             >
               <ShieldAlert aria-hidden className="mt-px size-4 shrink-0" />
-              <span>That account is suspended. An administrator has to reactivate it.</span>
+              <span>Akun ini sedang ditangguhkan. Administrator perlu mengaktifkannya kembali.</span>
             </div>
           ) : null}
 
           <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
-            <Field label="Email address" error={errors.email ?? null} required>
+            <Field label="Alamat email" error={errors.email ?? null} required>
               {({ id, describedBy, invalid }) => (
                 <TextInput
                   id={id}
@@ -144,7 +145,7 @@ export function LoginPage() {
                   describedBy={describedBy}
                   invalid={invalid}
                   leadingIcon={<Mail />}
-                  placeholder="you@example.com"
+                  placeholder="kamu@contoh.com"
                 />
               )}
             </Field>
@@ -167,7 +168,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
                     className="absolute top-1/2 right-2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-obsidian-400 transition-colors hover:bg-obsidian-100 hover:text-obsidian-700"
                   >
                     {showPassword ? (
@@ -198,7 +199,7 @@ export function LoginPage() {
               loading={submitting}
               trailingIcon={<ArrowRight className="size-4" />}
             >
-              {submitting ? 'Signing in' : 'Sign in'}
+              {submitting ? 'Sedang masuk' : 'Masuk'}
             </Button>
           </form>
         </div>

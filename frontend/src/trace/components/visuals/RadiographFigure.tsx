@@ -99,7 +99,7 @@ export function RadiographFigure({
         ) : null}
 
         {annotationLabel ? (
-          <p className="absolute right-3 bottom-3 rounded border border-trace-accent-edge bg-trace-film/85 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-trace-accent-soft">
+          <p className="absolute right-3 bottom-3 rounded border border-[#2c3b4c] bg-trace-film/85 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-[#93b2d1]">
             {annotationLabel}
           </p>
         ) : null}

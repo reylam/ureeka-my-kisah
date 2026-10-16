@@ -36,7 +36,7 @@ export function PatientProfilePage() {
 
   const save = async () => {
     if (draft.fullName.trim().length < 2) {
-      toast.error('Enter your full name.');
+      toast.error('Isi nama lengkap kamu.');
       return;
     }
     try {
@@ -47,9 +47,9 @@ export function PatientProfilePage() {
         sex: personal?.sex ?? null,
       });
       setEditing(false);
-      toast.success('Profile updated.');
+      toast.success('Profil diperbarui.');
     } catch (cause) {
-      toast.error('Could not update your profile.', errorMessage(cause));
+      toast.error('Profil tidak bisa diperbarui.', errorMessage(cause));
     }
   };
 
@@ -57,22 +57,22 @@ export function PatientProfilePage() {
   const withdrawHealth = async () => {
     try {
       await withdrawHealthConsent();
-      toast.success('Health answers withdrawn.', 'The answers have been cleared from your record.');
+      toast.success('Jawaban kesehatan ditarik.', 'Jawaban sudah dihapus dari rekam kamu.');
     } catch (cause) {
-      toast.error('Could not withdraw your answers.', errorMessage(cause));
+      toast.error('Jawaban kamu tidak bisa ditarik.', errorMessage(cause));
     }
   };
 
   return (
     <div className="space-y-5">
       <PageHeader
-        title="My profile"
-        description="Your details, your health answers, and what you have agreed to share."
+        title="Profil saya"
+        description="Data diri kamu, jawaban kesehatan, dan apa saja yang sudah kamu setujui untuk dibagikan."
       />
 
       <Card>
         <CardHeader
-          title="About you"
+          title="Tentang kamu"
           icon={<UserCircle />}
           actions={
             editing ? null : (
@@ -82,7 +82,7 @@ export function PatientProfilePage() {
                 leadingIcon={<Pencil className="mr-1.5 size-3.5" />}
                 onClick={() => setEditing(true)}
               >
-                Edit
+                Ubah
               </Button>
             )
           }
@@ -90,7 +90,7 @@ export function PatientProfilePage() {
         <CardBody>
           {editing ? (
             <div className="space-y-4">
-              <Field label="Full name" required>
+              <Field label="Nama lengkap" required>
                 {({ id }) => (
                   <TextInput
                     id={id}
@@ -101,7 +101,7 @@ export function PatientProfilePage() {
                   />
                 )}
               </Field>
-              <Field label="Phone number">
+              <Field label="Nomor telepon">
                 {({ id }) => (
                   <TextInput
                     id={id}
@@ -115,28 +115,28 @@ export function PatientProfilePage() {
               </Field>
               <div className="flex gap-2">
                 <Button variant="primary" size="sm" onClick={save}>
-                  Save changes
+                  Simpan perubahan
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
-                  Cancel
+                  Batal
                 </Button>
               </div>
             </div>
           ) : (
             <dl className="divide-y divide-obsidian-100">
-              <DetailRow label="Name">{personal?.fullName ?? account.name}</DetailRow>
+              <DetailRow label="Nama">{personal?.fullName ?? account.name}</DetailRow>
               <DetailRow label="Email">{account.email}</DetailRow>
-              <DetailRow label="Phone">{personal?.phone || 'Not provided'}</DetailRow>
-              <DetailRow label="Date of birth">
-                {personal?.birthDate ? formatDate(personal.birthDate) : 'Not provided'}
+              <DetailRow label="Telepon">{personal?.phone || 'Belum diisi'}</DetailRow>
+              <DetailRow label="Tanggal lahir">
+                {personal?.birthDate ? formatDate(personal.birthDate) : 'Belum diisi'}
               </DetailRow>
-              <DetailRow label="Lives in">
+              <DetailRow label="Tinggal di">
                 {address
                   ? [address.village, address.district, address.province].filter(Boolean).join(', ')
-                  : 'Not provided'}
+                  : 'Belum diisi'}
               </DetailRow>
-              <DetailRow label="Account type">{ROLE_LABEL[account.role]}</DetailRow>
-              <DetailRow label="Member since">{formatDate(account.createdAt)}</DetailRow>
+              <DetailRow label="Tipe akun">{ROLE_LABEL[account.role]}</DetailRow>
+              <DetailRow label="Anggota sejak">{formatDate(account.createdAt)}</DetailRow>
             </dl>
           )}
         </CardBody>
@@ -144,17 +144,17 @@ export function PatientProfilePage() {
 
       <Card>
         <CardHeader
-          title="Health information"
+          title="Informasi kesehatan"
           icon={<ShieldCheck />}
-          description="What you told us during sign-up, and who can see it."
+          description="Apa yang kamu isi saat mendaftar, dan siapa yang bisa melihatnya."
           actions={
             health?.shared ? (
               <Badge tone="info" size="sm" icon={<ShieldCheck />}>
-                Shared with your care team
+                Dibagikan ke tim perawatan kamu
               </Badge>
             ) : (
               <Badge tone="inert" size="sm" icon={<Lock />}>
-                Not shared
+                Tidak dibagikan
               </Badge>
             )
           }
@@ -163,43 +163,43 @@ export function PatientProfilePage() {
           {health?.shared ? (
             <>
               <dl className="divide-y divide-obsidian-100">
-                <DetailRow label="Symptoms reported">
-                  {health.symptoms.length > 0 ? `${health.symptoms.length} selected` : 'None'}
+                <DetailRow label="Gejala yang dilaporkan">
+                  {health.symptoms.length > 0 ? `${health.symptoms.length} dipilih` : 'Tidak ada'}
                 </DetailRow>
-                <DetailRow label="Duration">
-                  {health.symptomWeeks ? `About ${health.symptomWeeks} weeks` : 'Not given'}
+                <DetailRow label="Durasi">
+                  {health.symptomWeeks ? `Sekitar ${health.symptomWeeks} minggu` : 'Tidak diisi'}
                 </DetailRow>
-                <DetailRow label="Previous TB treatment">
+                <DetailRow label="Pengobatan TB sebelumnya">
                   {
                     {
-                      never: 'Never treated',
-                      treated: 'Treated and finished',
-                      ongoing: 'Currently being treated',
-                      'prefer-not-to-say': 'Preferred not to say',
+                      never: 'Belum pernah berobat',
+                      treated: 'Pernah berobat dan tuntas',
+                      ongoing: 'Sedang berobat',
+                      'prefer-not-to-say': 'Memilih tidak menjawab',
                     }[health.priorTb]
                   }
                 </DetailRow>
               </dl>
 
               <Notice tone="info" compact>
-                Only health professionals assigned to your care can open these answers. No other
-                patient can see them, and administrators see account details rather than your
-                health record.
+                Hanya tenaga kesehatan yang ditugaskan merawat kamu yang bisa membuka jawaban ini.
+                Pasien lain tidak bisa melihatnya, dan administrator hanya melihat detail akun,
+                bukan rekam kesehatan kamu.
               </Notice>
 
               <Button variant="outline" size="sm" onClick={withdrawHealth}>
-                Withdraw and clear my health answers
+                Tarik dan hapus jawaban kesehatan saya
               </Button>
             </>
           ) : (
             <>
               <p className="max-w-prose text-[13px] leading-relaxed text-obsidian-600">
-                You have not shared any health details. That is entirely fine: your account works
-                without them. Sharing symptoms helps whoever reads your record, because symptoms
-                matter more than any image.
+                Kamu belum membagikan detail kesehatan apa pun. Tidak masalah: akun kamu tetap
+                berfungsi tanpa itu. Membagikan gejala membantu siapa pun yang membaca rekam kamu,
+                karena gejala lebih penting daripada gambar mana pun.
               </p>
               <ButtonLink to="/onboarding" variant="outline" size="sm">
-                Add health details
+                Tambah detail kesehatan
               </ButtonLink>
             </>
           )}
@@ -207,17 +207,17 @@ export function PatientProfilePage() {
       </Card>
 
       <Card>
-        <CardHeader title="Consent" icon={<Lock />} />
+        <CardHeader title="Persetujuan" icon={<Lock />} />
         <CardBody className="space-y-3">
           <Checkbox
-            label="My name, contact details and address may be used to manage my account and care."
-            description="Required for the account to work. Contact an administrator to close your account instead."
+            label="Nama, kontak, dan alamat saya boleh dipakai untuk mengelola akun dan perawatan saya."
+            description="Wajib agar akun bisa berfungsi. Hubungi administrator jika ingin menutup akun."
             checked={consent?.dataUse ?? false}
             onChange={() => undefined}
             disabled
           />
           <Checkbox
-            label="My health answers may be shared with the health professionals assigned to my care."
+            label="Jawaban kesehatan saya boleh dibagikan ke tenaga kesehatan yang ditugaskan merawat saya."
             checked={Boolean(consent?.healthInfo && health?.shared)}
             onChange={(checked) => {
               if (!checked) {
@@ -225,14 +225,14 @@ export function PatientProfilePage() {
                 return;
               }
               toast.info(
-                'Add your health details first.',
-                'There is nothing to share until you have answered the health questions.',
+                'Tambahkan detail kesehatan kamu dulu.',
+                'Belum ada yang bisa dibagikan sampai kamu menjawab pertanyaan kesehatan.',
               );
             }}
           />
           {consent ? (
             <p className="border-t border-obsidian-100 pt-3 text-[12px] text-obsidian-500">
-              Agreed on {formatDate(consent.acceptedAt)}.
+              Disetujui pada {formatDate(consent.acceptedAt)}.
             </p>
           ) : null}
         </CardBody>

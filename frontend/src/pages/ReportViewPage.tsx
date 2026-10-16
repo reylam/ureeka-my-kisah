@@ -83,11 +83,11 @@ export function ReportViewPage() {
       <Card className="mx-auto max-w-lg">
         <EmptyState
           icon={<FileSearch />}
-          title="Report not found"
-          description="The screening record behind this report no longer exists."
+          title="Report tidak ditemukan"
+          description="Catatan screening untuk report ini sudah tidak ada."
           action={
             <Button variant="primary" onClick={() => navigate('/reports')}>
-              Back to reports
+              Kembali ke report
             </Button>
           }
         />
@@ -116,27 +116,27 @@ export function ReportViewPage() {
           leadingIcon={<ArrowLeft className="size-4" />}
           onClick={() => navigate(`/screenings/${screening.id}`)}
         >
-          Back to the screening record
+          Kembali ke catatan screening
         </Button>
 
         <div className="flex flex-wrap items-center gap-2">
           {hasRegions ? (
             <div
               role="group"
-              aria-label="Image comparison"
+              aria-label="Perbandingan gambar"
               className="flex items-center rounded-md bg-obsidian-100 p-0.5"
             >
               <ModeButton
                 active={mode === 'side-by-side'}
                 onClick={() => setMode('side-by-side')}
                 icon={<Layers className="size-3.5" />}
-                label="Compare"
+                label="Bandingkan"
               />
               <ModeButton
                 active={mode === 'original'}
                 onClick={() => setMode('original')}
                 icon={<SquareDashedMousePointer className="size-3.5" />}
-                label="Original"
+                label="Asli"
               />
               <ModeButton
                 active={mode === 'overlay'}
@@ -152,7 +152,7 @@ export function ReportViewPage() {
             leadingIcon={<Printer className="size-4" />}
             onClick={() => window.print()}
           >
-            Print report
+            Cetak report
           </Button>
         </div>
       </div>
@@ -165,7 +165,7 @@ export function ReportViewPage() {
             <LogoMark className="size-8 shrink-0" />
             <div>
               <h1 className="text-base font-semibold text-obsidian-950">
-                TB screening report
+                Report screening TB
               </h1>
               <p className="mt-0.5 text-[13px] text-obsidian-600">
                 {facility?.name} · {facility?.region}, {facility?.province}
@@ -174,11 +174,11 @@ export function ReportViewPage() {
           </div>
           <dl className="text-right text-xs text-obsidian-600">
             <div>
-              <dt className="inline text-obsidian-400">Report ref </dt>
+              <dt className="inline text-obsidian-400">Ref. report </dt>
               <dd className="inline font-mono">{screening.id}</dd>
             </div>
             <div className="mt-0.5">
-              <dt className="inline text-obsidian-400">Generated </dt>
+              <dt className="inline text-obsidian-400">Dibuat </dt>
               <dd className="inline tabular">{formatDateTime(new Date().toISOString())}</dd>
             </div>
           </dl>
@@ -190,15 +190,15 @@ export function ReportViewPage() {
           className="border-b border-obsidian-200 bg-obsidian-50 px-5 py-3 print:px-0"
         >
           <p className="text-[13px] font-semibold text-obsidian-950">
-            Screening aid, not a diagnosis. {SIMULATED_RESULT_NOTICE}
+            Alat bantu screening, bukan diagnosis. {SIMULATED_RESULT_NOTICE}
           </p>
           <p className="mt-1.5 text-xs leading-relaxed text-obsidian-600">
             {SCREENING_DISCLAIMER}
           </p>
           <p className="mt-1.5 text-xs leading-relaxed text-obsidian-600">
             {analysis
-              ? `The output below was produced by ${analysis.model.name} (${analysis.model.version}). It has not been clinically validated here and never replaces the reviewer's read.`
-              : 'No model has analysed this radiograph; there is no model output in this report. The reviewer read the image directly.'}
+              ? `Output di bawah dihasilkan oleh ${analysis.model.name} (${analysis.model.version}). Output ini belum divalidasi secara klinis di sini dan tidak pernah menggantikan penilaian reviewer.`
+              : 'Belum ada model yang menganalisis radiograf ini, jadi report ini tidak memuat output model. Reviewer membaca gambarnya secara langsung.'}
           </p>
         </div>
 
@@ -206,30 +206,30 @@ export function ReportViewPage() {
           {/* Patient and encounter */}
           <section data-print="avoid-break" className="grid gap-5 sm:grid-cols-2">
             <div>
-              <SectionTitle>Patient</SectionTitle>
+              <SectionTitle>Pasien</SectionTitle>
               <dl className="mt-2 divide-y divide-obsidian-100">
-                <DetailRow label="Name">{patient.name}</DetailRow>
-                <DetailRow label="Record no.">
+                <DetailRow label="Nama">{patient.name}</DetailRow>
+                <DetailRow label="No. rekam medis">
                   <span className="font-mono text-xs">{patient.mrn}</span>
                 </DetailRow>
-                <DetailRow label="Age and sex">
-                  {ageFromBirthDate(patient.birthDate)} years · {sexLabel[patient.sex]}
+                <DetailRow label="Usia dan jenis kelamin">
+                  {ageFromBirthDate(patient.birthDate)} tahun · {sexLabel[patient.sex]}
                 </DetailRow>
-                <DetailRow label="Residence">
+                <DetailRow label="Tempat tinggal">
                   {patient.village}, {patient.district}
                 </DetailRow>
               </dl>
             </div>
 
             <div>
-              <SectionTitle>Encounter</SectionTitle>
+              <SectionTitle>Kunjungan</SectionTitle>
               <dl className="mt-2 divide-y divide-obsidian-100">
-                <DetailRow label="Screened">{formatDateTime(screening.performedAt)}</DetailRow>
-                <DetailRow label="Recorded by">{operator?.name ?? 'Unknown'}</DetailRow>
-                <DetailRow label="Record status">
+                <DetailRow label="Waktu screening">{formatDateTime(screening.performedAt)}</DetailRow>
+                <DetailRow label="Dicatat oleh">{operator?.name ?? 'Tidak diketahui'}</DetailRow>
+                <DetailRow label="Status catatan">
                   <ScreeningStatusBadge status={screening.status} size="sm" />
                 </DetailRow>
-                <DetailRow label="Image quality">
+                <DetailRow label="Kualitas gambar">
                   <ImageQualityBadge quality={screening.imageQuality} size="sm" />
                 </DetailRow>
               </dl>
@@ -238,7 +238,7 @@ export function ReportViewPage() {
 
           {/* Imaging */}
           <section data-print="avoid-break">
-            <SectionTitle>Radiograph</SectionTitle>
+            <SectionTitle>Radiograf</SectionTitle>
             <div
               className={cn(
                 'mt-2 grid gap-4',
@@ -249,7 +249,7 @@ export function ReportViewPage() {
               {(!hasRegions || mode !== 'overlay') ? (
                 <XrayFrame
                   screening={screening}
-                  label="Original radiograph, as captured"
+                  label="Radiograf asli, sesuai hasil pengambilan"
                 />
               ) : null}
 
@@ -258,7 +258,7 @@ export function ReportViewPage() {
                   screening={screening}
                   regions={analysis?.regions ?? []}
                   showOverlay
-                  label="Illustrative region overlay, numbered below"
+                  label="Overlay region sebagai ilustrasi, bernomor di bawah"
                 />
               ) : null}
             </div>
@@ -279,7 +279,7 @@ export function ReportViewPage() {
                           {region.zone}
                         </span>
                         <span className="ml-2 text-obsidian-500 tabular">
-                          region score {formatPercent(region.score, 0)}
+                          score region {formatPercent(region.score, 0)}
                         </span>
                       </span>
                     </li>
@@ -287,34 +287,35 @@ export function ReportViewPage() {
                 </ol>
                 <p className="mt-2.5 flex items-start gap-1.5 text-xs leading-relaxed text-obsidian-500">
                   <Info aria-hidden className="mt-px size-3.5 shrink-0" />
-                  The overlay is illustrative. It shows where the simulator placed boxes, not a
-                  measured finding, and a highlighted region is not evidence of disease. Region
-                  scores are the simulator&rsquo;s own numbers and are not calibrated.
+                  Overlay ini hanya ilustrasi. Overlay menunjukkan di mana simulator menaruh
+                  kotak, bukan temuan hasil pengukuran, dan region yang di-highlight bukan bukti
+                  penyakit. Score region adalah angka milik simulator sendiri dan belum
+                  dikalibrasi.
                 </p>
               </>
             ) : (
               <p className="mt-2.5 text-[13px] leading-relaxed text-obsidian-600">
-                No region overlay was produced for this record.{' '}
-                {analysis?.detectionNote ?? 'Localisation was not attempted.'}
+                Tidak ada overlay region untuk catatan ini.{' '}
+                {analysis?.detectionNote ?? 'Lokalisasi tidak dilakukan.'}
               </p>
             )}
           </section>
 
           {/* Clinical context */}
           <section data-print="avoid-break">
-            <SectionTitle>Reported symptoms and vitals</SectionTitle>
+            <SectionTitle>Gejala dan tanda vital yang dilaporkan</SectionTitle>
             <dl className="mt-2 divide-y divide-obsidian-100">
-              <DetailRow label="Cough">
+              <DetailRow label="Batuk">
                 {screening.symptoms.coughWeeks > 0
-                  ? `${screening.symptoms.coughWeeks} week${screening.symptoms.coughWeeks === 1 ? '' : 's'}`
-                  : 'None reported'}
+                  ? `${screening.symptoms.coughWeeks} minggu`
+                  : 'Tidak ada laporan'}
               </DetailRow>
-              <DetailRow label="Other symptoms">
+              <DetailRow label="Gejala lain">
                 {reportedSymptoms.length === 0
-                  ? 'None reported'
+                  ? 'Tidak ada laporan'
                   : reportedSymptoms.map((key) => symptomLabel[key] ?? key).join(', ')}
               </DetailRow>
-              <DetailRow label="Vitals">
+              <DetailRow label="Tanda vital">
                 <span className="tabular">
                   {[
                     screening.vitals.weightKg ? `${screening.vitals.weightKg} kg` : null,
@@ -325,12 +326,12 @@ export function ReportViewPage() {
                       : null,
                   ]
                     .filter(Boolean)
-                    .join(' · ') || 'Not recorded'}
+                    .join(' · ') || 'Tidak dicatat'}
                 </span>
               </DetailRow>
-              <DetailRow label="Risk factors">
+              <DetailRow label="Faktor risiko">
                 {patient.riskFactors.length === 0
-                  ? 'None recorded'
+                  ? 'Tidak dicatat'
                   : patient.riskFactors.join(', ').replace(/-/g, ' ')}
               </DetailRow>
             </dl>
@@ -338,7 +339,7 @@ export function ReportViewPage() {
 
           {/* Model output */}
           <section data-print="avoid-break">
-            <SectionTitle>Screening model output</SectionTitle>
+            <SectionTitle>Output model screening</SectionTitle>
             {analysis ? (
               <div className="mt-2 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -353,17 +354,17 @@ export function ReportViewPage() {
               </div>
             ) : (
               <p className="mt-2 text-[13px] text-obsidian-600">
-                No model output exists for this record.
+                Tidak ada output model untuk catatan ini.
               </p>
             )}
           </section>
 
           {/* Model information */}
           <section data-print="avoid-break">
-            <SectionTitle>Model information</SectionTitle>
+            <SectionTitle>Informasi model</SectionTitle>
             <dl className="mt-2 divide-y divide-obsidian-100">
-              <DetailRow label="Source">
-                {analysis?.model.name ?? 'Not applicable'}
+              <DetailRow label="Sumber">
+                {analysis?.model.name ?? 'Tidak berlaku'}
                 {analysis ? (
                   <span className="ml-1.5 font-mono text-xs text-obsidian-400">
                     {analysis.model.version}
@@ -371,35 +372,35 @@ export function ReportViewPage() {
                 ) : null}
               </DetailRow>
               <DetailRow label="Label set">
-                {analysis?.model.labels.join(', ') ?? 'Not applicable'}
+                {analysis?.model.labels.join(', ') ?? 'Tidak berlaku'}
               </DetailRow>
-              <DetailRow label="Architecture reference">
-                {analysis?.model.backbone ?? 'Not applicable'}
+              <DetailRow label="Referensi arsitektur">
+                {analysis?.model.backbone ?? 'Tidak berlaku'}
               </DetailRow>
-              <DetailRow label="Validation">
+              <DetailRow label="Validasi">
                 <span className="text-obsidian-500">
-                  None. No model was evaluated, so no accuracy, sensitivity or specificity figures
-                  are reported.
+                  Tidak ada. Tidak ada model yang dievaluasi, jadi angka akurasi, sensitivitas,
+                  maupun spesifisitas tidak dilaporkan.
                 </span>
               </DetailRow>
-              <DetailRow label="Analysed">
-                {analysis ? formatDateTime(analysis.analysedAt) : 'Not analysed'}
+              <DetailRow label="Dianalisis">
+                {analysis ? formatDateTime(analysis.analysedAt) : 'Belum dianalisis'}
               </DetailRow>
             </dl>
           </section>
 
           {/* Limitations */}
           <section data-print="avoid-break">
-            <SectionTitle>Screening limitations</SectionTitle>
+            <SectionTitle>Keterbatasan screening</SectionTitle>
             <ul className="mt-2 space-y-1.5">
               {[
-                'A screening aid narrows down who needs a confirmatory test. It cannot rule tuberculosis in or out.',
-                'A chest radiograph cannot confirm TB on its own. Bacteriological confirmation, by sputum microscopy or a molecular test, is required.',
-                'The absence of a screening alert does not mean the patient is free of TB. Symptoms and clinical judgement take priority.',
-                'Image quality, positioning and exposure materially affect what can be read from a radiograph.',
+                'Alat bantu screening hanya mempersempit siapa yang perlu tes konfirmasi. Alat ini tidak bisa memastikan atau menyingkirkan tuberkulosis.',
+                'Radiograf dada saja tidak bisa memastikan TB. Konfirmasi bakteriologis lewat mikroskopi dahak atau tes molekuler tetap diperlukan.',
+                'Tidak adanya alert screening bukan berarti pasien bebas TB. Gejala dan penilaian klinis tetap diutamakan.',
+                'Kualitas gambar, posisi, dan eksposur sangat memengaruhi apa yang bisa dibaca dari radiograf.',
                 analysis
-                  ? 'Model output has no validated performance figures here and carries no diagnostic weight on its own.'
-                  : 'No model output exists for this record, so the assessment rests on the reviewer’s own read of the image.',
+                  ? 'Output model belum punya angka performa tervalidasi di sini dan tidak punya bobot diagnostik sendiri.'
+                  : 'Tidak ada output model untuk catatan ini, jadi penilaian bergantung pada pembacaan gambar oleh reviewer.',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-[13px] leading-relaxed">
                   <span
@@ -414,72 +415,72 @@ export function ReportViewPage() {
 
           {/* Reviewer */}
           <section data-print="avoid-break">
-            <SectionTitle>Human reviewer</SectionTitle>
+            <SectionTitle>Reviewer manusia</SectionTitle>
             {screening.review ? (
               <dl className="mt-2 divide-y divide-obsidian-100">
-                <DetailRow label="Reviewed by">
-                  {reviewer?.name ?? 'Unknown'}
+                <DetailRow label="Ditinjau oleh">
+                  {reviewer?.name ?? 'Tidak diketahui'}
                   {reviewer ? (
                     <span className="ml-1.5 text-obsidian-400">
-                      {reviewer.role === 'physician' ? 'Physician' : 'Nurse'}
+                      {reviewer.role === 'physician' ? 'Dokter' : 'Perawat'}
                     </span>
                   ) : null}
                 </DetailRow>
-                <DetailRow label="Reviewed">{formatDateTime(screening.review.reviewedAt)}</DetailRow>
-                <DetailRow label="Assessment">
+                <DetailRow label="Waktu review">{formatDateTime(screening.review.reviewedAt)}</DetailRow>
+                <DetailRow label="Penilaian">
                   {screening.review.agreement === 'agrees'
                     ? analysis
-                      ? 'Consistent with the screening output'
-                      : 'Reviewed the image, no concern raised'
+                      ? 'Sesuai dengan output screening'
+                      : 'Gambar sudah ditinjau, tidak ada temuan mencurigakan'
                     : screening.review.agreement === 'disagrees'
                       ? analysis
-                        ? 'Not consistent with the screening output'
-                        : 'Reviewed the image, concern raised'
-                      : 'Could not conclude from this image'}
+                        ? 'Tidak sesuai dengan output screening'
+                        : 'Gambar sudah ditinjau, ada temuan yang perlu diperhatikan'
+                      : 'Belum bisa disimpulkan dari gambar ini'}
                 </DetailRow>
-                <DetailRow label="Decision">
+                <DetailRow label="Keputusan">
                   {screening.review.decision === 'refer'
-                    ? 'Refer for diagnostic testing'
+                    ? 'Rujuk untuk tes diagnostik'
                     : screening.review.decision === 'repeat-image'
-                      ? 'Repeat the radiograph'
+                      ? 'Ulangi radiograf'
                       : screening.review.decision === 'observe'
-                        ? 'Observe and recheck'
-                        : 'No further action'}
+                        ? 'Observasi dan cek ulang'
+                        : 'Tidak ada tindakan lanjutan'}
                 </DetailRow>
-                <DetailRow label="Notes">
+                <DetailRow label="Catatan">
                   <span className="leading-relaxed">{screening.review.notes}</span>
                 </DetailRow>
               </dl>
             ) : (
               <Notice tone="attention" compact className="mt-2">
-                This record has not been reviewed by a clinician. Without a human review the
-                screening output carries no weight at all.
+                Catatan ini belum ditinjau oleh klinisi. Tanpa review manusia, output screening
+                tidak punya bobot sama sekali.
               </Notice>
             )}
           </section>
 
           {/* Referral */}
           <section data-print="avoid-break">
-            <SectionTitle>Referral status</SectionTitle>
+            <SectionTitle>Status referral</SectionTitle>
             {referral ? (
               <dl className="mt-2 divide-y divide-obsidian-100">
                 <DetailRow label="Referral">
                   <span className="font-mono text-xs">{referral.code}</span>
                 </DetailRow>
-                <DetailRow label="Destination">{destination?.name ?? 'Unknown facility'}</DetailRow>
-                <DetailRow label="Requested">
+                <DetailRow label="Tujuan">{destination?.name ?? 'Fasilitas tidak dikenal'}</DetailRow>
+                <DetailRow label="Layanan diminta">
                   {facilityServiceLabel[referral.requestedService]}
                 </DetailRow>
                 <DetailRow label="Status">
                   <ReferralStatusBadge status={referral.status} size="sm" />
                 </DetailRow>
-                <DetailRow label="Appointment">
-                  {referral.appointmentDate ? formatDate(referral.appointmentDate) : 'Not booked'}
+                <DetailRow label="Jadwal temu">
+                  {referral.appointmentDate ? formatDate(referral.appointmentDate) : 'Belum dijadwalkan'}
                 </DetailRow>
               </dl>
             ) : (
               <p className="mt-2 text-[13px] text-obsidian-600">
-                No referral has been raised from this screening record.
+                Belum ada referral yang dibuat dari catatan screening ini.
               </p>
             )}
           </section>
@@ -489,15 +490,15 @@ export function ReportViewPage() {
             data-print="avoid-break"
             className="hidden border-t border-obsidian-300 pt-5 print:block"
           >
-            <SectionTitle>Clinician sign-off</SectionTitle>
+            <SectionTitle>Pengesahan klinisi</SectionTitle>
             <div className="mt-6 grid grid-cols-2 gap-8">
               <div>
                 <div className="h-10 border-b border-obsidian-400" />
-                <p className="mt-1.5 text-xs text-obsidian-500">Name and signature</p>
+                <p className="mt-1.5 text-xs text-obsidian-500">Nama dan tanda tangan</p>
               </div>
               <div>
                 <div className="h-10 border-b border-obsidian-400" />
-                <p className="mt-1.5 text-xs text-obsidian-500">Date</p>
+                <p className="mt-1.5 text-xs text-obsidian-500">Tanggal</p>
               </div>
             </div>
           </section>
@@ -506,22 +507,22 @@ export function ReportViewPage() {
         {/* Footer repeated on the printed sheet */}
         <footer className="border-t border-obsidian-200 px-5 py-3 print:px-0">
           <p className="text-[11px] leading-relaxed text-obsidian-500">
-            Generated by PULMO-TRACE, a demonstration prototype. Every record, including this patient
-            and this radiograph, is synthetic. Not a medical device, not validated, and not for
-            clinical use. {SIMULATED_RESULT_NOTICE}
+            Dibuat oleh PULMO-TRACE, prototipe demonstrasi. Semua data, termasuk pasien dan
+            radiograf ini, bersifat sintetis. Bukan alat kesehatan, belum divalidasi, dan tidak
+            untuk penggunaan klinis. {SIMULATED_RESULT_NOTICE}
           </p>
         </footer>
       </article>
 
       {/* Screen-only reminder about what printing does */}
       <Card data-print="hide" className="print:hidden">
-        <CardHeader icon={<Printer />} title="Printing this report" />
+        <CardHeader icon={<Printer />} title="Mencetak report ini" />
         <CardBody>
           <p className="text-[13px] leading-relaxed text-obsidian-600">
-            Printing uses the browser&rsquo;s own dialogue, which can also save the sheet as a PDF.
-            The navigation, buttons and view switcher are removed from the printed page, and the
-            comparison collapses to the original image alongside the overlay so both appear on the
-            sheet.
+            Pencetakan memakai dialog bawaan browser, yang juga bisa menyimpan lembar ini sebagai
+            PDF. Navigasi, tombol, dan pengalih tampilan dihilangkan dari halaman cetak, dan
+            perbandingan diubah jadi gambar asli di samping overlay sehingga keduanya muncul di
+            lembar.
           </p>
         </CardBody>
       </Card>

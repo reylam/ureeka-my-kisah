@@ -60,7 +60,7 @@ export function useScreeningImage(screening: Screening | null | undefined): Scre
       .catch((cause: unknown) => {
         if (!active) return;
         setUrl(null);
-        setError(cause instanceof Error ? cause.message : 'The image could not be loaded.');
+        setError(cause instanceof Error ? cause.message : 'Gambar gagal dimuat.');
         setLoading(false);
       });
 

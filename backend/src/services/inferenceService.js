@@ -56,6 +56,23 @@ const rawResponse = z.object({
 /** Below this top-class probability the result is reported as inconclusive. */
 const INCONCLUSIVE_BELOW = 0.6;
 
+/**
+ * Risk point: the model's TB probability on a 0-100 scale.
+ *
+ * It is the network's own output restated, not a separate calculation, and it
+ * is not the chance that a person has tuberculosis: the model has not been
+ * calibrated against any population. The bands below only decide how the
+ * number is presented (the frontend reads `riskLevel`), they are not clinical
+ * thresholds. The frontend mirrors them in `lib/risk.ts`.
+ */
+export const RISK_BANDS = { moderate: 30, high: 60 };
+
+export function riskFrom(probabilities) {
+  const riskPoint = Math.round(clamp01(probabilities.TB) * 100);
+  const riskLevel = riskPoint >= RISK_BANDS.high ? 'high' : riskPoint >= RISK_BANDS.moderate ? 'moderate' : 'low';
+  return { riskPoint, riskLevel };
+}
+
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 
 const baseName = (value) => (value ? String(value).split(/[\\/]/).pop() || undefined : undefined);
@@ -112,6 +129,7 @@ export function toAnalysis(rawInput, size, now = new Date()) {
     outcome,
     predictedLabel: raw.prediction,
     probabilities: raw.probabilities,
+    ...riskFrom(raw.probabilities),
     regions,
     model: {
       // A service might report a checkpoint path; keep only the file name so

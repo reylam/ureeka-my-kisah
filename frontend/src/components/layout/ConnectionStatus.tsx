@@ -32,14 +32,14 @@ export function ConnectionStatus() {
   );
 
   const connected = online && !simulatedOffline;
-  const label = !online ? 'Offline' : simulatedOffline ? 'Offline (simulated)' : 'Online';
+  const label = !online ? 'Offline' : simulatedOffline ? 'Offline (simulasi)' : 'Online';
 
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={`Connection status: ${label}. Open connection details.`}
+        aria-label={`Status koneksi: ${label}. Buka detail koneksi.`}
         className={cn(
           'inline-flex h-8 items-center gap-1.5 rounded-md border px-2 text-xs font-medium transition-colors',
           connected
@@ -64,12 +64,12 @@ export function ConnectionStatus() {
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        title="Connection and synchronisation"
-        description="What is stored on this device, and what a sync would actually do."
+        title="Koneksi dan sync"
+        description="Apa saja yang tersimpan di perangkat ini, dan apa yang sebenarnya dilakukan sync."
         footer={
           <>
             <Button variant="ghost" onClick={() => setOpen(false)}>
-              Close
+              Tutup
             </Button>
             <Button
               variant="primary"
@@ -78,23 +78,23 @@ export function ConnectionStatus() {
                 navigate('/offline');
               }}
             >
-              Open offline queue
+              Buka offline queue
             </Button>
           </>
         }
       >
         <dl className="divide-y divide-obsidian-100 text-[13px]">
-          <Row label="Browser reports">
+          <Row label="Status browser">
             <span className={online ? 'text-complete-800' : 'text-attention-800'}>
-              {online ? 'Connected' : 'No connection'}
+              {online ? 'Terhubung' : 'Tidak ada koneksi'}
             </span>
-            <span className="text-obsidian-400"> · changed {formatRelative(changedAt)}</span>
+            <span className="text-obsidian-400"> · berubah {formatRelative(changedAt)}</span>
           </Row>
-          <Row label="Records waiting">
-            {queued === 0 ? 'Nothing queued' : pluralise(queued, 'record')}
+          <Row label="Record menunggu">
+            {queued === 0 ? 'Tidak ada antrean' : pluralise(queued, 'record', 'record')}
           </Row>
-          <Row label="Last demo sync">
-            {lastSyncAt ? formatRelative(lastSyncAt) : 'Never run in this session'}
+          <Row label="Sync demo terakhir">
+            {lastSyncAt ? formatRelative(lastSyncAt) : 'Belum dijalankan di sesi ini'}
           </Row>
         </dl>
 
@@ -103,20 +103,20 @@ export function ConnectionStatus() {
             tone="attention"
             checked={simulatedOffline}
             onChange={setSimulatedOffline}
-            label="Work offline"
-            description="Queue everything locally instead of syncing. Useful on a connection that keeps dropping, where repeated failed attempts cost more than waiting."
+            label="Kerja offline"
+            description="Simpan semuanya di antrean lokal, tidak langsung sync. Berguna saat koneksi sering putus, karena percobaan yang terus gagal lebih merepotkan daripada menunggu."
           />
         </div>
 
         <Notice tone="demo" className="mt-4">
           <p>
-            Screening records and radiographs you create are written to this browser&rsquo;s own
-            storage on this device. Nothing is uploaded anywhere. There is no server in this
-            prototype, so &ldquo;sync&rdquo; only moves records between local states.
+            Record screening dan radiograf yang kamu buat disimpan di storage browser ini, di
+            perangkat ini. Tidak ada yang di-upload ke mana pun. Prototipe ini tidak punya
+            server, jadi &ldquo;sync&rdquo; hanya memindahkan record antar status lokal.
           </p>
           <p className="mt-2">
-            Browser storage is not a substitute for a secured backend. Anyone with access to this
-            device profile can read it.
+            Storage browser bukan pengganti backend yang aman. Siapa pun yang punya akses ke
+            profil perangkat ini bisa membacanya.
           </p>
         </Notice>
       </Dialog>

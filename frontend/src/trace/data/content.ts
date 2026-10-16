@@ -14,7 +14,7 @@ export const PROJECT = {
   name: 'PULMO-TRACE',
   tagline: 'See Beyond the Scan',
   version: '0.1.0',
-  updated: 'October 2026',
+  updated: 'Oktober 2026',
 } as const;
 
 /* ───────────────────────────── why it matters ───────────────────────────── */
@@ -27,38 +27,38 @@ export const BURDEN_FACTS: {
 }[] = [
   {
     figure: '10.7',
-    unit: 'million people',
-    body: 'fell ill with tuberculosis in 2024. It is one of the world’s deadliest infectious diseases, and it is curable.',
+    unit: 'juta orang',
+    body: 'jatuh sakit karena tuberkulosis (TB) pada 2024. TB termasuk penyakit menular paling mematikan di dunia, padahal bisa disembuhkan.',
     sourceId: 'whoGtb2025',
   },
   {
     figure: '2.4',
-    unit: 'million missed',
-    body: 'of them were never diagnosed. Roughly one in five people with TB is never found by a health service at all.',
+    unit: 'juta tidak terdeteksi',
+    body: 'di antaranya tidak pernah didiagnosis. Sekitar satu dari lima orang dengan TB tidak pernah ditemukan oleh layanan kesehatan sama sekali.',
     sourceId: 'whoGtb2025',
   },
   {
-    figure: '1 of the first',
-    unit: 'places TB shows',
-    body: 'is a chest X-ray. It is cheap, quick and widely available, which is why it is used to decide who needs a lab test.',
+    figure: '1 dari',
+    unit: 'tempat pertama TB terlihat',
+    body: 'adalah chest X-ray. Murah, cepat, dan mudah dijangkau, makanya dipakai untuk menentukan siapa yang perlu menjalani tes lab.',
     sourceId: 'whoScreening2021',
   },
 ];
 
 export const WHY_POINTS: { title: string; body: string; sourceId?: string }[] = [
   {
-    title: 'Finding people is the hard part',
-    body: 'Tuberculosis can be treated. The people who die from it are mostly the people nobody managed to diagnose in time. So the bottleneck is not medicine, it is finding who needs to be tested.',
+    title: 'Menemukan penderita adalah bagian tersulitnya',
+    body: 'Tuberkulosis bisa diobati. Mereka yang meninggal karenanya sebagian besar adalah orang yang tidak sempat didiagnosis tepat waktu. Jadi hambatannya bukan di pengobatan, melainkan di menemukan siapa yang perlu dites.',
     sourceId: 'whoGtb2025',
   },
   {
-    title: 'An X-ray is a good first filter',
-    body: 'Chest X-rays are quick, inexpensive and available in places a laboratory is not. The World Health Organization includes them among the tools for TB screening, and since 2021 has allowed software to read them in place of a human reader for adults, in places where screening is already recommended.',
+    title: 'X-ray cocok sebagai filter awal',
+    body: 'Chest X-ray itu cepat, murah, dan tersedia di tempat yang tidak punya laboratorium. World Health Organization memasukkannya ke dalam perangkat screening TB, dan sejak 2021 membolehkan software membacanya sebagai pengganti pembaca manusia untuk orang dewasa, di tempat yang memang sudah merekomendasikan screening.',
     sourceId: 'whoScreening2021',
   },
   {
-    title: 'But a shadow on a lung is not a diagnosis',
-    body: 'Pneumonia, old scarring, cancer and several other conditions can look similar on an X-ray. And some people who definitely have TB have an X-ray that looks completely normal. An image narrows things down. It does not settle them.',
+    title: 'Tapi bayangan di paru-paru bukan diagnosis',
+    body: 'Pneumonia, bekas luka lama, kanker, dan beberapa kondisi lain bisa tampak mirip di X-ray. Sebaliknya, ada juga orang yang jelas menderita TB tetapi X-ray-nya tampak normal. Gambar hanya mempersempit kemungkinan, bukan menyimpulkannya.',
     sourceId: 'whoCxr2016',
   },
 ];
@@ -73,64 +73,64 @@ export const STEPS: {
 }[] = [
   {
     id: 'image',
-    label: 'Start with a chest X-ray',
-    body: 'One ordinary front-facing chest X-ray, the kind taken at a clinic in a couple of minutes.',
-    note: 'In this prototype you choose a file from your own device.',
+    label: 'Mulai dari chest X-ray',
+    body: 'Satu chest X-ray tampak depan yang biasa, seperti yang diambil di klinik dalam beberapa menit.',
+    note: 'Di prototipe ini, kamu memilih file dari perangkatmu sendiri.',
   },
   {
     id: 'check',
-    label: 'Check the picture is usable',
-    body: 'A blurry, cropped or badly exposed image gives an unreliable answer, so the picture is checked before anything else happens.',
-    note: 'The prototype checks the file type, the size and the dimensions.',
+    label: 'Cek apakah gambarnya layak dipakai',
+    body: 'Gambar yang buram, terpotong, atau salah eksposur menghasilkan jawaban yang tidak andal, jadi gambar diperiksa dulu sebelum proses lain berjalan.',
+    note: 'Prototipe ini memeriksa tipe file, ukuran, dan dimensinya.',
   },
   {
     id: 'look',
-    label: 'Look for familiar patterns',
-    body: 'Software trained on many labelled X-rays compares what it sees against the patterns it learned, and produces a score for how closely they match.',
-    note: 'Not built yet. No model is connected to this prototype.',
+    label: 'Mencari pola yang dikenali',
+    body: 'Software yang dilatih dengan banyak X-ray berlabel membandingkan apa yang dilihatnya dengan pola yang sudah dipelajari, lalu menghasilkan score yang menunjukkan seberapa mirip keduanya.',
+    note: 'Belum dibuat. Belum ada model yang terhubung ke prototipe ini.',
   },
   {
     id: 'result',
-    label: 'Turn the score into a next step',
-    body: 'Above a set cut-off the image is flagged for follow-up. Below it, no flag. The result is a recommendation about testing, never a conclusion about the person.',
-    note: 'The prototype shows this step with a clearly labelled placeholder.',
+    label: 'Ubah score jadi langkah berikutnya',
+    body: 'Di atas cut-off yang ditetapkan, gambar ditandai untuk tindak lanjut. Di bawahnya, tidak ada tanda. Hasilnya adalah rekomendasi soal tes, bukan kesimpulan tentang orangnya.',
+    note: 'Prototipe menampilkan langkah ini dengan placeholder yang diberi label jelas.',
   },
 ];
 
 /* ───────────────────────── can and cannot ───────────────────────── */
 
 export const CAN_DO: string[] = [
-  'Point to an X-ray that deserves a closer look',
-  'Work through a lot of images quickly, in order',
-  'Help in places where no radiologist is available that day',
-  'Give the same answer every time for the same image',
+  'Menunjukkan X-ray yang perlu dilihat lebih teliti',
+  'Memproses banyak gambar dengan cepat, secara berurutan',
+  'Membantu di tempat yang hari itu tidak punya radiolog',
+  'Memberi jawaban yang sama setiap kali untuk gambar yang sama',
 ];
 
 export const CANNOT_DO: string[] = [
-  'Confirm that someone has tuberculosis',
-  'Prove that someone does not have it',
-  'Replace a lab test, which is what actually confirms TB',
-  'Replace the judgement of a doctor who has met the patient',
+  'Memastikan seseorang menderita tuberkulosis',
+  'Membuktikan seseorang tidak menderita TB',
+  'Menggantikan tes lab, yang menjadi penentu sebenarnya untuk TB',
+  'Menggantikan penilaian dokter yang sudah bertemu langsung dengan pasien',
 ];
 
 /* ──────────────────────────── honest limits ──────────────────────────── */
 
 export const LIMITS: { title: string; body: string }[] = [
   {
-    title: 'It will miss people',
-    body: 'Early tuberculosis, and TB in people living with HIV, can be very hard to see on an X-ray. A tool like this will let some real cases through, which is why a negative result is never an all-clear.',
+    title: 'Ada orang yang akan terlewat',
+    body: 'Tuberkulosis tahap awal, dan TB pada orang dengan HIV, bisa sangat sulit terlihat di X-ray. Tools seperti ini akan meloloskan sebagian kasus nyata, makanya hasil negatif tidak pernah berarti aman.',
   },
   {
-    title: 'It will raise false alarms',
-    body: 'Several other lung conditions look similar. In a general population, where TB is rare, most of the images a tool like this flags will turn out not to be TB. That is a real cost in travel, time and worry for those people.',
+    title: 'Akan ada alarm palsu',
+    body: 'Beberapa kondisi paru lain tampak mirip. Pada populasi umum, di mana TB jarang ditemukan, sebagian besar gambar yang ditandai tools seperti ini ternyata bukan TB. Itu biaya nyata bagi orang-orang tersebut: ongkos perjalanan, waktu, dan rasa cemas.',
   },
   {
-    title: 'The picture quality changes the answer',
-    body: 'Different machines, different exposure, a patient standing slightly turned. All of it shifts what the software sees, and none of it is visible in the score it reports.',
+    title: 'Kualitas gambar memengaruhi jawaban',
+    body: 'Mesin yang berbeda, eksposur yang berbeda, pasien berdiri sedikit miring. Semuanya mengubah apa yang dilihat software, dan tidak satu pun terlihat di score yang dilaporkan.',
   },
   {
-    title: 'It has not been tested in a real clinic',
-    body: 'This is a prototype of the interface. No model has been trained for it and nothing has been measured, so nobody should treat anything here as evidence that the approach works.',
+    title: 'Belum diuji di klinik sungguhan',
+    body: 'Ini prototipe antarmuka. Belum ada model yang dilatih untuknya dan belum ada yang diukur, jadi jangan anggap apa pun di sini sebagai bukti bahwa pendekatan ini berhasil.',
   },
 ];
 
@@ -138,45 +138,45 @@ export const LIMITS: { title: string; body: string }[] = [
 
 export const FAQ: { question: string; answer: string; sourceId?: string }[] = [
   {
-    question: 'Can I use this to find out if I have tuberculosis?',
+    question: 'Bisakah ini dipakai untuk mengetahui apakah saya menderita tuberkulosis?',
     answer:
-      'No. This is a prototype of an interface, and no model is connected to it. Even a finished and properly tested version would only ever suggest that someone should be tested. If you are worried about TB, see a health professional. A persistent cough lasting more than two weeks, fever, night sweats and losing weight without trying are all reasons to get checked.',
+      'Tidak. Ini prototipe antarmuka, dan belum ada model yang terhubung. Bahkan versi final yang sudah diuji dengan benar pun hanya akan menyarankan bahwa seseorang perlu dites. Kalau kamu khawatir soal TB, temui tenaga kesehatan. Batuk terus-menerus lebih dari dua minggu, demam, keringat malam, dan berat badan turun tanpa sebab adalah alasan untuk periksa.',
   },
   {
-    question: 'What does the score in the demo actually mean?',
+    question: 'Sebenarnya score di demo itu artinya apa?',
     answer:
-      'In this prototype, nothing. It is a fixed placeholder chosen from the file’s name and size, so the same file always gives the same answer and the picture itself plays no part. In a real system the score would be a measure of how closely the image matches the patterns the software learned, on a scale from 0 to 1. It would still not be the chance that the person has TB.',
+      'Di prototipe ini, tidak ada artinya. Itu hanya placeholder tetap yang dipilih dari nama dan ukuran file, jadi file yang sama selalu menghasilkan jawaban yang sama dan gambarnya sendiri tidak berperan sama sekali. Di sistem sungguhan, score akan menjadi ukuran seberapa mirip gambar dengan pola yang dipelajari software, dalam skala 0 sampai 1. Itu pun bukan peluang seseorang menderita TB.',
   },
   {
-    question: 'Why is a score not the same as a percentage chance?',
+    question: 'Kenapa score tidak sama dengan persentase peluang?',
     answer:
-      'Because the two answer different questions. A score says how confidently the software can tell one group of images from another. The chance that a particular person has TB also depends on how common TB is where they live, their symptoms and their history. The same score means something quite different in a TB clinic and in a routine workplace check-up.',
+      'Karena keduanya menjawab pertanyaan yang berbeda. Score menunjukkan seberapa yakin software membedakan satu kelompok gambar dari kelompok lain. Peluang seseorang menderita TB juga bergantung pada seberapa umum TB di tempat tinggalnya, gejalanya, dan riwayatnya. Score yang sama bisa berarti sangat berbeda di klinik TB dan di pemeriksaan kesehatan rutin di tempat kerja.',
   },
   {
-    question: 'Is my X-ray uploaded anywhere?',
+    question: 'Apakah X-ray saya di-upload ke suatu tempat?',
     answer:
-      'No. The file you choose is read by your own browser to draw the preview, and it is never sent to a server. Nothing is stored and nothing leaves your device. Even so, please do not use an image that carries someone’s name or patient number.',
+      'Tidak. File yang kamu pilih dibaca oleh browser-mu sendiri untuk menampilkan preview, dan tidak pernah dikirim ke server. Tidak ada yang disimpan dan tidak ada yang keluar dari perangkatmu. Tetap saja, jangan pakai gambar yang memuat nama atau nomor pasien seseorang.',
   },
   {
-    question: 'So how is tuberculosis actually confirmed?',
+    question: 'Lalu bagaimana tuberkulosis dikonfirmasi?',
     answer:
-      'By testing for the bacteria, usually with a rapid molecular test on a sputum sample, sometimes by growing a culture or by examining a sample under a microscope. A doctor reads that result together with symptoms and history. An X-ray, read by a person or by software, comes earlier in the chain and only helps decide who should be tested.',
+      'Dengan menguji keberadaan bakterinya, biasanya lewat tes molekuler cepat pada sampel dahak, kadang dengan kultur atau pemeriksaan sampel di bawah mikroskop. Dokter membaca hasilnya bersama gejala dan riwayat pasien. X-ray, entah dibaca manusia atau software, ada di tahap lebih awal dan hanya membantu menentukan siapa yang perlu dites.',
     sourceId: 'whoScreening2021',
   },
   {
-    question: 'Why build the interface before the model?',
+    question: 'Kenapa antarmukanya dibuat sebelum modelnya?',
     answer:
-      'Because how a result is shown changes how it gets used. A screening tool that reports a bare number invites people to read it as a verdict. Getting the wording, the warnings and the next step right is work in its own right, and it is easier to do honestly while there is no impressive accuracy figure to show off.',
+      'Karena cara hasil ditampilkan memengaruhi cara hasil itu dipakai. Tools screening yang hanya menampilkan angka mentah mengundang orang membacanya sebagai vonis. Merumuskan kata-kata, peringatan, dan langkah berikutnya dengan tepat adalah pekerjaan tersendiri, dan lebih mudah dilakukan dengan jujur selama belum ada angka akurasi mengesankan yang dipamerkan.',
   },
 ];
 
 /* ─────────────────────────── what exists today ─────────────────────────── */
 
 export const BUILD_STATUS: { label: string; value: string; done: boolean }[] = [
-  { label: 'Screening interface', value: 'Built and working', done: true },
-  { label: 'Image checks and preview', value: 'Built and working', done: true },
-  { label: 'Result format and warnings', value: 'Built and working', done: true },
-  { label: 'Trained model', value: 'Not built', done: false },
-  { label: 'Tested on real patients', value: 'Not done', done: false },
-  { label: 'Approved for clinical use', value: 'No, and not applied for', done: false },
+  { label: 'Antarmuka screening', value: 'Sudah dibuat dan berfungsi', done: true },
+  { label: 'Pengecekan dan preview gambar', value: 'Sudah dibuat dan berfungsi', done: true },
+  { label: 'Format hasil dan peringatan', value: 'Sudah dibuat dan berfungsi', done: true },
+  { label: 'Model terlatih', value: 'Belum dibuat', done: false },
+  { label: 'Diuji pada pasien sungguhan', value: 'Belum dilakukan', done: false },
+  { label: 'Disetujui untuk penggunaan klinis', value: 'Belum, dan belum diajukan', done: false },
 ];

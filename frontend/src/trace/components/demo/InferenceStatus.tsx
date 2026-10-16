@@ -1,5 +1,9 @@
 import { AlertTriangle, Check, Circle, Loader2 } from 'lucide-react';
-import { STAGES, type InferenceState } from '@/trace/hooks/useSimulatedInference';
+import {
+  STAGES,
+  type InferenceStage,
+  type InferenceState,
+} from '@/trace/hooks/useSimulatedInference';
 import { cn } from '@/utils/cn';
 
 /**
@@ -20,6 +24,8 @@ export function InferenceStatus({
   stageIndex,
   progress,
   errorMessage,
+  stages = STAGES,
+  live = false,
   className,
 }: {
   state: InferenceState;
@@ -27,14 +33,18 @@ export function InferenceStatus({
   stageIndex: number;
   progress: number;
   errorMessage: string | null;
+  /** The stages of the active mode. Defaults to the simulated ones. */
+  stages?: InferenceStage[];
+  /** True when a real model answers, which changes what the states say. */
+  live?: boolean;
   className?: string;
 }) {
-  const display = resolveDisplay(state, hasImage);
+  const display = live ? resolveLiveDisplay(state, hasImage) : resolveDisplay(state, hasImage);
 
   return (
     <div className={cn('rounded-md border border-trace-line bg-trace-card', className)}>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-trace-line px-4 py-3">
-        <p className="trace-label text-trace-dim">Run state</p>
+        <p className="trace-label text-trace-dim">Status proses</p>
         <p
           aria-live="polite"
           className={cn(
@@ -57,7 +67,7 @@ export function InferenceStatus({
               aria-valuenow={Math.round(progress * 100)}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label="Simulated run progress"
+              aria-label={live ? 'Progres analisis' : 'Progres proses simulasi'}
               className="mt-4 h-1 w-full overflow-hidden rounded-full bg-trace-raised"
             >
               <div
@@ -67,7 +77,7 @@ export function InferenceStatus({
             </div>
 
             <ol className="mt-4 space-y-2.5">
-              {STAGES.map((stage, index) => {
+              {stages.map((stage, index) => {
                 const done = index < stageIndex || state === 'done';
                 const active = index === stageIndex && state === 'running';
                 return (
@@ -115,6 +125,55 @@ export function InferenceStatus({
   );
 }
 
+/** What each state says when a real model is doing the work. */
+function resolveLiveDisplay(state: InferenceState, hasImage: boolean) {
+  const neutral = 'border-trace-line bg-trace-raised text-trace-dim';
+  const accent = 'border-trace-accent-edge bg-trace-accent-surface text-trace-accent-soft';
+  const flag = 'border-trace-flag-edge bg-trace-flag-surface text-trace-flag-soft';
+
+  if (state === 'error') {
+    return {
+      label: 'Gagal',
+      tone: flag,
+      spinning: false,
+      description:
+        'Analisis berhenti sebelum selesai. Gambar yang kamu pilih masih termuat, jadi kamu bisa mencobanya lagi.',
+    };
+  }
+  if (state === 'running') {
+    return {
+      label: 'Memproses',
+      tone: accent,
+      spinning: true,
+      description: 'Gambar sedang dibaca oleh model screening. Biasanya hanya butuh beberapa detik.',
+    };
+  }
+  if (state === 'done') {
+    return {
+      label: 'Selesai',
+      tone: accent,
+      spinning: false,
+      description:
+        'Hasil dari model ada di bawah, lengkap dengan risk point dan batasannya. Ini alat bantu screening, bukan diagnosis.',
+    };
+  }
+  if (hasImage) {
+    return {
+      label: 'Gambar siap',
+      tone: accent,
+      spinning: false,
+      description:
+        'Gambar sudah termuat. Belum ada yang dikirim; gambar baru dikirim ke server setelah kamu menekan tombol.',
+    };
+  }
+  return {
+    label: 'Siap',
+    tone: neutral,
+    spinning: false,
+    description: 'Menunggu foto rontgen dada. Letakkan file JPG atau PNG, atau cari dari perangkat.',
+  };
+}
+
 function resolveDisplay(state: InferenceState, hasImage: boolean) {
   const neutral = 'border-trace-line bg-trace-raised text-trace-dim';
   const accent = 'border-trace-accent-edge bg-trace-accent-surface text-trace-accent-soft';
@@ -122,42 +181,42 @@ function resolveDisplay(state: InferenceState, hasImage: boolean) {
 
   if (state === 'error') {
     return {
-      label: 'Failed',
+      label: 'Gagal',
       tone: flag,
       spinning: false,
-      description: 'The run stopped. The selected image is still loaded, so you can try again.',
+      description: 'Proses berhenti. Gambar yang dipilih masih termuat, jadi kamu bisa mencoba lagi.',
     };
   }
   if (state === 'running') {
     return {
-      label: 'Working',
+      label: 'Memproses',
       tone: accent,
       spinning: true,
       description:
-        'Walking through the steps a real screening tool would take. Nothing is examining the picture.',
+        'Menjalankan langkah-langkah yang akan ditempuh tools screening sungguhan. Tidak ada yang memeriksa gambarnya.',
     };
   }
   if (state === 'done') {
     return {
-      label: 'Done',
+      label: 'Selesai',
       tone: accent,
       spinning: false,
       description:
-        'The example result is below. It was picked from the file’s name and size, not worked out from the picture.',
+        'Contoh hasil ada di bawah. Hasil ini dipilih dari nama dan ukuran file, bukan dihitung dari gambarnya.',
     };
   }
   if (hasImage) {
     return {
-      label: 'Image loaded',
+      label: 'Gambar dimuat',
       tone: accent,
       spinning: false,
-      description: 'Your image is loaded and the button is ready. Nothing has been sent anywhere.',
+      description: 'Gambarmu sudah dimuat dan tombolnya siap dipakai. Belum ada yang dikirim ke mana pun.',
     };
   }
   return {
-    label: 'Ready',
+    label: 'Siap',
     tone: neutral,
     spinning: false,
-    description: 'Waiting for a chest X-ray. Drop a JPG or PNG file, or browse for one.',
+    description: 'Menunggu chest X-ray. Drop file JPG atau PNG, atau cari di perangkatmu.',
   };
 }

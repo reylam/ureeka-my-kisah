@@ -99,9 +99,10 @@ export function DashboardPage() {
 
   const greeting = (() => {
     const hour = new Date().getHours();
-    if (hour < 11) return 'Good morning';
-    if (hour < 16) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 11) return 'Selamat pagi';
+    if (hour < 15) return 'Selamat siang';
+    if (hour < 18) return 'Selamat sore';
+    return 'Selamat malam';
   })();
 
   const firstName = user?.name.replace(/^(dr\.|Ns\.)\s*/i, '').split(' ')[0] ?? '';
@@ -110,25 +111,25 @@ export function DashboardPage() {
     <div className="space-y-5">
       <PageHeader
         title={`${greeting}, ${firstName}`}
-        description={`${facility?.name} · ${facility?.region}. Here is what needs attention today.`}
+        description={`${facility?.name} · ${facility?.region}. Ini yang perlu diperhatikan hari ini.`}
         actions={
           <>
             <Button variant="outline" onClick={() => navigate('/reports')}>
-              Screening history
+              Riwayat screening
             </Button>
             <Button
               variant="primary"
               leadingIcon={<ScanLine className="size-4" />}
               onClick={() => navigate('/screenings/new')}
             >
-              New screening
+              Screening baru
             </Button>
           </>
         }
       />
 
       {/* 1. What needs attention */}
-      <section aria-label="Workload summary">
+      <section aria-label="Ringkasan beban kerja">
         {loading || !summary ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {Array.from({ length: 4 }, (_, i) => (
@@ -138,42 +139,42 @@ export function DashboardPage() {
         ) : (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <MetricTile
-              label="Screening records"
+              label="Record screening"
               value={summary.totalScreenings}
               icon={ClipboardList}
               to="/reports"
-              caption={`${summary.screeningsThisWeek} recorded in the last 7 days`}
+              caption={`${summary.screeningsThisWeek} tercatat dalam 7 hari terakhir`}
             />
             <MetricTile
-              label="Awaiting review"
+              label="Menunggu review"
               value={summary.awaitingReview}
               icon={Stethoscope}
               to="/reports?status=awaiting-review"
               tone="attention"
               caption={
                 summary.flaggedAwaitingReview > 0
-                  ? `${summary.flaggedAwaitingReview} flagged by the demo model`
-                  : 'No flagged records in the queue'
+                  ? `${summary.flaggedAwaitingReview} ditandai oleh model demo`
+                  : 'Tidak ada record yang ditandai di queue'
               }
             />
             <MetricTile
-              label="Pending referrals"
+              label="Referral menunggu"
               value={summary.pendingReferrals}
               icon={Send}
               to="/referrals"
               tone="attention"
-              caption="Not yet attended or closed"
+              caption="Belum dihadiri atau ditutup"
             />
             <MetricTile
-              label="Overdue follow-ups"
+              label="Follow-up terlambat"
               value={summary.overdueFollowUps}
               icon={CalendarClock}
               to="/followups?bucket=overdue"
               tone="urgent"
               caption={
                 summary.dueTodayFollowUps > 0
-                  ? `${summary.dueTodayFollowUps} more due today`
-                  : 'Nothing else due today'
+                  ? `${summary.dueTodayFollowUps} lagi jatuh tempo hari ini`
+                  : 'Tidak ada lagi yang jatuh tempo hari ini'
               }
             />
           </div>
@@ -185,11 +186,11 @@ export function DashboardPage() {
         <Card>
           <CardHeader
             icon={<Stethoscope />}
-            title="Awaiting clinical review"
-            description="Screening records with analysis output that no clinician has signed off yet."
+            title="Menunggu review klinis"
+            description="Record screening dengan output analisis yang belum disetujui tenaga medis."
             actions={
               <Button size="sm" variant="ghost" onClick={() => navigate('/reports?status=awaiting-review')}>
-                View all
+                Lihat semua
               </Button>
             }
           />
@@ -199,8 +200,8 @@ export function DashboardPage() {
             <EmptyState
               compact
               icon={<CheckCircle2 />}
-              title="Review queue is clear"
-              description="Every screening record with analysis output has been reviewed."
+              title="Review queue kosong"
+              description="Semua record screening dengan output analisis sudah direview."
             />
           ) : (
             <ul className="divide-y divide-obsidian-100">
@@ -214,9 +215,9 @@ export function DashboardPage() {
                     >
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[13px] font-medium text-obsidian-900">
-                          {patient?.name ?? 'Unknown patient'}
+                          {patient?.name ?? 'Pasien tidak dikenal'}
                           <span className="ml-2 font-normal text-obsidian-400">
-                            {patient ? `${ageFromBirthDate(patient.birthDate)} yrs` : ''}
+                            {patient ? `${ageFromBirthDate(patient.birthDate)} thn` : ''}
                           </span>
                         </p>
                         <p className="mt-0.5 truncate font-mono text-[11px] text-obsidian-500">
@@ -247,10 +248,10 @@ export function DashboardPage() {
           <CardHeader
             icon={<CalendarClock />}
             title="Follow-up queue"
-            description="Open contact tasks, most overdue first."
+            description="Task kontak yang masih terbuka, yang paling terlambat di atas."
             actions={
               <Button size="sm" variant="ghost" onClick={() => navigate('/followups')}>
-                View all
+                Lihat semua
               </Button>
             }
           />
@@ -260,8 +261,8 @@ export function DashboardPage() {
             <EmptyState
               compact
               icon={<CheckCircle2 />}
-              title="No open follow-ups"
-              description="Nothing is scheduled or in progress right now."
+              title="Tidak ada follow-up terbuka"
+              description="Saat ini tidak ada yang terjadwal atau sedang berjalan."
             />
           ) : (
             <ul className="divide-y divide-obsidian-100">
@@ -276,7 +277,7 @@ export function DashboardPage() {
                     >
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[13px] font-medium text-obsidian-900">
-                          {patient?.name ?? 'Unknown patient'}
+                          {patient?.name ?? 'Pasien tidak dikenal'}
                         </p>
                         <p className="mt-0.5 truncate text-xs text-obsidian-500">
                           {followUpReasonLabel[item.reason]} ·{' '}
@@ -308,8 +309,8 @@ export function DashboardPage() {
         <Card>
           <CardHeader
             icon={<Activity />}
-            title="Screening activity"
-            description="Records created at this facility, counted from the local dataset."
+            title="Aktivitas screening"
+            description="Record yang dibuat di fasilitas ini, dihitung dari dataset lokal."
           />
           <CardBody>
             {loading || !summary ? (
@@ -325,7 +326,7 @@ export function DashboardPage() {
         <div className="space-y-5">
           {/* Offline sync indicator */}
           <Card>
-            <CardHeader icon={<CloudUpload />} title="Local records & sync" />
+            <CardHeader icon={<CloudUpload />} title="Record lokal & sync" />
             <CardBody className="space-y-3">
               {loading || !summary ? (
                 <LineSkeleton lines={3} />
@@ -333,30 +334,30 @@ export function DashboardPage() {
                 <>
                   <dl className="grid grid-cols-2 gap-3">
                     <SyncStat
-                      label="Offline drafts"
+                      label="Draf offline"
                       value={summary.draftRecords}
                       tone={summary.draftRecords > 0 ? 'attention' : 'neutral'}
                     />
                     <SyncStat
-                      label="Waiting to sync"
+                      label="Menunggu sync"
                       value={summary.pendingSyncRecords}
                       tone={summary.pendingSyncRecords > 0 ? 'attention' : 'neutral'}
                     />
                     <SyncStat
-                      label="Failed attempts"
+                      label="Percobaan gagal"
                       value={summary.failedSyncRecords}
                       tone={summary.failedSyncRecords > 0 ? 'urgent' : 'neutral'}
                     />
                     <SyncStat
-                      label="Conflicts"
+                      label="Konflik"
                       value={summary.conflictRecords}
                       tone={summary.conflictRecords > 0 ? 'urgent' : 'neutral'}
                     />
                   </dl>
                   <p className="text-xs text-obsidian-500">
-                    Last demo sync{' '}
+                    Sync demo terakhir{' '}
                     <span className="font-medium text-obsidian-700">
-                      {lastSyncAt ? formatRelative(lastSyncAt) : 'not run yet'}
+                      {lastSyncAt ? formatRelative(lastSyncAt) : 'belum pernah dijalankan'}
                     </span>
                     .
                   </p>
@@ -367,7 +368,7 @@ export function DashboardPage() {
                     leadingIcon={<CloudOff className="size-4" />}
                     onClick={() => navigate('/offline')}
                   >
-                    Open offline queue
+                    Buka offline queue
                   </Button>
                 </>
               )}
@@ -378,8 +379,8 @@ export function DashboardPage() {
           <Card>
             <CardHeader
               icon={<ClipboardList />}
-              title="Outcome mix"
-              description="How the demo analysis classified records that have been analysed."
+              title="Sebaran outcome"
+              description="Cara analisis demo mengklasifikasikan record yang sudah dianalisis."
             />
             <CardBody className="space-y-2.5">
               {loading || !summary ? (
@@ -433,13 +434,13 @@ export function DashboardPage() {
                 </span>
                 <div className="min-w-0">
                   <p className="text-[13px] font-medium text-obsidian-900">
-                    {pluralise(patients.length, 'patient')} in the register
+                    {pluralise(patients.length, 'pasien', 'pasien')} di register
                   </p>
                   <Link
                     to="/patients"
                     className="text-xs text-ct-700 underline decoration-ct-300 underline-offset-2 transition-colors hover:text-ct-800"
                   >
-                    Open patient directory
+                    Buka direktori pasien
                   </Link>
                 </div>
               </div>

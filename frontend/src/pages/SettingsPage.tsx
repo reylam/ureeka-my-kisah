@@ -98,7 +98,7 @@ export function SettingsPage() {
       await clearImages();
       await unregisterServiceWorker();
       await refreshUsage();
-      toast.success('Stored radiographs cleared.', 'Records on the server were not touched.');
+      toast.success('Radiograf tersimpan sudah dihapus.', 'Data di server tidak ikut terhapus.');
       setClearImagesOpen(false);
     } finally {
       setWorking(false);
@@ -108,13 +108,13 @@ export function SettingsPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       <PageHeader
-        title="Settings"
-        description="Your profile, your facility, and what is stored on this device."
+        title="Pengaturan"
+        description="Profil, fasilitas, dan data yang tersimpan di perangkat ini."
       />
 
       {/* Profile */}
       <Card>
-        <CardHeader icon={<UserCog />} title="Profile" />
+        <CardHeader icon={<UserCog />} title="Profil" />
         <CardBody className="space-y-4">
           {user ? (
             <div className="flex items-start gap-3">
@@ -125,11 +125,11 @@ export function SettingsPage() {
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {user.canReview ? (
                     <Badge tone="complete" size="sm" icon={<FlaskConical />}>
-                      Can sign off reviews
+                      Bisa mengesahkan review
                     </Badge>
                   ) : (
                     <Badge tone="neutral" size="sm" icon={<FlaskConical />}>
-                      Cannot sign off reviews
+                      Tidak bisa mengesahkan review
                     </Badge>
                   )}
                 </div>
@@ -142,19 +142,19 @@ export function SettingsPage() {
                   navigate('/login', { replace: true });
                 }}
               >
-                Sign out
+                Keluar
               </Button>
             </div>
           ) : null}
 
           <dl className="divide-y divide-obsidian-100">
-            <DetailRow label="Email">{user?.email ?? 'Not signed in'}</DetailRow>
-            <DetailRow label="Phone">{user?.phone ?? 'None on file'}</DetailRow>
+            <DetailRow label="Email">{user?.email ?? 'Belum masuk'}</DetailRow>
+            <DetailRow label="Telepon">{user?.phone ?? 'Belum ada data'}</DetailRow>
           </dl>
 
           <Notice tone="info" compact>
-            Profile details come from the staff directory and are managed by an administrator, so
-            the fields are read-only here.
+            Detail profil berasal dari direktori staf dan dikelola oleh administrator, jadi kolom
+            di sini hanya bisa dibaca.
           </Notice>
         </CardBody>
       </Card>
@@ -163,8 +163,8 @@ export function SettingsPage() {
       <Card>
         <CardHeader
           icon={<Building2 />}
-          title="Facility"
-          description="The facility you are working at."
+          title="Fasilitas"
+          description="Fasilitas tempat kamu bertugas."
         />
         <CardBody>
           {facility ? (
@@ -177,19 +177,19 @@ export function SettingsPage() {
                 <FacilityInfoBadge status={facility.infoStatus} size="sm" />
               </div>
               <dl className="mt-3 divide-y divide-obsidian-100">
-                <DetailRow label="Address">{facility.address}</DetailRow>
-                <DetailRow label="Region">
+                <DetailRow label="Alamat">{facility.address}</DetailRow>
+                <DetailRow label="Wilayah">
                   {facility.region}, {facility.province}
                 </DetailRow>
-                <DetailRow label="Phone">{facility.phone}</DetailRow>
-                <DetailRow label="Opening hours">{facility.operatingHours}</DetailRow>
-                <DetailRow label="On-site services">
+                <DetailRow label="Telepon">{facility.phone}</DetailRow>
+                <DetailRow label="Jam operasional">{facility.operatingHours}</DetailRow>
+                <DetailRow label="Layanan di lokasi">
                   {facility.services.map((service) => facilityServiceLabel[service]).join(', ')}
                 </DetailRow>
-                <DetailRow label="TB programme contact">
-                  {facility.tbProgrammeContact ?? 'No named contact'}
+                <DetailRow label="Kontak program TB">
+                  {facility.tbProgrammeContact ?? 'Belum ada kontak'}
                 </DetailRow>
-                <DetailRow label="Entry last checked">
+                <DetailRow label="Terakhir diperiksa">
                   {formatDate(facility.infoUpdatedAt)}
                 </DetailRow>
               </dl>
@@ -202,31 +202,31 @@ export function SettingsPage() {
       <Card>
         <CardHeader
           icon={<FlaskConical />}
-          title="Prototype environment"
-          description="What is running, and what is not."
+          title="Lingkungan prototipe"
+          description="Apa saja yang berjalan, dan apa yang belum."
         />
         <CardBody className="space-y-4">
           <dl className="divide-y divide-obsidian-100">
-            <DetailRow label="Screening output">
+            <DetailRow label="Output screening">
               {DEMO_MODEL.name}
               <span className="ml-1.5 font-mono text-xs text-obsidian-400">
                 {DEMO_MODEL.version}
               </span>
               <span className="mt-1 block text-xs leading-relaxed text-obsidian-500">
-                The screening model runs as a separate service. While it is not connected,
-                records are saved and reviewed by a clinician without model output.
+                Model screening berjalan sebagai service terpisah. Selama belum terhubung,
+                data tetap disimpan dan ditinjau klinisi tanpa output model.
               </span>
             </DetailRow>
             <DetailRow label="Label set">{DEMO_MODEL.labels.join(', ')}</DetailRow>
-            <DetailRow label="Reported performance">
+            <DetailRow label="Performa yang dilaporkan">
               <span className="text-obsidian-500">
-                None. Nothing here has been evaluated, so no accuracy figures are shown anywhere in
-                the product.
+                Tidak ada. Belum ada yang dievaluasi, jadi angka akurasi tidak ditampilkan di
+                bagian mana pun dalam produk ini.
               </span>
             </DetailRow>
-            <DetailRow label="Authentication">
+            <DetailRow label="Autentikasi">
               <span className="text-obsidian-500">
-                Handled by Supabase Auth. Every request is checked again by the API and the
+                Ditangani oleh Supabase Auth. Setiap request diperiksa ulang oleh API dan
                 database.
               </span>
             </DetailRow>
@@ -238,15 +238,15 @@ export function SettingsPage() {
               checked={simulatedOffline}
               onChange={(value) => {
                 setSimulatedOffline(value);
-                toast.info(value ? 'Offline mode simulated.' : 'Offline simulation switched off.');
+                toast.info(value ? 'Mode offline disimulasikan.' : 'Simulasi offline dimatikan.');
               }}
-              label="Work offline"
-              description="Forces the offline behaviour without disconnecting the network."
+              label="Bekerja offline"
+              description="Memaksa perilaku offline tanpa perlu memutus koneksi jaringan."
             />
           </div>
 
           <Notice tone="info" compact>
-            Animations follow your operating system&rsquo;s reduced-motion setting.
+            Animasi mengikuti pengaturan reduced-motion di sistem operasi kamu.
           </Notice>
         </CardBody>
       </Card>
@@ -255,8 +255,8 @@ export function SettingsPage() {
       <Card>
         <CardHeader
           icon={<HardDrive />}
-          title="Storage on this device"
-          description="Radiographs and records captured offline, held here until they are sent."
+          title="Penyimpanan di perangkat ini"
+          description="Radiograf dan data yang diambil saat offline, disimpan di sini sampai terkirim."
           actions={
             <Button
               size="sm"
@@ -265,7 +265,7 @@ export function SettingsPage() {
               onClick={() => void refreshUsage()}
               loading={usageLoading}
             >
-              Recheck
+              Cek ulang
             </Button>
           }
         />
@@ -274,17 +274,17 @@ export function SettingsPage() {
             <div className="rounded-md border border-obsidian-200 p-3.5">
               <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
                 <ImageIcon aria-hidden className="size-3" />
-                Radiographs (IndexedDB)
+                Radiograf (IndexedDB)
               </p>
               <p className="mt-2 text-lg leading-none font-semibold text-obsidian-950 tabular">
-                {usageLoading ? 'â€¦' : usage ? formatBytes(usage.bytes) : 'Unavailable'}
+                {usageLoading ? 'â€¦' : usage ? formatBytes(usage.bytes) : 'Tidak tersedia'}
               </p>
               <p className="mt-1.5 text-xs text-obsidian-500">
                 {usageLoading
-                  ? 'Checking'
+                  ? 'Memeriksa'
                   : usage
-                    ? `${pluralise(usage.count, 'image')} stored`
-                    : 'Could not read the image store'}
+                    ? `${pluralise(usage.count, 'gambar', 'gambar')} tersimpan`
+                    : 'Tidak bisa membaca penyimpanan gambar'}
               </p>
             </div>
 
@@ -297,15 +297,15 @@ export function SettingsPage() {
                 {formatBytes(metadataBytes)}
               </p>
               <p className="mt-1.5 text-xs text-obsidian-500">
-                {pluralise(syncQueue.length, 'record')} waiting to be sent
+                {pluralise(syncQueue.length, 'data', 'data')} menunggu dikirim
               </p>
             </div>
           </div>
 
           <Notice tone="demo" compact>
-            Radiographs are kept out of localStorage and out of the service-worker cache on
-            purpose. They stay here only until the record is sent; the server then holds them in
-            private storage.
+            Radiograf sengaja tidak disimpan di localStorage maupun cache service worker.
+            Radiograf hanya ada di sini sampai datanya terkirim; setelah itu server menyimpannya
+            di penyimpanan privat.
           </Notice>
 
           <div className="flex flex-wrap gap-2">
@@ -315,11 +315,11 @@ export function SettingsPage() {
               onClick={() => setClearImagesOpen(true)}
               disabled={!usage || usage.count === 0 || hasQueuedImages}
             >
-              Clear stored radiographs
+              Hapus radiograf tersimpan
             </Button>
             {hasQueuedImages ? (
               <p className="self-center text-xs text-obsidian-500">
-                Send or discard the queued records first.
+                Kirim atau buang dulu data yang ada di queue.
               </p>
             ) : null}
           </div>
@@ -332,9 +332,9 @@ export function SettingsPage() {
         onConfirm={() => void handleClearImages()}
         tone="danger"
         loading={working}
-        title="Clear stored radiographs?"
-        description="Images held on this device will be deleted. Records already on the server are not affected."
-        confirmLabel="Clear images"
+        title="Hapus radiograf tersimpan?"
+        description="Gambar yang tersimpan di perangkat ini akan dihapus. Data yang sudah ada di server tidak terpengaruh."
+        confirmLabel="Hapus gambar"
       />
     </div>
   );

@@ -168,11 +168,11 @@ export const router = createBrowserRouter([
     ),
     errorElement: <RouteError />,
     children: [
-      { path: 'me', element: <PatientOverviewPage />, handle: { crumbs: [{ label: 'Overview' }] } },
+      { path: 'me', element: <PatientOverviewPage />, handle: { crumbs: [{ label: 'Ringkasan' }] } },
       {
         path: 'me/screenings',
         element: <PatientScreeningsPage />,
-        handle: { crumbs: [{ label: 'My screenings' }] },
+        handle: { crumbs: [{ label: 'Screening saya' }] },
       },
       {
         path: 'me/followup',
@@ -182,17 +182,17 @@ export const router = createBrowserRouter([
       {
         path: 'me/learn',
         element: <PatientLearningPage />,
-        handle: { crumbs: [{ label: 'Health learning' }] },
+        handle: { crumbs: [{ label: 'Belajar kesehatan' }] },
       },
       {
         path: 'me/facilities',
         element: <FacilitiesPage />,
-        handle: { crumbs: [{ label: 'Healthcare facilities' }] },
+        handle: { crumbs: [{ label: 'Fasilitas kesehatan' }] },
       },
       {
         path: 'me/profile',
         element: <PatientProfilePage />,
-        handle: { crumbs: [{ label: 'My profile' }] },
+        handle: { crumbs: [{ label: 'Profil saya' }] },
       },
     ],
   },
@@ -211,29 +211,29 @@ export const router = createBrowserRouter([
       {
         path: 'admin',
         element: <AdminOverviewPage />,
-        handle: { crumbs: [{ label: 'Administration' }] },
+        handle: { crumbs: [{ label: 'Administrasi' }] },
       },
       {
         path: 'admin/users',
         element: <AdminUsersPage />,
-        handle: { crumbs: [{ label: 'Administration', to: '/admin' }, { label: 'Accounts' }] },
+        handle: { crumbs: [{ label: 'Administrasi', to: '/admin' }, { label: 'Akun' }] },
       },
       {
         path: 'admin/facilities',
         element: <AdminFacilitiesPage />,
-        handle: { crumbs: [{ label: 'Administration', to: '/admin' }, { label: 'Facilities' }] },
+        handle: { crumbs: [{ label: 'Administrasi', to: '/admin' }, { label: 'Fasilitas' }] },
       },
       {
         path: 'admin/screenings',
         element: <AdminScreeningsPage />,
         handle: {
-          crumbs: [{ label: 'Administration', to: '/admin' }, { label: 'Screening records' }],
+          crumbs: [{ label: 'Administrasi', to: '/admin' }, { label: 'Rekam screening' }],
         },
       },
       {
         path: 'admin/audit',
         element: <AdminAuditPage />,
-        handle: { crumbs: [{ label: 'Administration', to: '/admin' }, { label: 'Audit log' }] },
+        handle: { crumbs: [{ label: 'Administrasi', to: '/admin' }, { label: 'Audit log' }] },
       },
     ],
   },
@@ -257,46 +257,46 @@ export const router = createBrowserRouter([
       {
         path: 'patients',
         element: <PatientsPage />,
-        handle: { crumbs: [{ label: 'Patients' }] },
+        handle: { crumbs: [{ label: 'Pasien' }] },
       },
       {
         path: 'patients/:patientId',
         element: <PatientDetailPage />,
-        handle: { crumbs: [{ label: 'Patients', to: '/patients' }, { label: 'Patient record' }] },
+        handle: { crumbs: [{ label: 'Pasien', to: '/patients' }, { label: 'Rekam pasien' }] },
       },
       {
         path: 'screenings/new',
         element: <NewScreeningPage />,
-        handle: { crumbs: [{ label: 'Screenings' }, { label: 'New screening' }] },
+        handle: { crumbs: [{ label: 'Screening' }, { label: 'Screening baru' }] },
       },
       {
         path: 'screenings/:screeningId',
         element: <ScreeningResultPage />,
         handle: {
-          crumbs: [{ label: 'Reports', to: '/reports' }, { label: 'Screening result' }],
+          crumbs: [{ label: 'Reports', to: '/reports' }, { label: 'Hasil screening' }],
         },
       },
       {
         path: 'screenings/:screeningId/report',
         element: <ReportViewPage />,
         handle: {
-          crumbs: [{ label: 'Reports', to: '/reports' }, { label: 'Explainable report' }],
+          crumbs: [{ label: 'Reports', to: '/reports' }, { label: 'Report yang dapat dijelaskan' }],
         },
       },
       {
         path: 'referrals',
         element: <ReferralsPage />,
-        handle: { crumbs: [{ label: 'Referrals' }] },
+        handle: { crumbs: [{ label: 'Referral' }] },
       },
       {
         path: 'followups',
         element: <FollowUpsPage />,
-        handle: { crumbs: [{ label: 'Follow-ups' }] },
+        handle: { crumbs: [{ label: 'Follow-up' }] },
       },
       {
         path: 'facilities',
         element: <FacilitiesPage />,
-        handle: { crumbs: [{ label: 'Healthcare facilities' }] },
+        handle: { crumbs: [{ label: 'Fasilitas kesehatan' }] },
       },
       {
         path: 'reports',
@@ -311,7 +311,7 @@ export const router = createBrowserRouter([
       {
         path: 'settings',
         element: <SettingsPage />,
-        handle: { crumbs: [{ label: 'Settings' }] },
+        handle: { crumbs: [{ label: 'Pengaturan' }] },
       },
       { path: '*', element: <NotFoundPage /> },
     ],

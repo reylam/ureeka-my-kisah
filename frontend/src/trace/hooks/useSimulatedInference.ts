@@ -25,18 +25,18 @@ export interface InferenceStage {
 }
 
 export const STAGES: InferenceStage[] = [
-  { id: 'validate', label: 'Checking the file', detail: 'Type, size and dimensions of the image' },
+  { id: 'validate', label: 'Memeriksa file', detail: 'Tipe, ukuran, dan dimensi gambar' },
   {
     id: 'preprocess',
-    label: 'Preparing the picture',
-    detail: 'Would resize and even out the brightness before anything looks at it',
+    label: 'Menyiapkan gambar',
+    detail: 'Akan mengubah ukuran dan menyeragamkan kecerahan sebelum gambar dianalisis',
   },
   {
     id: 'infer',
-    label: 'Looking for patterns',
-    detail: 'Not happening: no trained model is connected, so a stand-in is used',
+    label: 'Mencari pola',
+    detail: 'Tidak benar-benar berjalan: belum ada model terlatih yang terhubung, jadi dipakai placeholder',
   },
-  { id: 'report', label: 'Writing up the result', detail: 'The answer, with its warnings' },
+  { id: 'report', label: 'Menyusun hasil', detail: 'Jawabannya, lengkap dengan peringatan' },
 ];
 
 interface UseSimulatedInference {

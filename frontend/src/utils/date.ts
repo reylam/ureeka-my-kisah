@@ -67,7 +67,7 @@ export function isToday(date: ISODate): boolean {
 
 /* ── Formatting ─────────────────────────────────────────────────────────── */
 
-const LOCALE = 'en-GB';
+const LOCALE = 'id-ID';
 
 export function formatDate(value: ISODate | ISODateTime): string {
   const d = value.length <= 10 ? parseISODate(value) : new Date(value);
@@ -95,23 +95,22 @@ export function formatTime(value: ISODateTime): string {
 /** Due labels for follow-up queues: "3 days overdue", "due today", "in 5 days". */
 export function formatDueLabel(date: ISODate): string {
   const diff = daysFromToday(date);
-  if (diff === 0) return 'Due today';
-  if (diff === 1) return 'Due tomorrow';
-  if (diff === -1) return '1 day overdue';
-  if (diff < 0) return `${Math.abs(diff)} days overdue`;
-  return `In ${diff} days`;
+  if (diff === 0) return 'Jatuh tempo hari ini';
+  if (diff === 1) return 'Jatuh tempo besok';
+  if (diff < 0) return `Terlambat ${Math.abs(diff)} hari`;
+  return `${diff} hari lagi`;
 }
 
 /** Compact relative time for activity feeds and sync timestamps. */
 export function formatRelative(value: ISODateTime): string {
   const diffMs = Date.now() - new Date(value).getTime();
   const minutes = Math.round(diffMs / 60_000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 1) return 'baru saja';
+  if (minutes < 60) return `${minutes} menit lalu`;
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} hr${hours === 1 ? '' : 's'} ago`;
+  if (hours < 24) return `${hours} jam lalu`;
   const days = Math.round(hours / 24);
-  if (days < 30) return `${days} day${days === 1 ? '' : 's'} ago`;
+  if (days < 30) return `${days} hari lalu`;
   return formatDate(value);
 }
 

@@ -248,47 +248,46 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    PULMO-TRACE design tokens
 
-   The research site is a separate, dark, editorial surface that sits beside the
-   light clinical prototype. Its tokens are namespaced `trace-*` so the two
+   The research site is a separate, light, editorial surface that sits beside the
+   clinical prototype. Its tokens are namespaced `trace-*` so the two
    never compete for the same utility classes, and the dark chrome is applied
    through a scope class rather than by rewriting the global base layer.
    ═══════════════════════════════════════════════════════════════════════════ */
 @theme {
-  --color-trace-bg: #08090b; /* page */
-  --color-trace-surface: #111318; /* banded section */
-  --color-trace-card: #15181e; /* card / panel */
-  --color-trace-raised: #1b1f27; /* nested panel, table header */
-  --color-trace-text: #f5f7fa;
-  --color-trace-muted: #a1a8b3;
-  --color-trace-dim: #6d7480; /* metadata, axis labels */
-  --color-trace-line: #292e37; /* borders */
-  --color-trace-line-soft: #1e232b;
+  --color-trace-bg: #f7f8fa; /* page */
+  --color-trace-surface: #eef1f5; /* banded section */
+  --color-trace-card: #ffffff; /* card / panel */
+  --color-trace-raised: #f1f3f6; /* nested panel, table header */
+  --color-trace-text: #12161c;
+  --color-trace-muted: #4a525e;
+  --color-trace-dim: #66707d; /* metadata, axis labels */
+  --color-trace-line: #d9dde4; /* borders */
+  --color-trace-line-soft: #e6e9ee;
 
-  /* Radiographic blue, deliberately desaturated. A saturated accent on a
-     near-black page reads as a neon product site; this one reads as an
-     instrument. It still clears 6:1 against the page background. */
-  --color-trace-accent: #6b94c2;
-  --color-trace-accent-soft: #93b2d1;
-  --color-trace-accent-surface: #141b24;
-  --color-trace-accent-edge: #2c3b4c;
-  --color-trace-ink: #0a1017; /* text on a filled accent surface */
+  /* Radiographic blue, deepened for a light page so text and fills still
+     clear AA contrast against white and the paper-grey background. */
+  --color-trace-accent: #35608c;
+  --color-trace-accent-soft: #2a4c6f;
+  --color-trace-accent-surface: #eaf2fa;
+  --color-trace-accent-edge: #bcd3ea;
+  --color-trace-ink: #ffffff; /* text on a filled accent surface */
 
   /* Flags are deliberately not green/red. A screening output is not a verdict
      of health or disease, and colour must never imply that it is. Muted ochre:
      attention without alarm. */
-  --color-trace-flag: #c2a06b;
-  --color-trace-flag-soft: #d3bc92;
-  --color-trace-flag-surface: #1b1813;
-  --color-trace-flag-edge: #3a3327;
+  --color-trace-flag: #8a6420;
+  --color-trace-flag-soft: #6f4f16;
+  --color-trace-flag-surface: #faf4e8;
+  --color-trace-flag-edge: #e6d4ae;
 
-  --color-trace-neutral: #8d96a3; /* "pattern not indicated": neutral */
-  --color-trace-film: #0a0c10; /* radiograph viewer background */
-  --color-trace-hover: #39404b; /* hairline on hover */
+  --color-trace-neutral: #5f6874; /* "pattern not indicated": neutral */
+  --color-trace-film: #0a0c10; /* radiograph viewer stays dark, like real film */
+  --color-trace-hover: #b7bec9; /* hairline on hover */
 }
 
 @layer base {
-  /* The scroll container needs the dark background too, otherwise overscroll
-     and the mobile address bar flash white. Set by the research layout. */
+  /* The scroll container needs the page background too, otherwise overscroll
+     and the mobile address bar flash. Set by the research layout. */
   html[data-site='pulmo-trace'],
   html[data-site='pulmo-trace'] body {
     background-color: var(--color-trace-bg);
@@ -329,15 +328,15 @@
      never as general page decoration. */
   .trace-grid {
     background-image:
-      linear-gradient(to right, rgb(107 148 194 / 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(107 148 194 / 0.04) 1px, transparent 1px);
+      linear-gradient(to right, rgb(53 96 140 / 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(53 96 140 / 0.07) 1px, transparent 1px);
     background-size: 48px 48px;
   }
 
   .trace-grid-fine {
     background-image:
-      linear-gradient(to right, rgb(107 148 194 / 0.038) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(107 148 194 / 0.038) 1px, transparent 1px);
+      linear-gradient(to right, rgb(53 96 140 / 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(53 96 140 / 0.07) 1px, transparent 1px);
     background-size: 24px 24px;
   }
 
@@ -371,5 +370,21 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Scroll reveal for sections below the fold (see `Reveal`). Hidden until
+     scrolled into view, then fades and rises once. The revealed state uses
+     `transform: none` so no stacking context is left behind. */
+  .trace-reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .trace-reveal[data-visible='true'] {
+    opacity: 1;
+    transform: none;
   }
 }

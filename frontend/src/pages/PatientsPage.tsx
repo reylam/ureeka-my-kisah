@@ -88,7 +88,7 @@ export function PatientsPage() {
     () => [
       {
         id: 'name',
-        header: 'Patient',
+        header: 'Pasien',
         sortable: true,
         cell: (row) => (
           <StackedCell
@@ -99,14 +99,14 @@ export function PatientsPage() {
       },
       {
         id: 'mrn',
-        header: 'Record no.',
+        header: 'No. rekam medis',
         width: 'w-36',
         hideBelow: 'lg',
         cell: (row) => <MonoCell>{row.patient.mrn}</MonoCell>,
       },
       {
         id: 'age',
-        header: 'Age',
+        header: 'Usia',
         sortable: true,
         align: 'right',
         width: 'w-20',
@@ -119,14 +119,14 @@ export function PatientsPage() {
       },
       {
         id: 'lastScreening',
-        header: 'Last screening',
+        header: 'Screening terakhir',
         sortable: true,
         width: 'w-32',
         cell: (row) =>
           row.lastScreeningAt ? (
             <span className="tabular">{formatDate(row.lastScreeningAt)}</span>
           ) : (
-            <span className="text-obsidian-400">Never</span>
+            <span className="text-obsidian-400">Belum pernah</span>
           ),
       },
       {
@@ -137,7 +137,7 @@ export function PatientsPage() {
           row.lastScreeningStatus ? (
             <ScreeningStatusBadge status={row.lastScreeningStatus} size="sm" />
           ) : (
-            <span className="text-obsidian-400">None</span>
+            <span className="text-obsidian-400">Belum ada</span>
           ),
       },
       {
@@ -149,7 +149,7 @@ export function PatientsPage() {
           row.referralStatus ? (
             <ReferralStatusBadge status={row.referralStatus} size="sm" />
           ) : (
-            <span className="text-obsidian-400">None</span>
+            <span className="text-obsidian-400">Belum ada</span>
           ),
       },
       {
@@ -160,13 +160,13 @@ export function PatientsPage() {
           row.followUpBucket ? (
             <FollowUpBucketBadge bucket={row.followUpBucket} size="sm" />
           ) : (
-            <span className="text-obsidian-400">None</span>
+            <span className="text-obsidian-400">Belum ada</span>
           ),
       },
       {
         id: 'open',
         header: '',
-        srHeader: 'Open record',
+        srHeader: 'Buka rekam medis',
         align: 'right',
         width: 'w-10',
         cell: () => (
@@ -183,13 +183,13 @@ export function PatientsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Patients"
-        description="Everyone registered at this facility, with their latest screening and follow-up state."
+        title="Pasien"
+        description="Semua pasien yang terdaftar di fasilitas ini, lengkap dengan status screening dan follow-up terbaru."
         meta={
           <>
-            <HeaderMeta label="Registered" value={allRows.length} />
+            <HeaderMeta label="Terdaftar" value={allRows.length} />
             <HeaderMeta
-              label="With overdue follow-up"
+              label="Follow-up terlambat"
               value={allRows.filter((row) => row.hasOverdueFollowUp).length}
             />
           </>
@@ -200,7 +200,7 @@ export function PatientsPage() {
             leadingIcon={<UserPlus className="size-4" />}
             onClick={() => navigate('/screenings/new')}
           >
-            Register &amp; screen
+            Daftar &amp; screening
           </Button>
         }
       />
@@ -211,8 +211,8 @@ export function PatientsPage() {
           onClearFilters={controls.clearAll}
           search={
             <SearchInput
-              label="Search patients by name, record number or village"
-              placeholder="Name, record no. or village"
+              label="Cari pasien berdasarkan nama, nomor rekam medis, atau desa"
+              placeholder="Nama, no. rekam medis, atau desa"
               value={controls.term}
               onChange={controls.setTerm}
             />
@@ -221,21 +221,21 @@ export function PatientsPage() {
             <>
               <FilterSelect
                 label="Screening"
-                allLabel="Any screening status"
+                allLabel="Semua status screening"
                 value={controls.filterValues.screening as ScreeningStatus | 'all'}
                 options={SCREENING_OPTIONS}
                 onChange={(value) => controls.setFilter('screening', value)}
               />
               <FilterSelect
                 label="Follow-up"
-                allLabel="Any follow-up"
+                allLabel="Semua follow-up"
                 value={controls.filterValues.followup as FollowUpStatus | 'all'}
                 options={FOLLOWUP_OPTIONS}
                 onChange={(value) => controls.setFilter('followup', value)}
               />
               <FilterSelect
-                label="District"
-                allLabel="All districts"
+                label="Kecamatan"
+                allLabel="Semua kecamatan"
                 value={controls.filterValues.district}
                 options={DISTRICTS.map((district) => ({ value: district, label: district }))}
                 onChange={(value) => controls.setFilter('district', value)}
@@ -243,7 +243,7 @@ export function PatientsPage() {
             </>
           }
           trailing={
-            <ResultCount shown={controls.filtered.length} total={allRows.length} noun="patients" />
+            <ResultCount shown={controls.filtered.length} total={allRows.length} noun="pasien" />
           }
         />
 
@@ -254,24 +254,24 @@ export function PatientsPage() {
         ) : allRows.length === 0 ? (
           <EmptyState
             icon={<Users />}
-            title="No patients registered yet"
-            description="Patients are created as part of recording a screening."
+            title="Belum ada pasien terdaftar"
+            description="Data pasien dibuat saat mencatat screening."
             action={
               <Button
                 variant="primary"
                 leadingIcon={<ScanLine className="size-4" />}
                 onClick={() => navigate('/screenings/new')}
               >
-                Start a screening
+                Mulai screening
               </Button>
             }
           />
         ) : controls.filtered.length === 0 ? (
-          <NoMatchesState entity="patients" onClear={controls.clearAll} />
+          <NoMatchesState entity="pasien" onClear={controls.clearAll} />
         ) : (
           <>
             <DataTable
-              caption="Patient directory"
+              caption="Direktori pasien"
               rows={controls.visible}
               columns={columns}
               rowKey={(row) => row.patient.id}
@@ -289,7 +289,7 @@ export function PatientsPage() {
                       {row.patient.mrn}
                     </p>
                     <p className="mt-1 text-xs text-obsidian-500">
-                      {row.age} yrs · {sexLabel[row.patient.sex]} · {row.patient.village}
+                      {row.age} thn · {sexLabel[row.patient.sex]} · {row.patient.village}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {row.lastScreeningStatus ? (

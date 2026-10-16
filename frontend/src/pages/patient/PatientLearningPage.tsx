@@ -69,7 +69,7 @@ export function PatientLearningPage() {
       if (result?.read) setRead(result.read);
     } catch (cause) {
       setRead(previous);
-      toast.error('Could not save your progress.', errorMessage(cause));
+      toast.error('Progres kamu tidak bisa disimpan.', errorMessage(cause));
     }
   };
 
@@ -94,13 +94,13 @@ export function PatientLearningPage() {
           leadingIcon={<ArrowLeft className="mr-1.5 size-3.5" />}
           onClick={() => setParams({}, { replace: true })}
         >
-          All topics
+          Semua topik
         </Button>
 
         <Card as="article">
           <CardHeader
             title={article.title}
-            description={`${TOPIC_LABEL[article.topic]} · ${article.minutes} min read`}
+            description={`${TOPIC_LABEL[article.topic]} · ${article.minutes} menit baca`}
           />
           <CardBody className="space-y-4">
             {article.body.map((paragraph) => (
@@ -114,7 +114,7 @@ export function PatientLearningPage() {
 
             {article.keyPoints ? (
               <div className="rounded-card border border-ct-200 bg-ct-50 p-4">
-                <p className="text-[13px] font-semibold text-ct-800">Worth remembering</p>
+                <p className="text-[13px] font-semibold text-ct-800">Perlu diingat</p>
                 <ul className="mt-2 space-y-1.5">
                   {article.keyPoints.map((point) => (
                     <li key={point} className="flex gap-2 text-[13px] leading-relaxed text-ct-800">
@@ -127,8 +127,9 @@ export function PatientLearningPage() {
             ) : null}
 
             <Notice tone="attention" compact>
-              This is general information, not advice about your own case. Do not start, stop or
-              change any medicine based on what you read here. Talk to your clinician.
+              Ini informasi umum, bukan saran untuk kasus kamu sendiri. Jangan memulai, menghentikan,
+              atau mengubah obat apa pun hanya berdasarkan bacaan di sini. Bicarakan dengan klinisi
+              kamu.
             </Notice>
 
             <Button
@@ -136,7 +137,7 @@ export function PatientLearningPage() {
               leadingIcon={isRead ? <Check className="mr-1.5 size-4" /> : undefined}
               onClick={() => void toggleRead(article.id, !isRead)}
             >
-              {isRead ? 'Marked as read' : 'Mark as read'}
+              {isRead ? 'Sudah dibaca' : 'Tandai sudah dibaca'}
             </Button>
           </CardBody>
         </Card>
@@ -148,22 +149,22 @@ export function PatientLearningPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Health learning"
-        description="Short guides about tuberculosis, written for patients rather than for clinicians."
+        title="Belajar kesehatan"
+        description="Panduan singkat tentang tuberkulosis, ditulis untuk pasien, bukan untuk klinisi."
       />
 
       <Card>
-        <CardHeader title="Your progress" icon={<GraduationCap />} />
+        <CardHeader title="Progres kamu" icon={<GraduationCap />} />
         <CardBody className="space-y-3">
           <ProgressBar
             value={Math.round((read.length / ARTICLES.length) * 100)}
-            label={`Articles read: ${read.length} of ${ARTICLES.length}`}
+            label={`Artikel dibaca: ${read.length} dari ${ARTICLES.length}`}
             tone={read.length === ARTICLES.length ? 'complete' : 'default'}
           />
           <p className="text-[12.5px] leading-relaxed text-obsidian-500">
             {read.length === 0
-              ? 'Nothing read yet. There is no order you have to follow.'
-              : `${read.length} of ${ARTICLES.length} read. Nothing expires and there is no test.`}
+              ? 'Belum ada yang dibaca. Tidak ada urutan yang harus diikuti.'
+              : `${read.length} dari ${ARTICLES.length} sudah dibaca. Tidak ada masa kedaluwarsa dan tidak ada tes.`}
           </p>
         </CardBody>
       </Card>
@@ -193,12 +194,12 @@ export function PatientLearningPage() {
       {/* Full library */}
       <Card>
         <CardHeader
-          title="All topics"
+          title="Semua topik"
           icon={<BookOpen />}
           actions={
             <div className="flex flex-wrap gap-1.5">
               <TopicChip active={topic === 'all'} onClick={() => setTopic('all')}>
-                All
+                Semua
               </TopicChip>
               {(Object.keys(TOPIC_LABEL) as EducationTopic[]).map((key) => (
                 <TopicChip key={key} active={topic === key} onClick={() => setTopic(key)}>
@@ -245,7 +246,7 @@ function ArticleCard({
         <span className="text-[13px] font-medium text-obsidian-900">{article.title}</span>
         {read ? (
           <Badge tone="complete" size="sm" icon={<Check />}>
-            Read
+            Dibaca
           </Badge>
         ) : null}
       </span>
@@ -253,7 +254,7 @@ function ArticleCard({
         {article.summary}
       </span>
       <span className="mt-auto pt-3 text-[11.5px] text-obsidian-400">
-        {TOPIC_LABEL[article.topic]} · {article.minutes} min
+        {TOPIC_LABEL[article.topic]} · {article.minutes} menit
       </span>
     </button>
   );

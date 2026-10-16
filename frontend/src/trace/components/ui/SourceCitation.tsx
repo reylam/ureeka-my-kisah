@@ -15,7 +15,7 @@ import { cn } from '@/utils/cn';
 export function SourceCitation({
   sourceId,
   className,
-  prefix = 'Source',
+  prefix = 'Sumber',
 }: {
   sourceId: string;
   className?: string;
@@ -25,7 +25,7 @@ export function SourceCitation({
   if (!source) {
     return (
       <p className={cn('text-xs text-trace-flag', className)}>
-        Unknown source id “{sourceId}”. Citation missing.
+        ID sumber “{sourceId}” tidak dikenal. Sitasi hilang.
       </p>
     );
   }

@@ -9,6 +9,10 @@ import * as patientService from '../services/patientService.js';
 import * as referralService from '../services/referralService.js';
 import * as screeningService from '../services/screeningService.js';
 import * as staffService from '../services/staffService.js';
+import { readImageSize } from '../services/imageInfo.js';
+import { toAnalysis } from '../services/inferenceService.js';
+import { sniffImage } from '../middleware/upload.js';
+import { ApiError } from '../utils/ApiError.js';
 import { created, noContent, ok } from '../utils/response.js';
 
 /**
@@ -21,6 +25,10 @@ import { created, noContent, ok } from '../utils/response.js';
 const ctx = (req) => req.auth;
 
 export const auth = {
+  register: async (req, res) => {
+    const account = await accountService.register(req.app.locals.supabase.admin, req.valid.body);
+    return created(res, account);
+  },
   me: async (req, res) => ok(res, { account: await accountService.me(ctx(req)) }),
   logout: async (req, res) => {
     await accountService.signOut(ctx(req));
@@ -123,6 +131,28 @@ export function screenings({ config, inference }) {
       ok(res, await screeningService.analyze(ctx(req), req.valid.params.id, { ...storage, inference })),
     review: async (req, res) =>
       created(res, await screeningService.review(ctx(req), req.valid.params.id, req.valid.body)),
+  };
+}
+
+/**
+ * Public try-it-out for the research site's demo page.
+ *
+ * Runs the model on one uploaded image and returns the analysis. Nothing is
+ * stored: no screening, no patient, no file. The image lives in memory for the
+ * request, goes to the model service, and is gone.
+ */
+export function demo({ inference }) {
+  return {
+    analyze: async (req, res) => {
+      const kind = sniffImage(req.file.buffer);
+      if (!kind) throw ApiError.validation({ image: ['Only JPEG and PNG images are accepted.'] });
+      const raw = await inference.analyze({
+        bytes: req.file.buffer,
+        mime: kind.mime,
+        fileName: `demo.${kind.ext}`,
+      });
+      return ok(res, toAnalysis(raw, readImageSize(req.file.buffer)));
+    },
   };
 }
 

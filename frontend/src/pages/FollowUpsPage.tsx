@@ -177,9 +177,9 @@ export function FollowUpsPage() {
   });
 
   const lastAction = (followUp: FollowUp): string => {
-    if (followUp.completedAt) return `Completed ${formatRelative(followUp.completedAt)}`;
+    if (followUp.completedAt) return `Selesai ${formatRelative(followUp.completedAt)}`;
     const latest = followUp.attempts[followUp.attempts.length - 1];
-    if (!latest) return 'No contact attempt yet';
+    if (!latest) return 'Belum ada percobaan kontak';
     return `${contactOutcomeLabel[latest.outcome] ?? latest.outcome} · ${formatRelative(latest.at)}`;
   };
 
@@ -187,12 +187,12 @@ export function FollowUpsPage() {
     () => [
       {
         id: 'patient',
-        header: 'Patient',
+        header: 'Pasien',
         sortable: true,
         cell: (followUp) => {
           const patient = patientsById.get(followUp.patientId);
           return (
-            <StackedCell primary={patient?.name ?? 'Unknown patient'} secondary={patient?.mrn} />
+            <StackedCell primary={patient?.name ?? 'Pasien tidak dikenal'} secondary={patient?.mrn} />
           );
         },
       },
@@ -206,7 +206,7 @@ export function FollowUpsPage() {
       },
       {
         id: 'reason',
-        header: 'Reason',
+        header: 'Alasan',
         width: 'w-44',
         cell: (followUp) => (
           <span className="text-obsidian-700">{followUpReasonLabel[followUp.reason]}</span>
@@ -214,7 +214,7 @@ export function FollowUpsPage() {
       },
       {
         id: 'due',
-        header: 'Due',
+        header: 'Jatuh tempo',
         sortable: true,
         width: 'w-40',
         cell: (followUp) => {
@@ -244,9 +244,9 @@ export function FollowUpsPage() {
         hideBelow: 'xl',
         cell: (followUp) =>
           followUp.referralId ? (
-            <MonoCell>{referralsById.get(followUp.referralId)?.code ?? 'Unknown'}</MonoCell>
+            <MonoCell>{referralsById.get(followUp.referralId)?.code ?? 'Tidak dikenal'}</MonoCell>
           ) : (
-            <span className="text-obsidian-400">None</span>
+            <span className="text-obsidian-400">Tidak ada</span>
           ),
       },
       {
@@ -257,7 +257,7 @@ export function FollowUpsPage() {
       },
       {
         id: 'lastAction',
-        header: 'Last action',
+        header: 'Aksi terakhir',
         width: 'w-48',
         hideBelow: 'lg',
         cell: (followUp) => (
@@ -267,7 +267,7 @@ export function FollowUpsPage() {
       {
         id: 'open',
         header: '',
-        srHeader: 'Open follow-up',
+        srHeader: 'Buka follow-up',
         align: 'right',
         width: 'w-10',
         cell: () => (
@@ -286,35 +286,41 @@ export function FollowUpsPage() {
 
   const emptyCopy: Record<TabId, { title: string; description: string }> = {
     overdue: {
-      title: 'Nothing is overdue',
-      description: 'Every open follow-up still has time on it.',
+      title: 'Tidak ada yang terlambat',
+      description: 'Semua follow-up yang masih terbuka belum melewati tenggat.',
     },
-    today: { title: 'Nothing due today', description: 'Check the upcoming queue for what is next.' },
+    today: {
+      title: 'Tidak ada yang jatuh tempo hari ini',
+      description: 'Cek queue mendatang untuk melihat yang berikutnya.',
+    },
     upcoming: {
-      title: 'Nothing scheduled ahead',
-      description: 'Schedule a follow-up when a patient needs chasing.',
+      title: 'Belum ada jadwal ke depan',
+      description: 'Jadwalkan follow-up saat ada pasien yang perlu dihubungi.',
     },
     completed: {
-      title: 'No completed follow-ups',
-      description: 'Completed tasks appear here with their recorded outcome.',
+      title: 'Belum ada follow-up selesai',
+      description: 'Task yang selesai muncul di sini beserta hasil yang dicatat.',
     },
     unresolved: {
-      title: 'Nothing unresolved',
-      description: 'Tasks that genuinely cannot be closed are listed here.',
+      title: 'Tidak ada yang belum terselesaikan',
+      description: 'Task yang memang tidak bisa ditutup akan tampil di sini.',
     },
-    all: { title: 'No follow-ups yet', description: 'Schedule one from a patient or referral.' },
+    all: {
+      title: 'Belum ada follow-up',
+      description: 'Jadwalkan dari halaman pasien atau referral.',
+    },
   };
 
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Follow-ups"
-        description="Contact tasks that keep a referred patient from disappearing between the screening and the test."
+        title="Follow-up"
+        description="Task kontak agar pasien rujukan tidak hilang di antara screening dan pemeriksaan."
         meta={
           <>
-            <HeaderMeta label="Overdue" value={counts.overdue} />
-            <HeaderMeta label="Due today" value={counts['due-today']} />
-            <HeaderMeta label="Upcoming" value={counts.upcoming} />
+            <HeaderMeta label="Terlambat" value={counts.overdue} />
+            <HeaderMeta label="Jatuh tempo hari ini" value={counts['due-today']} />
+            <HeaderMeta label="Mendatang" value={counts.upcoming} />
           </>
         }
         actions={
@@ -323,19 +329,19 @@ export function FollowUpsPage() {
             leadingIcon={<CalendarPlus className="size-4" />}
             onClick={() => setScheduleOpen(true)}
           >
-            Schedule follow-up
+            Jadwalkan follow-up
           </Button>
         }
       />
 
       {counts.overdue > 0 && tab !== 'overdue' ? (
-        <Notice tone="urgent" title={`${pluralise(counts.overdue, 'follow-up')} overdue`}>
+        <Notice tone="urgent" title={`${pluralise(counts.overdue, 'follow-up', 'follow-up')} terlambat`}>
           <button
             type="button"
             onClick={() => setTab('overdue')}
             className="font-medium text-urgent-800 underline decoration-urgent-300 underline-offset-2"
           >
-            Open the overdue queue
+            Buka queue terlambat
           </button>
         </Notice>
       ) : null}
@@ -351,26 +357,26 @@ export function FollowUpsPage() {
           items={[
             {
               id: 'overdue',
-              label: 'Overdue',
+              label: 'Terlambat',
               count: counts.overdue,
               countTone: counts.overdue > 0 ? 'urgent' : 'neutral',
               icon: <AlertTriangle />,
             },
             {
               id: 'today',
-              label: 'Due today',
+              label: 'Jatuh tempo hari ini',
               count: counts['due-today'],
               countTone: counts['due-today'] > 0 ? 'attention' : 'neutral',
             },
-            { id: 'upcoming', label: 'Upcoming', count: counts.upcoming },
-            { id: 'completed', label: 'Completed', count: counts.completed },
+            { id: 'upcoming', label: 'Mendatang', count: counts.upcoming },
+            { id: 'completed', label: 'Selesai', count: counts.completed },
             {
               id: 'unresolved',
-              label: 'Unresolved',
+              label: 'Belum terselesaikan',
               count: counts.unresolved,
               countTone: counts.unresolved > 0 ? 'urgent' : 'neutral',
             },
-            { id: 'all', label: 'All', count: all.length },
+            { id: 'all', label: 'Semua', count: all.length },
           ]}
         />
 
@@ -379,8 +385,8 @@ export function FollowUpsPage() {
           onClearFilters={controls.clearAll}
           search={
             <SearchInput
-              label="Search follow-ups by patient, task code or reason"
-              placeholder="Patient, task code or village"
+              label="Cari follow-up berdasarkan pasien, kode task, atau alasan"
+              placeholder="Pasien, kode task, atau desa"
               value={controls.term}
               onChange={controls.setTerm}
             />
@@ -388,8 +394,8 @@ export function FollowUpsPage() {
           filters={
             <>
               <FilterSelect
-                label="Reason"
-                allLabel="Any reason"
+                label="Alasan"
+                allLabel="Semua alasan"
                 value={controls.filterValues.reason as FollowUpReason | 'all'}
                 options={REASONS.map((reason) => ({
                   value: reason,
@@ -399,8 +405,8 @@ export function FollowUpsPage() {
                 onChange={(value) => controls.setFilter('reason', value)}
               />
               <FilterSelect
-                label="Assigned"
-                allLabel="Anyone"
+                label="Ditugaskan ke"
+                allLabel="Siapa saja"
                 value={controls.filterValues.worker}
                 options={Array.from(new Set(all.map((item) => item.assignedWorkerId))).map(
                   (id) => ({ value: id, label: users.find((u) => u.id === id)?.name ?? id }),
@@ -410,7 +416,7 @@ export function FollowUpsPage() {
             </>
           }
           trailing={
-            <ResultCount shown={controls.filtered.length} total={tabRows.length} noun="tasks" />
+            <ResultCount shown={controls.filtered.length} total={tabRows.length} noun="task" />
           }
         />
 
@@ -426,7 +432,7 @@ export function FollowUpsPage() {
             action={
               tab === 'upcoming' || tab === 'all' ? (
                 <Button variant="primary" size="sm" onClick={() => setScheduleOpen(true)}>
-                  Schedule a follow-up
+                  Jadwalkan follow-up
                 </Button>
               ) : undefined
             }
@@ -436,7 +442,7 @@ export function FollowUpsPage() {
         ) : (
           <>
             <DataTable
-              caption="Follow-up queue"
+              caption="Queue follow-up"
               rows={controls.visible}
               columns={columns}
               rowKey={(followUp) => followUp.id}
@@ -460,7 +466,7 @@ export function FollowUpsPage() {
                   <div className="flex items-start gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-obsidian-900">
-                        {patient?.name ?? 'Unknown patient'}
+                        {patient?.name ?? 'Pasien tidak dikenal'}
                       </p>
                       <p className="mt-0.5 truncate text-xs text-obsidian-500">
                         {followUpReasonLabel[followUp.reason]}
@@ -517,7 +523,7 @@ export function FollowUpsPage() {
                   navigate(`/patients/${focused.patientId}`);
                 }}
               >
-                Open patient
+                Buka data pasien
               </Button>
               {focused.status !== 'completed' ? (
                 <>
@@ -526,21 +532,21 @@ export function FollowUpsPage() {
                     leadingIcon={<CalendarClock className="size-4" />}
                     onClick={() => setRescheduling(focused)}
                   >
-                    Reschedule
+                    Jadwalkan ulang
                   </Button>
                   <Button
                     variant="outline"
                     leadingIcon={<PhoneCall className="size-4" />}
                     onClick={() => setAttemptFor(focused)}
                   >
-                    Log attempt
+                    Catat percobaan
                   </Button>
                   <Button
                     variant="primary"
                     leadingIcon={<CalendarCheck className="size-4" />}
                     onClick={() => setCompletingFor(focused)}
                   >
-                    Complete
+                    Selesaikan
                   </Button>
                 </>
               ) : (
@@ -549,7 +555,7 @@ export function FollowUpsPage() {
                   leadingIcon={<CalendarClock className="size-4" />}
                   onClick={() => setRescheduling(focused)}
                 >
-                  Reopen with a new date
+                  Buka lagi dengan tanggal baru
                 </Button>
               )}
             </>
@@ -564,29 +570,29 @@ export function FollowUpsPage() {
             </div>
 
             {focused.unresolvedReason ? (
-              <Notice tone="urgent" title="Recorded as unresolved">
+              <Notice tone="urgent" title="Dicatat sebagai belum terselesaikan">
                 {focused.unresolvedReason}
               </Notice>
             ) : null}
 
             <dl className="divide-y divide-obsidian-100">
-              <DetailRow label="Reason">{followUpReasonLabel[focused.reason]}</DetailRow>
-              <DetailRow label="Due date">
+              <DetailRow label="Alasan">{followUpReasonLabel[focused.reason]}</DetailRow>
+              <DetailRow label="Tanggal jatuh tempo">
                 {formatDate(focused.dueDate)}
                 <span className="ml-1.5 text-obsidian-400">
                   ({formatDueLabel(focused.dueDate).toLowerCase()})
                 </span>
               </DetailRow>
-              <DetailRow label="Assigned to">
+              <DetailRow label="Ditugaskan ke">
                 {(() => {
                   const worker = users.find((u) => u.id === focused.assignedWorkerId);
-                  return worker ? `${worker.name} (${userRoleLabel[worker.role]})` : 'Unassigned';
+                  return worker ? `${worker.name} (${userRoleLabel[worker.role]})` : 'Belum ditugaskan';
                 })()}
               </DetailRow>
-              <DetailRow label="Patient phone">
+              <DetailRow label="Telepon pasien">
                 {focusedPatient?.phone ?? (
                   <span className="text-attention-800">
-                    None on file, contact through the village cadre
+                    Belum tercatat, hubungi lewat kader desa
                   </span>
                 )}
               </DetailRow>
@@ -607,7 +613,7 @@ export function FollowUpsPage() {
                     <ReferralStatusBadge status={focusedReferral.status} size="sm" />
                   </span>
                 ) : (
-                  'Not linked to a referral'
+                  'Tidak terhubung ke referral'
                 )}
               </DetailRow>
               <DetailRow label="Screening">
@@ -620,15 +626,15 @@ export function FollowUpsPage() {
                     }}
                     className="inline-flex items-center gap-1.5 text-ct-700 underline decoration-ct-300 underline-offset-2 transition-colors hover:text-ct-800"
                   >
-                    Open screening result
+                    Buka hasil screening
                     <ExternalLink aria-hidden className="size-3" />
                   </button>
                 ) : (
-                  'Not linked to a screening'
+                  'Tidak terhubung ke screening'
                 )}
               </DetailRow>
               {focused.completedAt ? (
-                <DetailRow label="Completed">{formatDateTime(focused.completedAt)}</DetailRow>
+                <DetailRow label="Selesai">{formatDateTime(focused.completedAt)}</DetailRow>
               ) : null}
             </dl>
 
@@ -636,11 +642,11 @@ export function FollowUpsPage() {
             <div className="border-t border-obsidian-100 pt-4">
               <h3 className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
                 <History aria-hidden className="size-3" />
-                Contact attempts ({focused.attempts.length})
+                Percobaan kontak ({focused.attempts.length})
               </h3>
               {focused.attempts.length === 0 ? (
                 <p className="mt-2 text-[13px] text-obsidian-500">
-                  Nobody has tried to reach this patient for this task yet.
+                  Belum ada yang mencoba menghubungi pasien ini untuk task ini.
                 </p>
               ) : (
                 <ol className="mt-2.5 space-y-2.5">
@@ -668,7 +674,7 @@ export function FollowUpsPage() {
                         ) : null}
                         <p className="mt-0.5 text-[11px] text-obsidian-400">
                           {formatDateTime(attempt.at)} ·{' '}
-                          {users.find((u) => u.id === attempt.actorId)?.name ?? 'Unknown user'}
+                          {users.find((u) => u.id === attempt.actorId)?.name ?? 'Pengguna tidak dikenal'}
                         </p>
                       </div>
                     </li>
@@ -680,8 +686,8 @@ export function FollowUpsPage() {
             {focused.status !== 'completed' && focused.status !== 'unresolved' ? (
               <div className="border-t border-obsidian-100 pt-4">
                 <p className="text-[13px] text-obsidian-600">
-                  If this patient genuinely cannot be followed up, record why rather than leaving
-                  the task open indefinitely.
+                  Kalau pasien ini memang tidak bisa di-follow-up, catat alasannya daripada
+                  membiarkan task terbuka tanpa batas waktu.
                 </p>
                 <Button
                   className="mt-2.5"
@@ -690,7 +696,7 @@ export function FollowUpsPage() {
                   leadingIcon={<CircleSlash className="size-3.5" />}
                   onClick={() => setUnresolvedFor(focused)}
                 >
-                  Mark unresolved
+                  Tandai belum terselesaikan
                 </Button>
               </div>
             ) : null}

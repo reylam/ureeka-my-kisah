@@ -34,7 +34,7 @@ export function AppShell() {
         href="#app-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-obsidian-950 focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium focus:text-white"
       >
-        Skip to content
+        Langsung ke konten
       </a>
 
       <Sidebar className="hidden lg:flex" />
@@ -70,7 +70,7 @@ export function AppShell() {
  */
 function PageFallback() {
   return (
-    <div role="status" aria-label="Loading page" className="space-y-5">
+    <div role="status" aria-label="Memuat halaman" className="space-y-5">
       <div className="space-y-2.5">
         <Skeleton className="h-6 w-56" />
         <Skeleton className="h-3.5 w-80" />

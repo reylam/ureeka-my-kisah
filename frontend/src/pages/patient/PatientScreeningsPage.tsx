@@ -26,8 +26,8 @@ export function PatientScreeningsPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="My screenings"
-        description="Every chest X-ray screening recorded for you, and where each one has got to."
+        title="Screening saya"
+        description="Semua screening chest X-ray yang tercatat untuk kamu, beserta perkembangan masing-masing."
       />
 
       {screenings.length === 0 ? (
@@ -35,11 +35,11 @@ export function PatientScreeningsPage() {
           <CardBody>
             <EmptyState
               icon={<ClipboardList />}
-              title="Nothing recorded yet"
-              description="Screenings are recorded by a health worker at a facility. When one is added to your record it will appear here, along with the report once a professional has reviewed it."
+              title="Belum ada yang tercatat"
+              description="Screening dicatat oleh petugas kesehatan di fasilitas. Saat ada yang ditambahkan ke rekam kamu, screening itu akan muncul di sini, beserta report-nya setelah ditinjau tenaga profesional."
               action={
                 <ButtonLink to="/me/facilities" variant="outline" size="sm">
-                  Find a facility
+                  Cari fasilitas
                 </ButtonLink>
               }
             />
@@ -63,10 +63,10 @@ export function PatientScreeningsPage() {
                 />
                 <CardBody className="space-y-4">
                   <dl className="divide-y divide-obsidian-100">
-                    <DetailRow label="Recorded by">
-                      {operator ? operator.name : 'A health worker'}
+                    <DetailRow label="Dicatat oleh">
+                      {operator ? operator.name : 'Petugas kesehatan'}
                     </DetailRow>
-                    <DetailRow label="Image quality">
+                    <DetailRow label="Kualitas gambar">
                       <ImageQualityBadge quality={screening.imageQuality} size="sm" />
                     </DetailRow>
                     <DetailRow label="Status">{screeningStatusLabel[screening.status]}</DetailRow>
@@ -76,7 +76,7 @@ export function PatientScreeningsPage() {
                   {screening.review ? (
                     <div className="rounded-card border border-obsidian-200 bg-obsidian-50 p-3.5">
                       <p className="text-[13px] font-semibold text-obsidian-900">
-                        What your care team recorded
+                        Catatan dari tim yang merawat kamu
                       </p>
                       <p className="mt-1.5 text-[13px] leading-relaxed text-obsidian-700">
                         {screening.review.notes}
@@ -88,9 +88,9 @@ export function PatientScreeningsPage() {
                     </div>
                   ) : (
                     <Notice tone="info" compact>
-                      This screening has not been reviewed yet. A health professional checks every
-                      record before any conclusion is drawn from it, so there is nothing to read
-                      into the delay.
+                      Screening ini belum ditinjau. Tenaga kesehatan profesional memeriksa setiap
+                      rekam sebelum ada kesimpulan yang diambil, jadi tidak perlu mengartikan
+                      apa-apa dari waktu tunggunya.
                     </Notice>
                   )}
 
@@ -102,8 +102,8 @@ export function PatientScreeningsPage() {
       )}
 
       <Notice tone="attention" compact>
-        A screening result is never a diagnosis. Tuberculosis is confirmed by a laboratory test on
-        a sputum sample, read together with your symptoms by a clinician.
+        Hasil screening bukan diagnosis. Tuberkulosis dikonfirmasi lewat tes laboratorium pada
+        sampel dahak, lalu dibaca bersama gejala kamu oleh klinisi.
       </Notice>
     </div>
   );

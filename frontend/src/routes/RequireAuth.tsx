@@ -29,7 +29,7 @@ import type { AccountRole } from '@/types/account';
 
 function WorkspaceLoading() {
   return (
-    <div className="mx-auto max-w-md px-6 py-24" role="status" aria-label="Loading your workspace">
+    <div className="mx-auto max-w-md px-6 py-24" role="status" aria-label="Memuat workspace kamu">
       <LineSkeleton lines={4} />
     </div>
   );
@@ -41,7 +41,7 @@ function WorkspaceError({ message }: { message: string | null }) {
   return (
     <div className="mx-auto max-w-md py-16">
       <ErrorState
-        title="Could not load your workspace"
+        title="Workspace kamu gagal dimuat"
         description={message ?? undefined}
         onRetry={() => void loadWorkspace()}
       />
@@ -51,7 +51,7 @@ function WorkspaceError({ message }: { message: string | null }) {
           className="text-[13px] text-obsidian-500 underline underline-offset-2 hover:text-obsidian-900"
           onClick={() => void signOut()}
         >
-          Sign out
+          Keluar
         </button>
       </p>
     </div>
@@ -75,11 +75,8 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace state={{ suspended: true }} />;
   }
 
-  // A patient who has not finished onboarding is sent back to it, wherever in
-  // the application they were trying to go.
-  if (account.role === 'patient' && !account.onboarding.completedAt) {
-    return <Navigate to="/onboarding" replace />;
-  }
+  // Onboarding is optional: a new patient lands on their dashboard straight
+  // after registering and can complete the profile later from the overview.
 
   if (workspace === 'error') return <WorkspaceError message={workspaceError} />;
   if (workspace !== 'ready') return <WorkspaceLoading />;
@@ -129,8 +126,5 @@ export function RequirePermission({
 export function RoleHome() {
   const account = useCurrentAccount();
   if (!account) return <SignInRedirect />;
-  if (account.role === 'patient' && !account.onboarding.completedAt) {
-    return <Navigate to="/onboarding" replace />;
-  }
   return <Navigate to={ROLE_HOME[account.role]} replace />;
 }

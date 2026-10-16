@@ -14,7 +14,7 @@ export function RouteError() {
     ? `${error.status} ${error.statusText}`
     : error instanceof Error
       ? error.message
-      : 'An unexpected error occurred.';
+      : 'Terjadi error yang tidak terduga.';
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-cloud px-4">
@@ -25,9 +25,9 @@ export function RouteError() {
         >
           <AlertOctagon className="size-5" />
         </div>
-        <h1 className="mt-4 text-base font-semibold text-obsidian-950">Something broke</h1>
+        <h1 className="mt-4 text-base font-semibold text-obsidian-950">Ada yang error</h1>
         <p className="mt-1.5 text-[13px] leading-relaxed text-obsidian-600">
-          This screen failed to render. Nothing you have saved has been changed.
+          Halaman ini gagal ditampilkan. Data yang sudah kamu simpan tidak berubah.
         </p>
         <pre className="mt-3 max-h-40 overflow-auto rounded-md border border-obsidian-200 bg-obsidian-50 p-3 font-mono text-xs break-words whitespace-pre-wrap text-obsidian-700">
           {message}
@@ -38,14 +38,14 @@ export function RouteError() {
             leadingIcon={<RotateCcw className="size-4" />}
             onClick={() => window.location.reload()}
           >
-            Reload
+            Muat ulang
           </Button>
           <Button
             variant="outline"
             leadingIcon={<Home className="size-4" />}
             onClick={() => navigate('/dashboard')}
           >
-            Back to dashboard
+            Kembali ke dashboard
           </Button>
         </div>
       </div>

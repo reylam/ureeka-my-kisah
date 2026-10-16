@@ -98,7 +98,7 @@ export function UserMenu() {
               ) : (
                 <Settings aria-hidden className="size-4 text-obsidian-400" />
               )}
-              {isPatient ? 'My profile' : 'Account settings'}
+              {isPatient ? 'Profil saya' : 'Pengaturan akun'}
             </Link>
             <button
               type="button"
@@ -107,12 +107,12 @@ export function UserMenu() {
                 signOut();
                 setOpen(false);
                 navigate('/login', { replace: true });
-                toast.info('Signed out.');
+                toast.info('Kamu sudah keluar.');
               }}
               className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] text-obsidian-700 transition-colors hover:bg-obsidian-50"
             >
               <LogOut aria-hidden className="size-4 text-obsidian-400" />
-              Sign out
+              Keluar
             </button>
           </div>
         </div>

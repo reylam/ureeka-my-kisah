@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react';
+import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -34,7 +34,7 @@ export function MobileTabBar() {
 
   return (
     <nav
-      aria-label="Primary navigation"
+      aria-label="Navigasi utama"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-obsidian-200 bg-white/97 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
     >
       <ul className="grid grid-cols-5">
@@ -68,10 +68,10 @@ export function MobileTabBar() {
                       ) : null}
                     </span>
                     <span className="max-w-full truncate">
-                      {item.label === 'New Screening' ? 'Screen' : item.label}
+                      {item.label === 'Screening Baru' ? 'Screen' : item.label}
                     </span>
                     {item.badge && count > 0 ? (
-                      <span className="sr-only">{count} need attention</span>
+                      <span className="sr-only">{count} perlu perhatian</span>
                     ) : null}
                     {isActive ? (
                       <span
@@ -136,20 +136,19 @@ export function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () 
             transition={{ duration: 0.22, ease: [0.2, 0, 0.2, 1] }}
             role="dialog"
             aria-modal="true"
-            aria-label="Navigation"
-            className="on-dark relative flex h-full w-72 max-w-[85vw] flex-col bg-obsidian-950"
+            aria-label="Navigasi"
+            className="relative flex h-full w-72 max-w-[85vw] flex-col bg-white"
           >
             <div className="flex h-14 shrink-0 items-center justify-between px-4">
-              <Logo tone="light" />
+              <Logo tone="dark" />
               <IconButton
-                label="Close navigation"
-                tone="onDark"
-                icon={<X className="size-4" />}
+                label="Tutup navigasi"
+               icon={<X className="size-4" />}
                 onClick={onClose}
               />
             </div>
 
-            <nav aria-label="All sections" className="min-h-0 flex-1 overflow-y-auto px-2 pb-6">
+            <nav aria-label="Semua bagian" className="min-h-0 flex-1 overflow-y-auto px-2 pb-6">
               {navSections.map((section) => (
                 <div key={section.id} className="mb-2">
                   {section.label ? (
@@ -172,8 +171,8 @@ export function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () 
                               cn(
                                 'flex items-start gap-3 rounded-md px-2.5 py-2.5 transition-colors',
                                 isActive
-                                  ? 'bg-white/[0.07] text-white'
-                                  : 'text-obsidian-300 active:bg-white/[0.04]',
+                                  ? 'bg-ct-100 text-ct-900'
+                                  : 'text-obsidian-600 active:bg-obsidian-50',
                               )
                             }
                           >
@@ -182,14 +181,14 @@ export function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () 
                                 <Icon
                                   className={cn(
                                     'mt-px size-4 shrink-0',
-                                    isActive ? 'text-ct-300' : 'text-obsidian-400',
+                                    isActive ? 'text-ct-700' : 'text-obsidian-400',
                                   )}
                                 />
                                 <span className="min-w-0 flex-1">
                                   <span className="flex items-center gap-2 text-[13px] font-medium">
                                     {item.label}
                                     {item.badge && count > 0 ? (
-                                      <span className="inline-flex min-w-[18px] items-center justify-center rounded bg-white/10 px-1 text-[10px] font-semibold text-ct-200 tabular">
+                                      <span className="inline-flex min-w-[18px] items-center justify-center rounded bg-ct-100 px-1 text-[10px] font-semibold text-ct-800 tabular">
                                         {count}
                                       </span>
                                     ) : null}
@@ -209,7 +208,7 @@ export function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () 
               ))}
             </nav>
 
-            <div className="shrink-0 border-t border-white/5 px-4 py-3">
+            <div className="shrink-0 border-t border-obsidian-200 px-4 py-3">
               <p className="text-[11px] leading-relaxed text-obsidian-500">
                 {facility?.name}
               </p>

@@ -82,8 +82,8 @@ export const ROLE_PERMISSIONS: Record<AccountRole, Permission[]> = {
 };
 
 export const ROLE_LABEL: Record<AccountRole, string> = {
-  patient: 'Patient',
-  professional: 'Healthcare professional',
+  patient: 'Pasien',
+  professional: 'Petugas kesehatan',
   admin: 'Administrator',
 };
 

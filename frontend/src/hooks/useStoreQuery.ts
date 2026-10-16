@@ -42,7 +42,7 @@ export function useStoreQuery<T>(
       })
       .catch((cause: unknown) => {
         if (!active) return;
-        setError(cause instanceof Error ? cause.message : 'Could not load this data.');
+        setError(cause instanceof Error ? cause.message : 'Data ini gagal dimuat.');
         setLoading(false);
       });
 

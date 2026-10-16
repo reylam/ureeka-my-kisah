@@ -48,15 +48,27 @@ export function PatientOverviewPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title={firstName ? `Hello, ${firstName}` : 'Your health overview'}
-        description="Your screening history, anything coming up, and reading that fits where you are."
+        title={firstName ? `Halo, ${firstName}` : 'Ringkasan kesehatan kamu'}
+        description="Riwayat screening, jadwal yang akan datang, dan bacaan yang sesuai dengan kondisi kamu."
       />
+
+      {account && !account.onboarding.completedAt ? (
+        <Notice tone="info" title="Lengkapi profil kamu">
+          <p>
+            Tambahkan data diri dan, kalau mau, beberapa jawaban seputar kesehatan supaya rekam
+            kamu lengkap. Cuma butuh beberapa menit dan kamu bisa berhenti di langkah mana pun.
+          </p>
+          <ButtonLink to="/onboarding" variant="outline" size="sm" className="mt-2.5">
+            Lengkapi profil
+          </ButtonLink>
+        </Notice>
+      ) : null}
 
       {/* Latest screening */}
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card>
           <CardHeader
-            title="Latest screening"
+            title="Screening terbaru"
             icon={<ClipboardList />}
             actions={
               screenings.length > 0 ? (
@@ -66,7 +78,7 @@ export function PatientOverviewPage() {
                   size="sm"
                   trailingIcon={<ArrowRight className="ml-1.5 size-3.5" />}
                 >
-                  All screenings
+                  Semua screening
                 </ButtonLink>
               ) : null
             }
@@ -77,31 +89,31 @@ export function PatientOverviewPage() {
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                   <ScreeningStatusBadge status={latest.status} />
                   <span className="text-[13px] text-obsidian-600">
-                    Recorded {formatDate(latest.performedAt)}
+                    Dicatat {formatDate(latest.performedAt)}
                   </span>
                 </div>
 
                 <p className="max-w-prose text-[13px] leading-relaxed text-obsidian-600">
                   {latest.status === 'reviewed'
-                    ? 'A health professional has looked at this screening and recorded their assessment. Open the record to read it.'
+                    ? 'Tenaga kesehatan profesional sudah memeriksa screening ini dan mencatat penilaiannya. Buka rekam untuk membacanya.'
                     : latest.status === 'referred'
-                      ? 'This screening led to a referral for further testing. Your follow-up section has the details.'
-                      : 'This screening is still working through the review queue. A health professional checks every record before anything is concluded from it.'}
+                      ? 'Screening ini berlanjut ke referral untuk tes lanjutan. Detailnya ada di bagian follow-up.'
+                      : 'Screening ini masih dalam antrean review. Tenaga kesehatan profesional memeriksa setiap rekam sebelum ada kesimpulan yang diambil.'}
                 </p>
 
                 <ButtonLink to="/me/screenings" variant="outline" size="sm">
-                  Open the record
+                  Buka rekam
                 </ButtonLink>
               </div>
             ) : (
               <EmptyState
                 compact
                 icon={<ClipboardList />}
-                title="No screenings on your record yet"
-                description="When a health worker records a chest X-ray screening for you, it will appear here with its status and report."
+                title="Belum ada screening di rekam kamu"
+                description="Saat petugas kesehatan mencatat screening chest X-ray untuk kamu, screening itu akan muncul di sini lengkap dengan status dan report-nya."
                 action={
                   <ButtonLink to="/me/facilities" variant="outline" size="sm">
-                    Find a facility near you
+                    Cari fasilitas di dekat kamu
                   </ButtonLink>
                 }
               />
@@ -111,17 +123,17 @@ export function PatientOverviewPage() {
 
         {/* Counts of the patient's own records only */}
         <Card>
-          <CardHeader title="Your record" icon={<Stethoscope />} />
+          <CardHeader title="Rekam kamu" icon={<Stethoscope />} />
           <CardBody className="space-y-3">
-            <Stat label="Screenings" value={screenings.length} />
-            <Stat label="Referrals" value={referrals.length} />
+            <Stat label="Screening" value={screenings.length} />
+            <Stat label="Referral" value={referrals.length} />
             <Stat
-              label="Follow-ups scheduled"
+              label="Follow-up terjadwal"
               value={followUps.filter((item) => item.status !== 'completed').length}
             />
             {homeFacility ? (
               <p className="border-t border-obsidian-100 pt-3 text-[12.5px] leading-relaxed text-obsidian-500">
-                Registered at {homeFacility.name}, {homeFacility.region}.
+                Terdaftar di {homeFacility.name}, {homeFacility.region}.
               </p>
             ) : null}
           </CardBody>
@@ -131,9 +143,9 @@ export function PatientOverviewPage() {
       {/* Follow-up */}
       <Card>
         <CardHeader
-          title="Coming up"
+          title="Akan datang"
           icon={<CalendarClock />}
-          description="Appointments and contact arranged by your care team."
+          description="Janji temu dan kontak yang diatur oleh tim yang merawat kamu."
         />
         <CardBody>
           {nextFollowUp ? (
@@ -146,25 +158,25 @@ export function PatientOverviewPage() {
                   </span>
                 </div>
                 <p className="mt-1.5 text-[13px] text-obsidian-600">
-                  Due {formatDate(nextFollowUp.dueDate)} ·{' '}
+                  Jatuh tempo {formatDate(nextFollowUp.dueDate)} ·{' '}
                   {formatDueLabel(nextFollowUp.dueDate)}
                 </p>
                 {careWorker ? (
                   <p className="mt-1 text-[12.5px] text-obsidian-500">
-                    Arranged by {careWorker.name}
+                    Diatur oleh {careWorker.name}
                   </p>
                 ) : null}
               </div>
               <ButtonLink to="/me/followup" variant="outline" size="sm">
-                Follow-up details
+                Detail follow-up
               </ButtonLink>
             </div>
           ) : (
             <EmptyState
               compact
               icon={<CalendarClock />}
-              title="Nothing scheduled"
-              description="If your care team arranges an appointment or plans to contact you, it will show here."
+              title="Belum ada jadwal"
+              description="Kalau tim yang merawat kamu mengatur janji temu atau berencana menghubungi kamu, jadwalnya akan tampil di sini."
             />
           )}
         </CardBody>
@@ -178,7 +190,7 @@ export function PatientOverviewPage() {
           description={recommendation.reason}
           actions={
             <ButtonLink to="/me/learn" variant="ghost" size="sm">
-              All topics
+              Semua topik
             </ButtonLink>
           }
         />
@@ -200,7 +212,7 @@ export function PatientOverviewPage() {
                       {article.summary}
                     </span>
                     <span className="mt-auto pt-3 text-[11.5px] text-obsidian-400">
-                      {article.minutes} min read
+                      {article.minutes} menit baca
                     </span>
                   </Link>
                 </li>
@@ -211,20 +223,20 @@ export function PatientOverviewPage() {
       </Card>
 
       <Notice tone="attention" compact>
-        PULMO does not diagnose tuberculosis. Everything here is to help you keep track and decide
-        whether to get tested. If you feel unwell, see a health professional rather than waiting for
-        anything on this page to change.
+        PULMO tidak mendiagnosis tuberkulosis. Semua yang ada di sini untuk membantu kamu
+        memantau dan memutuskan perlu tes atau tidak. Kalau merasa tidak enak badan, temui tenaga
+        kesehatan, jangan menunggu ada perubahan di halaman ini.
       </Notice>
 
       <Card>
-        <CardHeader title="Find care" icon={<Building2 />} />
+        <CardHeader title="Cari layanan kesehatan" icon={<Building2 />} />
         <CardBody>
           <p className="max-w-prose text-[13px] leading-relaxed text-obsidian-600">
-            The directory lists hospitals and puskesmas with their services, opening hours and
-            contact details, so you can see which ones can run a TB test.
+            Direktori ini memuat rumah sakit dan puskesmas beserta layanan, jam operasional, dan
+            kontaknya, jadi kamu bisa tahu mana yang bisa melakukan tes TB.
           </p>
           <ButtonLink to="/me/facilities" variant="outline" size="sm" className="mt-3">
-            Browse facilities
+            Lihat fasilitas
           </ButtonLink>
         </CardBody>
       </Card>

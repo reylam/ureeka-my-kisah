@@ -84,14 +84,14 @@ export function UploadDropzone({
           </span>
 
           <span className="mt-6 text-[17px] font-medium text-trace-text sm:text-[18px]">
-            {hasImage ? 'Replace the chest X-ray' : 'Drop a chest X-ray here'}
+            {hasImage ? 'Ganti chest X-ray' : 'Drop chest X-ray di sini'}
           </span>
           <span className="mt-2 text-[14px] text-trace-muted">
-            or <span className="text-trace-accent underline underline-offset-2">browse your files</span>
+            atau <span className="text-trace-accent underline underline-offset-2">cari di file kamu</span>
           </span>
 
           <span className="mt-6 font-mono text-[11.5px] tracking-[0.04em] text-trace-dim">
-            JPG · JPEG · PNG · max {MAX_BYTES / 1_000_000} MB · shorter edge ≥ {MIN_EDGE_PX} px
+            JPG · JPEG · PNG · maks {MAX_BYTES / 1_000_000} MB · sisi terpendek ≥ {MIN_EDGE_PX} px
           </span>
 
           <input

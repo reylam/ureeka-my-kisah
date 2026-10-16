@@ -116,15 +116,15 @@ export function PatientDetailPage() {
       <Card className="mx-auto max-w-lg">
         <EmptyState
           icon={<FileSearch />}
-          title="Patient record not found"
-          description="It may not exist, or the patient may belong to a facility you are not assigned to."
+          title="Data pasien tidak ditemukan"
+          description="Data ini mungkin tidak ada, atau pasien terdaftar di fasilitas yang bukan tempat tugasmu."
           action={
             <Button
               variant="primary"
               leadingIcon={<ArrowLeft className="size-4" />}
               onClick={() => navigate('/patients')}
             >
-              Back to patients
+              Kembali ke daftar pasien
             </Button>
           }
         />
@@ -140,7 +140,7 @@ export function PatientDetailPage() {
 
   const saveNote = async () => {
     if (noteBody.trim().length < 5) {
-      setNoteError('Write at least a few words.');
+      setNoteError('Tulis minimal beberapa kata.');
       return;
     }
     try {
@@ -148,9 +148,9 @@ export function PatientDetailPage() {
       setNoteBody('');
       setNoteError(null);
       setNoteOpen(false);
-      toast.success('Note added to the patient timeline.');
+      toast.success('Catatan ditambahkan ke timeline pasien.');
     } catch (cause) {
-      setNoteError(cause instanceof Error ? cause.message : 'The note could not be saved.');
+      setNoteError(cause instanceof Error ? cause.message : 'Catatan gagal disimpan.');
     }
   };
 
@@ -160,16 +160,16 @@ export function PatientDetailPage() {
         title={patient.name}
         description={
           <>
-            {ageFromBirthDate(patient.birthDate)} years · {sexLabel[patient.sex]} ·{' '}
+            {ageFromBirthDate(patient.birthDate)} tahun · {sexLabel[patient.sex]} ·{' '}
             {patient.village}, {patient.district}
           </>
         }
         meta={
           <>
-            <HeaderMeta label="Record no." value={<span className="font-mono">{patient.mrn}</span>} />
-            <HeaderMeta label="Screenings" value={screenings.length} />
+            <HeaderMeta label="No. rekam medis" value={<span className="font-mono">{patient.mrn}</span>} />
+            <HeaderMeta label="Screening" value={screenings.length} />
             <HeaderMeta
-              label="Phone"
+              label="Telepon"
               value={
                 patient.phone ? (
                   <a
@@ -180,7 +180,7 @@ export function PatientDetailPage() {
                     {patient.phone}
                   </a>
                 ) : (
-                  <span className="text-attention-800">None on file</span>
+                  <span className="text-attention-800">Belum ada</span>
                 )
               }
             />
@@ -193,28 +193,28 @@ export function PatientDetailPage() {
               leadingIcon={<MessageSquarePlus className="size-4" />}
               onClick={() => setNoteOpen(true)}
             >
-              Add note
+              Tambah catatan
             </Button>
             <Button
               variant="outline"
               leadingIcon={<CalendarClock className="size-4" />}
               onClick={() => setFollowUpOpen(true)}
             >
-              Schedule follow-up
+              Jadwalkan follow-up
             </Button>
             <Button
               variant="outline"
               leadingIcon={<Send className="size-4" />}
               onClick={() => setReferralOpen(true)}
             >
-              Create referral
+              Buat referral
             </Button>
             <Button
               variant="primary"
               leadingIcon={<ScanLine className="size-4" />}
               onClick={() => navigate(`/screenings/new?patient=${patient.id}`)}
             >
-              New screening
+              Screening baru
             </Button>
           </>
         }
@@ -228,7 +228,7 @@ export function PatientDetailPage() {
         ) : null}
         {openFollowUps.length > 0 ? (
           <Badge tone="attention" icon={<CalendarClock />}>
-            {pluralise(openFollowUps.length, 'open follow-up')}
+            {pluralise(openFollowUps.length, 'follow-up aktif', 'follow-up aktif')}
           </Badge>
         ) : null}
         {patient.riskFactors.map((factor) => (
@@ -245,15 +245,15 @@ export function PatientDetailPage() {
           className="px-2"
           items={[
             { id: 'timeline', label: 'Timeline', count: timeline.length },
-            { id: 'screenings', label: 'Screenings', count: screenings.length },
-            { id: 'referrals', label: 'Referrals', count: referrals.length },
+            { id: 'screenings', label: 'Screening', count: screenings.length },
+            { id: 'referrals', label: 'Referral', count: referrals.length },
             {
               id: 'followups',
-              label: 'Follow-ups',
+              label: 'Follow-up',
               count: followUps.length,
               countTone: openFollowUps.length > 0 ? 'attention' : 'neutral',
             },
-            { id: 'details', label: 'Details' },
+            { id: 'details', label: 'Detail' },
           ]}
         />
 
@@ -269,14 +269,14 @@ export function PatientDetailPage() {
               <EmptyState
                 compact
                 icon={<ScanLine />}
-                title="No screenings recorded"
+                title="Belum ada screening tercatat"
                 action={
                   <Button
                     size="sm"
                     variant="primary"
                     onClick={() => navigate(`/screenings/new?patient=${patient.id}`)}
                   >
-                    Record the first screening
+                    Catat screening pertama
                   </Button>
                 }
               />
@@ -294,10 +294,10 @@ export function PatientDetailPage() {
                         </p>
                         <p className="mt-1 text-xs text-obsidian-500">
                           {screening.symptoms.coughWeeks > 0
-                            ? `Cough ${screening.symptoms.coughWeeks}w`
-                            : 'No cough reported'}
+                            ? `Batuk ${screening.symptoms.coughWeeks} mgg`
+                            : 'Tidak ada keluhan batuk'}
                           {' · '}
-                          {users.find((u) => u.id === screening.operatorId)?.name ?? 'Unknown'}
+                          {users.find((u) => u.id === screening.operatorId)?.name ?? 'Tidak diketahui'}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           <ScreeningStatusBadge status={screening.status} size="sm" />
@@ -325,11 +325,11 @@ export function PatientDetailPage() {
               <EmptyState
                 compact
                 icon={<Send />}
-                title="No referrals raised"
-                description="Referrals escalate a patient to a facility that can confirm or exclude TB."
+                title="Belum ada referral"
+                description="Referral meneruskan pasien ke fasilitas yang bisa mengonfirmasi atau menyingkirkan TB."
                 action={
                   <Button size="sm" variant="primary" onClick={() => setReferralOpen(true)}>
-                    Create a referral
+                    Buat referral
                   </Button>
                 }
               />
@@ -348,13 +348,13 @@ export function PatientDetailPage() {
                             <span className="font-mono text-xs text-obsidian-600">
                               {referral.code}
                             </span>{' '}
-                            → {destination?.name ?? 'Unknown facility'}
+                            → {destination?.name ?? 'Fasilitas tidak diketahui'}
                           </p>
                           <p className="mt-1 text-xs leading-relaxed text-obsidian-500">
-                            {facilityServiceLabel[referral.requestedService]} · raised{' '}
+                            {facilityServiceLabel[referral.requestedService]} · dibuat{' '}
                             {formatDate(referral.createdAt)}
                             {referral.appointmentDate
-                              ? ` · appointment ${formatDate(referral.appointmentDate)}`
+                              ? ` · janji temu ${formatDate(referral.appointmentDate)}`
                               : ''}
                           </p>
                           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -378,10 +378,10 @@ export function PatientDetailPage() {
               <EmptyState
                 compact
                 icon={<CalendarClock />}
-                title="No follow-ups scheduled"
+                title="Belum ada follow-up terjadwal"
                 action={
                   <Button size="sm" variant="primary" onClick={() => setFollowUpOpen(true)}>
-                    Schedule a follow-up
+                    Jadwalkan follow-up
                   </Button>
                 }
               />
@@ -400,10 +400,10 @@ export function PatientDetailPage() {
                         <p className="mt-1 text-xs text-obsidian-500">
                           <span className="font-mono">{followUp.code}</span> ·{' '}
                           {followUp.status === 'completed'
-                            ? `completed ${followUp.completedAt ? formatDate(followUp.completedAt) : ''}`
+                            ? `selesai ${followUp.completedAt ? formatDate(followUp.completedAt) : ''}`
                             : formatDueLabel(followUp.dueDate)}
                           {followUp.attempts.length > 0
-                            ? ` · ${pluralise(followUp.attempts.length, 'contact attempt')}`
+                            ? ` · ${pluralise(followUp.attempts.length, 'percobaan kontak', 'percobaan kontak')}`
                             : ''}
                         </p>
                         {followUp.unresolvedReason ? (
@@ -429,51 +429,51 @@ export function PatientDetailPage() {
             <div className="grid gap-4 p-4 lg:grid-cols-2">
               <section>
                 <h3 className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-                  Identification
+                  Identitas
                 </h3>
                 <dl className="mt-2 divide-y divide-obsidian-100">
-                  <DetailRow label="Full name">{patient.name}</DetailRow>
-                  <DetailRow label="Record no.">
+                  <DetailRow label="Nama lengkap">{patient.name}</DetailRow>
+                  <DetailRow label="No. rekam medis">
                     <span className="font-mono text-xs">{patient.mrn}</span>
                   </DetailRow>
-                  <DetailRow label="Date of birth">
+                  <DetailRow label="Tanggal lahir">
                     {formatDate(patient.birthDate)}{' '}
                     <span className="text-obsidian-400">
-                      ({ageFromBirthDate(patient.birthDate)} yrs)
+                      ({ageFromBirthDate(patient.birthDate)} thn)
                     </span>
                   </DetailRow>
-                  <DetailRow label="Sex">{sexLabel[patient.sex]}</DetailRow>
-                  <DetailRow label="Registered">{formatDate(patient.registeredAt)}</DetailRow>
+                  <DetailRow label="Jenis kelamin">{sexLabel[patient.sex]}</DetailRow>
+                  <DetailRow label="Terdaftar">{formatDate(patient.registeredAt)}</DetailRow>
                 </dl>
               </section>
 
               <section>
                 <h3 className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-                  Location &amp; contact
+                  Lokasi &amp; kontak
                 </h3>
                 <dl className="mt-2 divide-y divide-obsidian-100">
-                  <DetailRow label="Village">{patient.village}</DetailRow>
-                  <DetailRow label="District">{patient.district}</DetailRow>
-                  <DetailRow label="Province">{patient.province}</DetailRow>
-                  <DetailRow label="Phone">{patient.phone ?? 'None on file'}</DetailRow>
-                  <DetailRow label="Home facility">{homeFacility?.name ?? 'Not recorded'}</DetailRow>
+                  <DetailRow label="Desa">{patient.village}</DetailRow>
+                  <DetailRow label="Kecamatan">{patient.district}</DetailRow>
+                  <DetailRow label="Provinsi">{patient.province}</DetailRow>
+                  <DetailRow label="Telepon">{patient.phone ?? 'Belum ada'}</DetailRow>
+                  <DetailRow label="Fasilitas asal">{homeFacility?.name ?? 'Belum dicatat'}</DetailRow>
                 </dl>
               </section>
 
               <section className="lg:col-span-2">
                 <h3 className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-                  Epidemiological context
+                  Konteks epidemiologi
                 </h3>
                 <dl className="mt-2 divide-y divide-obsidian-100">
-                  <DetailRow label="Risk factors">
+                  <DetailRow label="Faktor risiko">
                     {patient.riskFactors.length === 0
-                      ? 'None recorded'
+                      ? 'Belum ada yang dicatat'
                       : patient.riskFactors.map((factor) => riskFactorLabel[factor]).join(', ')}
                   </DetailRow>
-                  <DetailRow label="Household contacts">
+                  <DetailRow label="Kontak serumah">
                     {patient.householdContacts === 0
-                      ? 'None recorded'
-                      : pluralise(patient.householdContacts, 'person', 'people')}
+                      ? 'Belum ada yang dicatat'
+                      : pluralise(patient.householdContacts, 'orang', 'orang')}
                   </DetailRow>
                 </dl>
               </section>
@@ -481,7 +481,7 @@ export function PatientDetailPage() {
               <section className="lg:col-span-2">
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-                    Notes ({patient.notes.length})
+                    Catatan ({patient.notes.length})
                   </h3>
                   <Button
                     size="sm"
@@ -489,11 +489,11 @@ export function PatientDetailPage() {
                     leadingIcon={<MessageSquarePlus className="size-3.5" />}
                     onClick={() => setNoteOpen(true)}
                   >
-                    Add note
+                    Tambah catatan
                   </Button>
                 </div>
                 {patient.notes.length === 0 ? (
-                  <p className="mt-2 text-[13px] text-obsidian-500">No notes on this record.</p>
+                  <p className="mt-2 text-[13px] text-obsidian-500">Belum ada catatan di record ini.</p>
                 ) : (
                   <ul className="mt-2 space-y-2">
                     {patient.notes.map((note) => (
@@ -503,7 +503,7 @@ export function PatientDetailPage() {
                       >
                         <p className="text-[13px] leading-relaxed text-obsidian-800">{note.body}</p>
                         <p className="mt-1.5 text-[11px] text-obsidian-400">
-                          {users.find((u) => u.id === note.authorId)?.name ?? 'Unknown'} ·{' '}
+                          {users.find((u) => u.id === note.authorId)?.name ?? 'Tidak diketahui'} ·{' '}
                           {formatDateTime(note.createdAt)}
                         </p>
                       </li>
@@ -533,20 +533,20 @@ export function PatientDetailPage() {
       <Dialog
         open={noteOpen}
         onClose={() => setNoteOpen(false)}
-        title="Add a note"
-        description={`Added to ${patient.name}'s timeline.`}
+        title="Tambah catatan"
+        description={`Ditambahkan ke timeline ${patient.name}.`}
         footer={
           <>
             <Button variant="ghost" onClick={() => setNoteOpen(false)}>
-              Cancel
+              Batal
             </Button>
             <Button variant="primary" onClick={saveNote}>
-              Save note
+              Simpan catatan
             </Button>
           </>
         }
       >
-        <Field label="Note" error={noteError} required>
+        <Field label="Catatan" error={noteError} required>
           {({ id, describedBy, invalid }) => (
             <TextArea
               id={id}
@@ -555,7 +555,7 @@ export function PatientDetailPage() {
               describedBy={describedBy}
               invalid={invalid}
               rows={4}
-              placeholder="Anything the next person visiting this patient should know."
+              placeholder="Apa pun yang perlu diketahui petugas berikutnya yang mengunjungi pasien ini."
             />
           )}
         </Field>

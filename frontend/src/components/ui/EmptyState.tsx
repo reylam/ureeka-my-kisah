@@ -53,7 +53,7 @@ export function EmptyState({
 /** Specialised empty state for when active filters produced no matches. */
 export function NoMatchesState({
   onClear,
-  entity = 'records',
+  entity = 'data',
 }: {
   onClear: () => void;
   entity?: string;
@@ -61,11 +61,11 @@ export function NoMatchesState({
   return (
     <EmptyState
       icon={<AlertCircle />}
-      title={`No ${entity} match these filters`}
-      description="Try a different search term, or clear the filters to see everything again."
+      title={`Tidak ada ${entity} yang cocok dengan filter ini`}
+      description="Coba kata kunci lain, atau hapus filter untuk menampilkan semuanya lagi."
       action={
         <Button size="sm" variant="outline" leadingIcon={<RotateCcw className="size-4" />} onClick={onClear}>
-          Clear filters
+          Hapus filter
         </Button>
       }
     />
@@ -74,7 +74,7 @@ export function NoMatchesState({
 
 /** Error state for a failed load, with a retry affordance. */
 export function ErrorState({
-  title = 'Could not load this view',
+  title = 'Tampilan ini gagal dimuat',
   description,
   onRetry,
 }: {
@@ -92,7 +92,7 @@ export function ErrorState({
       </div>
       <p className="text-sm font-medium text-obsidian-900">{title}</p>
       <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-obsidian-500">
-        {description ?? 'Something went wrong while loading this data.'}
+        {description ?? 'Terjadi masalah saat memuat data ini.'}
       </p>
       {onRetry ? (
         <Button
@@ -102,7 +102,7 @@ export function ErrorState({
           leadingIcon={<RotateCcw className="size-4" />}
           onClick={onRetry}
         >
-          Try again
+          Coba lagi
         </Button>
       ) : null}
     </div>

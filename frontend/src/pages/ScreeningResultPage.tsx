@@ -100,11 +100,11 @@ export function ScreeningResultPage() {
       <Card className="mx-auto max-w-lg">
         <EmptyState
           icon={<FileSearch />}
-          title="Screening record not found"
-          description="It may not exist, or it may belong to a patient outside your facility."
+          title="Catatan screening tidak ditemukan"
+          description="Catatan ini mungkin tidak ada, atau milik pasien di luar fasilitas kamu."
           action={
             <Button variant="primary" onClick={() => navigate('/reports')}>
-              Back to screening history
+              Kembali ke riwayat screening
             </Button>
           }
         />
@@ -121,8 +121,8 @@ export function ScreeningResultPage() {
   const runAnalysis = async () => {
     if (!connected) {
       toast.attention(
-        'Analysis needs a connection.',
-        'The record stays queued until one is available.',
+        'Analisis butuh koneksi internet.',
+        'Data tetap masuk queue sampai koneksi tersedia.',
       );
       return;
     }
@@ -135,15 +135,15 @@ export function ScreeningResultPage() {
     try {
       await analyzeScreening(screening.id);
       setProgress(100);
-      toast.success('Analysis complete.', 'The record now needs a clinical review.');
+      toast.success('Analisis selesai.', 'Data ini sekarang perlu direview klinisi.');
     } catch (cause) {
       if (cause instanceof ApiError && cause.code === 'MODEL_NOT_CONNECTED') {
         toast.info(
-          'The screening model is not connected.',
-          'The record is unchanged and can still be reviewed by a clinician.',
+          'Model screening belum terhubung.',
+          'Data tidak berubah dan tetap bisa direview klinisi.',
         );
       } else {
-        toast.error('The analysis could not be completed.', errorMessage(cause));
+        toast.error('Analisis tidak bisa diselesaikan.', errorMessage(cause));
       }
     } finally {
       window.clearInterval(ticker);
@@ -156,40 +156,40 @@ export function ScreeningResultPage() {
   const nextStep = (() => {
     if (!analysis && !screening.review)
       return {
-        title: 'No model output yet',
+        title: 'Belum ada output model',
         body:
           screening.modelStatus === 'unavailable'
-            ? 'The screening model is not connected. A clinician can still review the image and record a decision.'
-            : 'Run the analysis if the model is connected, or have a clinician review the image directly.',
+            ? 'Model screening belum terhubung. Klinisi tetap bisa meninjau gambar dan mencatat keputusan.'
+            : 'Jalankan analisis jika model sudah terhubung, atau minta klinisi meninjau gambar secara langsung.',
         tone: 'info' as const,
       };
     if (!screening.review)
       return {
-        title: 'Needs a clinical review',
-        body: 'A nurse or physician has to look at the radiograph and record a decision before anything else happens.',
+        title: 'Perlu review klinis',
+        body: 'Perawat atau dokter harus melihat radiograf dan mencatat keputusan sebelum langkah berikutnya.',
         tone: 'attention' as const,
       };
     if (screening.review.decision === 'refer' && !referral)
       return {
-        title: 'Referral not yet raised',
-        body: 'The reviewer decided to refer this patient, but no referral exists on the record.',
+        title: 'Referral belum dibuat',
+        body: 'Reviewer memutuskan untuk merujuk pasien ini, tetapi belum ada referral di catatan.',
         tone: 'attention' as const,
       };
     if (screening.review.decision === 'repeat-image')
       return {
-        title: 'Repeat radiograph required',
-        body: 'The reviewer could not read this image. Schedule the patient to return for another one.',
+        title: 'Radiograf perlu diulang',
+        body: 'Reviewer tidak bisa membaca gambar ini. Jadwalkan pasien untuk kembali dan difoto ulang.',
         tone: 'attention' as const,
       };
     if (referral)
       return {
-        title: 'Referral in progress',
-        body: `${referral.code} is with ${facilities.find((f) => f.id === referral.toFacilityId)?.name ?? 'the destination facility'}. Track it from the referrals register.`,
+        title: 'Referral sedang berjalan',
+        body: `${referral.code} sedang ditangani ${facilities.find((f) => f.id === referral.toFacilityId)?.name ?? 'fasilitas tujuan'}. Pantau dari daftar referral.`,
         tone: 'info' as const,
       };
     return {
-      title: 'No further action needed',
-      body: 'The record has been reviewed and closed. The patient was advised to return if symptoms change.',
+      title: 'Tidak perlu tindakan lanjutan',
+      body: 'Catatan sudah ditinjau dan ditutup. Pasien disarankan kembali jika gejala berubah.',
       tone: 'info' as const,
     };
   })();
@@ -197,7 +197,7 @@ export function ScreeningResultPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Screening result"
+        title="Hasil screening"
         description={
           <>
             <Link
@@ -206,15 +206,15 @@ export function ScreeningResultPage() {
             >
               {patient.name}
             </Link>{' '}
-            · {ageFromBirthDate(patient.birthDate)} yrs · {sexLabel[patient.sex]} ·{' '}
+            · {ageFromBirthDate(patient.birthDate)} thn · {sexLabel[patient.sex]} ·{' '}
             {patient.village}, {patient.district}
           </>
         }
         meta={
           <>
-            <HeaderMeta label="Record no." value={<span className="font-mono">{patient.mrn}</span>} />
-            <HeaderMeta label="Screened" value={formatDateTime(screening.performedAt)} />
-            <HeaderMeta label="By" value={operator?.name ?? 'Unknown'} />
+            <HeaderMeta label="No. rekam medis" value={<span className="font-mono">{patient.mrn}</span>} />
+            <HeaderMeta label="Waktu screening" value={formatDateTime(screening.performedAt)} />
+            <HeaderMeta label="Oleh" value={operator?.name ?? 'Tidak diketahui'} />
           </>
         }
         actions={
@@ -224,7 +224,7 @@ export function ScreeningResultPage() {
               leadingIcon={<FileText className="size-4" />}
               onClick={() => navigate(`/screenings/${screening.id}/report`)}
             >
-              Open report
+              Buka report
             </Button>
             {referral ? (
               <Button
@@ -232,7 +232,7 @@ export function ScreeningResultPage() {
                 leadingIcon={<Send className="size-4" />}
                 onClick={() => navigate(`/referrals?focus=${referral.id}`)}
               >
-                View referral
+                Lihat referral
               </Button>
             ) : (
               <Button
@@ -240,7 +240,7 @@ export function ScreeningResultPage() {
                 leadingIcon={<Send className="size-4" />}
                 onClick={() => setReferralOpen(true)}
               >
-                Create referral
+                Buat referral
               </Button>
             )}
           </>
@@ -264,21 +264,21 @@ export function ScreeningResultPage() {
           <XrayViewer screening={screening} regions={analysis?.regions ?? []} />
 
           <Card>
-            <CardHeader icon={<User />} title="Encounter record" />
+            <CardHeader icon={<User />} title="Catatan kunjungan" />
             <CardBody>
               <dl className="divide-y divide-obsidian-100">
-                <DetailRow label="Facility">{facility?.name ?? 'Not recorded'}</DetailRow>
-                <DetailRow label="Cough">
+                <DetailRow label="Fasilitas">{facility?.name ?? 'Tidak dicatat'}</DetailRow>
+                <DetailRow label="Batuk">
                   {screening.symptoms.coughWeeks > 0
-                    ? `${screening.symptoms.coughWeeks} week${screening.symptoms.coughWeeks === 1 ? '' : 's'}`
-                    : 'None reported'}
+                    ? `${screening.symptoms.coughWeeks} minggu`
+                    : 'Tidak ada laporan'}
                 </DetailRow>
-                <DetailRow label="Other symptoms">
+                <DetailRow label="Gejala lain">
                   {reportedSymptoms.length === 0
-                    ? 'None reported'
+                    ? 'Tidak ada laporan'
                     : reportedSymptoms.map((key) => symptomLabel[key] ?? key).join(', ')}
                 </DetailRow>
-                <DetailRow label="Vitals">
+                <DetailRow label="Tanda vital">
                   <span className="tabular">
                     {[
                       screening.vitals.weightKg ? `${screening.vitals.weightKg} kg` : null,
@@ -291,10 +291,10 @@ export function ScreeningResultPage() {
                         : null,
                     ]
                       .filter(Boolean)
-                      .join(' · ') || 'Not recorded'}
+                      .join(' · ') || 'Tidak dicatat'}
                   </span>
                 </DetailRow>
-                <DetailRow label="Image file">
+                <DetailRow label="File gambar">
                   {screening.imageMeta ? (
                     <span className="break-all">
                       {screening.imageMeta.fileName}
@@ -303,16 +303,16 @@ export function ScreeningResultPage() {
                       </span>
                     </span>
                   ) : screening.sampleImage ? (
-                    'Bundled synthetic sample radiograph'
+                    'Contoh radiograf sintetis bawaan'
                   ) : (
-                    'No image attached'
+                    'Tidak ada gambar terlampir'
                   )}
                 </DetailRow>
-                <DetailRow label="Image quality">
+                <DetailRow label="Kualitas gambar">
                   {imageQualityLabel[screening.imageQuality]}
                   {screening.imageQuality === 'inadequate' ? (
                     <span className="mt-1 block text-xs text-urgent-700">
-                      An inadequate radiograph cannot produce a usable screening result.
+                      Radiograf yang tidak memadai tidak bisa menghasilkan hasil screening yang layak pakai.
                     </span>
                   ) : null}
                 </DetailRow>
@@ -327,22 +327,22 @@ export function ScreeningResultPage() {
           <Card>
             <CardHeader
               icon={<Stethoscope />}
-              title="Screening model output"
+              title="Output model screening"
               description={
                 analysis
                   ? analysis.simulated
-                    ? `Generated ${formatRelative(analysis.analysedAt)} by the built-in simulator.`
-                    : `Produced ${formatRelative(analysis.analysedAt)} by the screening model.`
-                  : 'Nothing has been generated for this record yet.'
+                    ? `Dihasilkan ${formatRelative(analysis.analysedAt)} oleh simulator bawaan.`
+                    : `Dihasilkan ${formatRelative(analysis.analysedAt)} oleh model screening.`
+                  : 'Belum ada output yang dihasilkan untuk data ini.'
               }
             />
             <CardBody className="space-y-4">
               {!analysis ? (
                 running ? (
                   <div>
-                    <ProgressBar value={progress} label="Running the screening model" />
+                    <ProgressBar value={progress} label="Menjalankan model screening" />
                     <p className="mt-2 text-xs text-obsidian-500">
-                      The radiograph is being sent to the screening model.
+                      Radiograf sedang dikirim ke model screening.
                     </p>
                   </div>
                 ) : (
@@ -351,10 +351,10 @@ export function ScreeningResultPage() {
                       <Hourglass aria-hidden className="mt-px size-4 shrink-0 text-obsidian-400" />
                       <p className="text-[13px] leading-relaxed text-obsidian-700">
                         {screening.modelStatus === 'unavailable'
-                          ? 'The screening model is not connected to the server, so there is no model output for this record. It can still be reviewed.'
+                          ? 'Model screening belum terhubung ke server, jadi belum ada output model untuk data ini. Data tetap bisa direview.'
                           : connected
-                            ? 'There is no model output for this record yet.'
-                            : 'Analysis needs a connection, so it will wait until one is available.'}
+                            ? 'Belum ada output model untuk data ini.'
+                            : 'Analisis butuh koneksi internet, jadi akan menunggu sampai koneksi tersedia.'}
                       </p>
                     </div>
                     <Button
@@ -364,7 +364,7 @@ export function ScreeningResultPage() {
                       leadingIcon={<Play className="size-4" />}
                       onClick={() => void runAnalysis()}
                     >
-                      Run model analysis
+                      Jalankan analisis model
                     </Button>
                   </div>
                 )
@@ -379,7 +379,7 @@ export function ScreeningResultPage() {
 
                   <div className="border-t border-obsidian-100 pt-3.5">
                     <h3 className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-                      Class scores
+                      Score per kelas
                     </h3>
                     <ProbabilityPanel analysis={analysis} className="mt-2.5" />
                   </div>
@@ -391,9 +391,9 @@ export function ScreeningResultPage() {
                   ) : null}
 
                   <dl className="divide-y divide-obsidian-100 border-t border-obsidian-100 pt-1">
-                    <DetailRow label="Regions marked">
+                    <DetailRow label="Region yang ditandai">
                       {analysis.regions.length === 0
-                        ? 'None'
+                        ? 'Tidak ada'
                         : `${analysis.regions.length} (${analysis.regions.map((r) => r.zone).join(', ')})`}
                     </DetailRow>
                     <DetailRow label="Model">
@@ -402,9 +402,9 @@ export function ScreeningResultPage() {
                         {analysis.model.version}
                       </span>
                     </DetailRow>
-                    <DetailRow label="Performance figures">
+                    <DetailRow label="Angka performa">
                       <span className="text-obsidian-500">
-                        Not reported, no model was evaluated
+                        Tidak dilaporkan, belum ada model yang dievaluasi
                       </span>
                     </DetailRow>
                   </dl>
@@ -415,7 +415,7 @@ export function ScreeningResultPage() {
 
           {/* Next step */}
           <Card>
-            <CardHeader icon={<ArrowRight />} title="Next step" />
+            <CardHeader icon={<ArrowRight />} title="Langkah berikutnya" />
             <CardBody>
               <Notice tone={nextStep.tone} title={nextStep.title}>
                 {nextStep.body}
@@ -428,7 +428,7 @@ export function ScreeningResultPage() {
                     leadingIcon={<Send className="size-4" />}
                     onClick={() => setReferralOpen(true)}
                   >
-                    Create referral
+                    Buat referral
                   </Button>
                 ) : null}
                 <Button
@@ -437,7 +437,7 @@ export function ScreeningResultPage() {
                   leadingIcon={<CalendarClock className="size-4" />}
                   onClick={() => setFollowUpOpen(true)}
                 >
-                  Schedule follow-up
+                  Jadwalkan follow-up
                 </Button>
               </div>
 
@@ -450,14 +450,14 @@ export function ScreeningResultPage() {
                           {followUpReasonLabel[item.reason]}
                         </span>
                         <span className="ml-1.5 text-obsidian-500">
-                          due {formatDate(item.dueDate)}
+                          jatuh tempo {formatDate(item.dueDate)}
                         </span>
                       </span>
                       <Link
                         to={`/followups?focus=${item.id}`}
                         className="shrink-0 text-xs text-ct-700 underline decoration-ct-300 underline-offset-2 transition-colors hover:text-ct-800"
                       >
-                        Open
+                        Buka
                       </Link>
                     </li>
                   ))}
@@ -470,8 +470,8 @@ export function ScreeningResultPage() {
           <Card>
             <CardHeader
               icon={<Stethoscope />}
-              title="Human review"
-              description="Screening output is never the final word. A clinician signs off here."
+              title="Review manusia"
+              description="Output screening bukan keputusan akhir. Klinisi mengesahkan hasilnya di sini."
             />
             <CardBody>
               <ReviewForm screening={screening} />
@@ -487,9 +487,9 @@ export function ScreeningResultPage() {
         screeningId={screening.id}
         defaultReason={
           analysis?.outcome === 'flagged-for-review'
-            ? `Screening flagged for clinical review on ${formatDate(screening.performedAt)}. Requesting diagnostic testing.`
+            ? `Screening ditandai untuk review klinis pada ${formatDate(screening.performedAt)}. Mohon tes diagnostik.`
             : analysis?.outcome === 'inconclusive'
-              ? `Radiograph not interpretable at this facility (${imageQualityLabel[screening.imageQuality].toLowerCase()}). Requesting repeat imaging.`
+              ? `Radiograf tidak bisa diinterpretasi di fasilitas ini (${imageQualityLabel[screening.imageQuality].toLowerCase()}). Mohon pengambilan gambar ulang.`
               : ''
         }
       />

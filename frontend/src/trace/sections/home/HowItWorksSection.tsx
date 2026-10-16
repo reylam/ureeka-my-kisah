@@ -13,9 +13,9 @@ export function HowItWorksSection() {
         <SectionHeading
           id="how-heading"
           index="02"
-          eyebrow="How it works"
-          title="Four steps, from a picture to a decision"
-          standfirst="Two of these four work in this prototype. The two in the middle, the ones that would need a trained model, do not yet."
+          eyebrow="Cara kerja"
+          title="Empat langkah, dari gambar sampai keputusan"
+          standfirst="Dua dari empat langkah ini sudah berfungsi di prototipe. Dua langkah di tengah, yang butuh model terlatih, belum."
         />
 
         <div className="mt-11 rounded-2xl border border-trace-line bg-trace-card p-6 sm:p-8">
@@ -26,7 +26,7 @@ export function HowItWorksSection() {
           to="/how-it-works"
           className="mt-8 inline-flex items-center gap-2 text-[14px] text-trace-accent transition-colors hover:text-trace-accent-soft"
         >
-          Read the longer explanation
+          Baca penjelasan lengkapnya
           <ArrowRight aria-hidden className="size-4" />
         </Link>
       </Container>

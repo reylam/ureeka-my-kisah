@@ -12,14 +12,14 @@ export function NotFoundPage() {
     <Card className="mx-auto max-w-lg">
       <EmptyState
         icon={<Compass />}
-        title="This page does not exist"
+        title="Halaman tidak ditemukan"
         description={
           <>
-            Nothing is routed to{' '}
+            Tidak ada halaman untuk alamat{' '}
             <code className="rounded bg-obsidian-100 px-1.5 py-0.5 font-mono text-xs text-obsidian-700">
               {location.pathname}
             </code>
-            . Use the navigation to get back to a working screen.
+            . Gunakan menu navigasi untuk kembali ke halaman yang tersedia.
           </>
         }
         action={
@@ -28,7 +28,7 @@ export function NotFoundPage() {
             leadingIcon={<Home className="size-4" />}
             onClick={() => navigate('/dashboard')}
           >
-            Go to dashboard
+            Ke dashboard
           </Button>
         }
       />

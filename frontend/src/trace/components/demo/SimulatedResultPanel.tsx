@@ -48,19 +48,19 @@ export function SimulatedResultPanel({
       <div className="bg-trace-card">
         {/* 1. Screening output */}
         <div className="border-b border-trace-line px-4 py-5 sm:px-5">
-          <p className="trace-label text-trace-dim">The result</p>
+          <p className="trace-label text-trace-dim">Hasil screening</p>
           <p
             className={cn(
               'mt-2.5 text-[23px] leading-tight font-semibold tracking-[-0.02em]',
               indicated ? 'text-trace-flag' : 'text-trace-neutral',
             )}
           >
-            {indicated ? 'Flagged for a closer look' : 'Nothing stood out'}
+            {indicated ? 'Ditandai untuk diperiksa lebih lanjut' : 'Tidak ada yang menonjol'}
           </p>
           <p className="mt-3 max-w-2xl text-[14px] leading-6 text-trace-muted">
             {indicated
-              ? 'In a working system this would mean: this picture resembles the ones the software learned to flag, so somebody should look at it and the person should be sent for a test. It would not mean they have tuberculosis.'
-              : 'In a working system this would mean: nothing in this picture resembled the patterns the software learned to flag. It would not mean the person is free of tuberculosis, because chest X-rays do miss cases.'}
+              ? 'Di sistem yang sudah berfungsi, ini berarti: gambar ini mirip dengan gambar yang dipelajari software untuk ditandai, jadi perlu ada yang memeriksanya dan orang tersebut perlu dikirim untuk tes. Ini tidak berarti ia menderita tuberkulosis.'
+              : 'Di sistem yang sudah berfungsi, ini berarti: tidak ada yang di gambar ini yang menyerupai pola yang dipelajari software untuk ditandai. Ini tidak berarti orang tersebut bebas dari tuberkulosis, karena chest X-ray memang bisa melewatkan kasus.'}
           </p>
         </div>
 
@@ -106,8 +106,8 @@ export function SimulatedResultPanel({
 
           {nearThreshold ? (
             <p className="mt-3 rounded-xl border border-trace-accent-edge bg-trace-accent-surface px-3.5 py-2.5 text-[12.5px] leading-5 text-trace-accent-soft">
-              This score sits right on the line. Nudge the cut-off a little and the answer flips,
-              while the picture itself has not changed at all.
+              Score ini tepat berada di garis batas. Geser cut-off sedikit saja dan jawabannya
+              berbalik, padahal gambarnya sama sekali tidak berubah.
             </p>
           ) : null}
         </div>
@@ -115,15 +115,15 @@ export function SimulatedResultPanel({
         {/* 3 and 4. Model status and input record */}
         <dl className="grid gap-x-6 gap-y-4 border-b border-trace-line px-4 py-5 sm:grid-cols-2 sm:px-5">
           <div className="sm:col-span-2">
-            <dt className="trace-label text-trace-dim">Where this answer came from</dt>
+            <dt className="trace-label text-trace-dim">Dari mana jawaban ini berasal</dt>
             <dd className="mt-1.5 text-[13.5px] leading-6 text-trace-muted">
-              {RESULT_DISCLOSURES.modelStatus} The outcome above was picked from the file’s name,
-              size and date, so the same file always gives the same answer and the picture itself
-              played no part in it.
+              {RESULT_DISCLOSURES.modelStatus} Hasil di atas dipilih dari nama, ukuran, dan tanggal
+              file, jadi file yang sama selalu menghasilkan jawaban yang sama dan gambarnya sendiri
+              tidak berperan sama sekali.
             </dd>
           </div>
           <div className="min-w-0">
-            <dt className="trace-label text-trace-dim">Your file</dt>
+            <dt className="trace-label text-trace-dim">File kamu</dt>
             <dd
               title={image.file.name}
               className="mt-1.5 truncate font-mono text-[11.5px] text-trace-muted"
@@ -132,7 +132,7 @@ export function SimulatedResultPanel({
             </dd>
           </div>
           <div>
-            <dt className="trace-label text-trace-dim">Properties</dt>
+            <dt className="trace-label text-trace-dim">Properti</dt>
             <dd className="mt-1.5 font-mono text-[11.5px] text-trace-muted">
               {image.width} × {image.height} px · {formatBytes(image.file.size)}
             </dd>
@@ -141,7 +141,7 @@ export function SimulatedResultPanel({
 
         {/* 5. Interpretation */}
         <div className="border-b border-trace-line px-4 py-5 sm:px-5">
-          <p className="trace-label text-trace-dim">What to make of it</p>
+          <p className="trace-label text-trace-dim">Cara membaca hasil ini</p>
           <p className="mt-2 max-w-2xl text-[13.5px] leading-6 text-trace-muted">
             {RESULT_DISCLOSURES.interpretation}
           </p>
@@ -152,7 +152,7 @@ export function SimulatedResultPanel({
 
         {/* 6. Limitations */}
         <div className="border-b border-trace-line px-4 py-5 sm:px-5">
-          <p className="trace-label text-trace-dim">Where a result like this falls short</p>
+          <p className="trace-label text-trace-dim">Di mana hasil seperti ini kurang andal</p>
           <ul className="mt-3 space-y-2">
             {RESULT_DISCLOSURES.limitations.map((item) => (
               <li
@@ -168,7 +168,7 @@ export function SimulatedResultPanel({
 
         {/* 7. Next step */}
         <div className="px-4 py-5 sm:px-5">
-          <p className="trace-label text-trace-dim">What to do next</p>
+          <p className="trace-label text-trace-dim">Langkah berikutnya</p>
           <p className="mt-2.5 flex gap-2.5 text-[13.5px] leading-6 text-trace-text">
             <Stethoscope aria-hidden className="mt-1 size-4 shrink-0 text-trace-accent" />
             <span>{RESULT_DISCLOSURES.nextStep}</span>
@@ -178,7 +178,7 @@ export function SimulatedResultPanel({
             to="/how-it-works"
             className="mt-4 inline-flex items-center gap-1.5 text-[13px] text-trace-accent transition-colors hover:text-trace-accent-soft"
           >
-            Why a score is not a chance of being ill
+            Kenapa score bukan peluang untuk sakit
             <ArrowUpRight aria-hidden className="size-3.5" />
           </Link>
         </div>

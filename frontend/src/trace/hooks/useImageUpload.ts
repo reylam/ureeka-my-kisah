@@ -3,10 +3,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * Local image selection for the demo.
  *
- * Everything stays in the browser: the file is read into an object URL to draw
- * a preview and to measure its pixel dimensions, and nothing is sent anywhere.
- * That is what makes the "processed locally" disclosure on the demo page true,
- * and it is the only reason the page is allowed to make it.
+ * Selection stays in the browser: the file is read into an object URL to draw
+ * a preview and to measure its pixel dimensions, and selecting sends nothing
+ * anywhere. Only the explicit "check" action in `useDemoInference` ever posts
+ * the file, and only when the API reports the screening model as connected.
+ * The "stays on your device" disclosure on the demo page is shown only in the
+ * mode where that is true.
  *
  * Object URLs are revoked when the selection is replaced or the component
  * unmounts, so repeatedly swapping images does not leak blobs.
@@ -44,7 +46,7 @@ interface UseImageUpload {
 
 function describeType(file: File): string {
   const extension = file.name.split('.').pop()?.toUpperCase();
-  return file.type || (extension ? `.${extension}` : 'an unrecognised format');
+  return file.type || (extension ? `.${extension}` : 'format yang tidak dikenali');
 }
 
 export function useImageUpload(): UseImageUpload {
@@ -83,7 +85,7 @@ export function useImageUpload(): UseImageUpload {
       if (!typeOk) {
         setError({
           kind: 'type',
-          message: `${file.name} is ${describeType(file)}. This demo accepts JPG, JPEG and PNG only.`,
+          message: `${file.name} berformat ${describeType(file)}. Demo ini hanya menerima JPG, JPEG, dan PNG.`,
         });
         return;
       }
@@ -91,7 +93,7 @@ export function useImageUpload(): UseImageUpload {
       if (file.size > MAX_BYTES) {
         setError({
           kind: 'size',
-          message: `${file.name} is ${(file.size / 1_000_000).toFixed(1)} MB. The limit is 15 MB.`,
+          message: `${file.name} berukuran ${(file.size / 1_000_000).toFixed(1)} MB. Batasnya 15 MB.`,
         });
         return;
       }
@@ -109,7 +111,7 @@ export function useImageUpload(): UseImageUpload {
           setIsReading(false);
           setError({
             kind: 'dimensions',
-            message: `${file.name} is ${width} × ${height} px. The shorter edge must be at least ${MIN_EDGE_PX} px for the preview to be meaningful.`,
+            message: `${file.name} berukuran ${width} × ${height} px. Sisi terpendeknya minimal ${MIN_EDGE_PX} px agar preview-nya bermakna.`,
           });
           return;
         }
@@ -132,7 +134,7 @@ export function useImageUpload(): UseImageUpload {
         setIsReading(false);
         setError({
           kind: 'decode',
-          message: `${file.name} could not be read as an image. It may be corrupt, or it may be a different format wearing an image extension.`,
+          message: `${file.name} tidak bisa dibaca sebagai gambar. File-nya mungkin rusak, atau formatnya lain tetapi memakai ekstensi gambar.`,
         });
       };
 

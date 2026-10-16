@@ -36,21 +36,21 @@ import { formatDate } from '@/utils/date';
  */
 
 const STEPS: Step[] = [
-  { id: 'personal', label: 'About you', hint: 'Name, date of birth, contact' },
-  { id: 'address', label: 'Where you live', hint: 'For nearby facilities' },
-  { id: 'health', label: 'Health details', hint: 'Optional' },
-  { id: 'consent', label: 'Review', hint: 'Check and confirm' },
+  { id: 'personal', label: 'Tentang kamu', hint: 'Nama, tanggal lahir, kontak' },
+  { id: 'address', label: 'Tempat tinggal', hint: 'Untuk fasilitas terdekat' },
+  { id: 'health', label: 'Detail kesehatan', hint: 'Opsional' },
+  { id: 'consent', label: 'Review', hint: 'Cek dan konfirmasi' },
 ];
 
 const SYMPTOM_OPTIONS = [
-  { id: 'cough', label: 'Cough that will not go away' },
-  { id: 'blood', label: 'Coughing up blood' },
-  { id: 'night-sweats', label: 'Night sweats' },
-  { id: 'weight-loss', label: 'Losing weight without trying' },
-  { id: 'fever', label: 'Fever' },
-  { id: 'chest-pain', label: 'Chest pain' },
-  { id: 'fatigue', label: 'Unusual tiredness' },
-  { id: 'appetite', label: 'Loss of appetite' },
+  { id: 'cough', label: 'Batuk yang tidak kunjung sembuh' },
+  { id: 'blood', label: 'Batuk berdarah' },
+  { id: 'night-sweats', label: 'Keringat malam' },
+  { id: 'weight-loss', label: 'Berat badan turun tanpa sebab jelas' },
+  { id: 'fever', label: 'Demam' },
+  { id: 'chest-pain', label: 'Nyeri dada' },
+  { id: 'fatigue', label: 'Lelah yang tidak biasa' },
+  { id: 'appetite', label: 'Nafsu makan menurun' },
 ];
 
 export function OnboardingPage() {
@@ -104,21 +104,21 @@ export function OnboardingPage() {
     const next: Record<string, string> = {};
 
     if (step === 0) {
-      if (personal.fullName.trim().length < 2) next.fullName = 'Enter your full name.';
-      if (!personal.birthDate) next.birthDate = 'Enter your date of birth.';
+      if (personal.fullName.trim().length < 2) next.fullName = 'Isi nama lengkapmu.';
+      if (!personal.birthDate) next.birthDate = 'Isi tanggal lahirmu.';
       else if (new Date(personal.birthDate) > new Date())
-        next.birthDate = 'That date is in the future.';
+        next.birthDate = 'Tanggal ini belum terjadi.';
       if (personal.phone.replace(/\D/g, '').length < 8)
-        next.phone = 'Enter a phone number we could reach you on.';
+        next.phone = 'Isi nomor telepon yang bisa kami hubungi.';
     }
 
     if (step === 1) {
-      if (!address.district) next.district = 'Choose your district.';
-      if (!address.village) next.village = 'Choose your village or sub-district.';
+      if (!address.district) next.district = 'Pilih kecamatanmu.';
+      if (!address.village) next.village = 'Pilih desa atau kelurahanmu.';
     }
 
     if (step === 3 && !consent.dataUse) {
-      next.consent = 'We need your agreement on the basics before the account can be used.';
+      next.consent = 'Kami butuh persetujuanmu untuk hal dasar ini sebelum akun bisa dipakai.';
     }
 
     setErrors(next);
@@ -149,14 +149,14 @@ export function OnboardingPage() {
           // Only meaningful if they actually shared anything in step 3.
           healthInfo: health.shared ? consent.healthInfo : false,
         });
-        toast.success('You are all set.');
+        toast.success('Semua sudah siap.');
         navigate('/me', { replace: true });
         return;
       }
 
       setStep(step + 1);
     } catch (cause) {
-      toast.error('Could not save this step.', errorMessage(cause));
+      toast.error('Langkah ini gagal disimpan.', errorMessage(cause));
     } finally {
       setSaving(false);
     }
@@ -177,7 +177,7 @@ export function OnboardingPage() {
       setHealth(declined);
       setStep(3);
     } catch (cause) {
-      toast.error('Could not save your choice.', errorMessage(cause));
+      toast.error('Pilihanmu gagal disimpan.', errorMessage(cause));
     } finally {
       setSaving(false);
     }
@@ -196,18 +196,18 @@ export function OnboardingPage() {
               navigate('/', { replace: true });
             }}
           >
-            Finish later
+            Selesaikan nanti
           </Button>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
         <h1 className="text-xl font-semibold text-obsidian-950">
-          Welcome, {account.name.split(' ')[0]}
+          Selamat datang, {account.name.split(' ')[0]}
         </h1>
         <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-obsidian-600">
-          A few details so your records are complete and we can point you to facilities near you.
-          You can change any of this later from your profile.
+          Beberapa detail agar record kamu lengkap dan kami bisa mengarahkanmu ke fasilitas
+          terdekat. Semua ini bisa kamu ubah nanti lewat profil.
         </p>
 
         <Stepper
@@ -225,9 +225,9 @@ export function OnboardingPage() {
           {/* ── Step 1 ── */}
           {step === 0 ? (
             <>
-              <CardHeader title="About you" description="Required, so your record is identifiable." />
+              <CardHeader title="Tentang kamu" description="Wajib diisi, supaya record kamu bisa dikenali." />
               <CardBody className="space-y-4">
-                <Field label="Full name" error={errors.fullName ?? null} required>
+                <Field label="Nama lengkap" error={errors.fullName ?? null} required>
                   {({ id, describedBy, invalid }) => (
                     <TextInput
                       id={id}
@@ -244,8 +244,8 @@ export function OnboardingPage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field
-                    label="Date of birth"
-                    hint="Used to work out your age band, which affects screening guidance."
+                    label="Tanggal lahir"
+                    hint="Dipakai untuk menentukan kelompok usia, yang memengaruhi panduan screening."
                     error={errors.birthDate ?? null}
                     required
                   >
@@ -263,7 +263,7 @@ export function OnboardingPage() {
                     )}
                   </Field>
 
-                  <Field label="Phone number" error={errors.phone ?? null} required>
+                  <Field label="Nomor telepon" error={errors.phone ?? null} required>
                     {({ id, describedBy, invalid }) => (
                       <TextInput
                         id={id}
@@ -282,8 +282,8 @@ export function OnboardingPage() {
                 </div>
 
                 <Field
-                  label="Sex"
-                  hint="Optional. TB presents differently between groups, so it helps the people reading your record."
+                  label="Jenis kelamin"
+                  hint="Opsional. TB bisa muncul berbeda antar kelompok, jadi ini membantu petugas yang membaca record kamu."
                 >
                   {() => (
                     <RadioGroup
@@ -291,8 +291,8 @@ export function OnboardingPage() {
                       value={personal.sex}
                       onChange={(value) => setPersonal((c) => ({ ...c, sex: value }))}
                       options={[
-                        { value: 'female', label: 'Female' },
-                        { value: 'male', label: 'Male' },
+                        { value: 'female', label: 'Perempuan' },
+                        { value: 'male', label: 'Laki-laki' },
                       ]}
                     />
                   )}
@@ -305,16 +305,16 @@ export function OnboardingPage() {
           {step === 1 ? (
             <>
               <CardHeader
-                title="Where you live"
-                description="Only as much as is needed to show you the nearest facilities."
+                title="Tempat tinggal"
+                description="Secukupnya saja, untuk menampilkan fasilitas terdekat."
               />
               <CardBody className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Province">
+                  <Field label="Provinsi">
                     {({ id }) => <TextInput id={id} value={address.province} readOnly disabled />}
                   </Field>
 
-                  <Field label="District" error={errors.district ?? null} required>
+                  <Field label="Kecamatan" error={errors.district ?? null} required>
                     {({ id, describedBy, invalid }) => (
                       <Select
                         id={id}
@@ -325,7 +325,7 @@ export function OnboardingPage() {
                         describedBy={describedBy}
                         invalid={invalid}
                       >
-                        <option value="">Choose a district</option>
+                        <option value="">Pilih kecamatan</option>
                         {DISTRICTS.map((district) => (
                           <option key={district} value={district}>
                             {district}
@@ -336,7 +336,7 @@ export function OnboardingPage() {
                   </Field>
                 </div>
 
-                <Field label="Village or sub-district" error={errors.village ?? null} required>
+                <Field label="Desa atau kelurahan" error={errors.village ?? null} required>
                   {({ id, describedBy, invalid }) => (
                     <Select
                       id={id}
@@ -349,7 +349,7 @@ export function OnboardingPage() {
                       disabled={!address.district}
                     >
                       <option value="">
-                        {address.district ? 'Choose a village' : 'Choose a district first'}
+                        {address.district ? 'Pilih desa' : 'Pilih kecamatan dulu'}
                       </option>
                       {villages.map((village) => (
                         <option key={village} value={village}>
@@ -361,8 +361,8 @@ export function OnboardingPage() {
                 </Field>
 
                 <Field
-                  label="Street address"
-                  hint="Optional. Only needed if a health worker may have to visit you."
+                  label="Alamat jalan"
+                  hint="Opsional. Hanya perlu kalau petugas kesehatan mungkin harus berkunjung."
                 >
                   {({ id }) => (
                     <TextInput
@@ -383,22 +383,23 @@ export function OnboardingPage() {
           {step === 2 ? (
             <>
               <CardHeader
-                title="Health details"
-                description="Entirely optional. Skip the whole step if you would rather not say."
+                title="Detail kesehatan"
+                description="Sepenuhnya opsional. Lewati seluruh langkah ini kalau kamu tidak ingin mengisi."
               />
               <CardBody className="space-y-5">
-                <Notice tone="info" title="Why we ask">
+                <Notice tone="info" title="Kenapa kami bertanya">
                   <p>
-                    Symptoms matter more than any image. A chest X-ray can look normal in someone
-                    who has TB, so whoever reads your record needs to know what you have been
-                    experiencing. Only health professionals assigned to your care can see these
-                    answers, and you can change or withdraw them at any time.
+                    Gejala sering lebih penting daripada gambar. X-ray dada bisa tampak normal pada
+                    orang yang sebenarnya terkena TB, jadi siapa pun yang membaca record kamu perlu
+                    tahu apa yang kamu rasakan. Hanya tenaga kesehatan yang ditugaskan untuk
+                    perawatanmu yang bisa melihat jawaban ini, dan kamu bisa mengubah atau menariknya
+                    kapan saja.
                   </p>
                 </Notice>
 
                 <Field
-                  label="Have you had any of these?"
-                  hint="Tick anything that applies. Nothing here is a diagnosis."
+                  label="Pernahkah kamu mengalami salah satu dari ini?"
+                  hint="Centang yang sesuai. Ini bukan diagnosis."
                 >
                   {() => (
                     <div className="grid gap-2 sm:grid-cols-2">
@@ -424,8 +425,8 @@ export function OnboardingPage() {
 
                 {health.symptoms.length > 0 ? (
                   <Field
-                    label="Roughly how many weeks has this been going on?"
-                    hint="A cough lasting more than two weeks is the usual reason to get checked."
+                    label="Kira-kira sudah berapa minggu?"
+                    hint="Batuk lebih dari dua minggu biasanya jadi alasan untuk periksa."
                   >
                     {({ id }) => (
                       <TextInput
@@ -446,30 +447,30 @@ export function OnboardingPage() {
                   </Field>
                 ) : null}
 
-                <Field label="Have you been treated for TB before?">
+                <Field label="Pernahkah kamu menjalani pengobatan TB sebelumnya?">
                   {() => (
                     <RadioGroup
                       name="priorTb"
                       value={health.priorTb}
                       onChange={(value) => setHealth((c) => ({ ...c, shared: true, priorTb: value }))}
                       options={[
-                        { value: 'never', label: 'No, never' },
-                        { value: 'treated', label: 'Yes, and I finished treatment' },
-                        { value: 'ongoing', label: 'Yes, I am being treated now' },
-                        { value: 'prefer-not-to-say', label: 'I would rather not say' },
+                        { value: 'never', label: 'Tidak, belum pernah' },
+                        { value: 'treated', label: 'Pernah, dan pengobatan sudah selesai' },
+                        { value: 'ongoing', label: 'Ya, sedang menjalani pengobatan' },
+                        { value: 'prefer-not-to-say', label: 'Lebih baik tidak dijawab' },
                       ]}
                     />
                   )}
                 </Field>
 
-                <Field label="Anything else you want on your record?">
+                <Field label="Ada hal lain yang ingin dicatat di record kamu?">
                   {({ id }) => (
                     <TextArea
                       id={id}
                       rows={3}
                       value={health.notes}
                       onChange={(event) => setHealth((c) => ({ ...c, notes: event.target.value }))}
-                      placeholder="Optional"
+                      placeholder="Opsional"
                     />
                   )}
                 </Field>
@@ -481,45 +482,45 @@ export function OnboardingPage() {
           {step === 3 ? (
             <>
               <CardHeader
-                title="Check and confirm"
-                description="Go back to any step to change an answer."
+                title="Cek dan konfirmasi"
+                description="Kembali ke langkah mana pun untuk mengubah jawaban."
               />
               <CardBody className="space-y-5">
                 <dl className="divide-y divide-obsidian-100">
-                  <DetailRow label="Name">{personal.fullName || '—'}</DetailRow>
-                  <DetailRow label="Date of birth">
+                  <DetailRow label="Nama">{personal.fullName || '—'}</DetailRow>
+                  <DetailRow label="Tanggal lahir">
                     {personal.birthDate ? formatDate(personal.birthDate) : '—'}
                   </DetailRow>
-                  <DetailRow label="Phone">{personal.phone || '—'}</DetailRow>
-                  <DetailRow label="Lives in">
+                  <DetailRow label="Telepon">{personal.phone || '—'}</DetailRow>
+                  <DetailRow label="Tempat tinggal">
                     {[address.village, address.district, address.province]
                       .filter(Boolean)
                       .join(', ') || '—'}
                   </DetailRow>
-                  <DetailRow label="Health details">
+                  <DetailRow label="Detail kesehatan">
                     {health.shared
                       ? health.symptoms.length > 0
-                        ? `${health.symptoms.length} symptom${health.symptoms.length === 1 ? '' : 's'} reported`
-                        : 'Answered, no symptoms reported'
-                      : 'Not shared'}
+                        ? `${health.symptoms.length} gejala dilaporkan`
+                        : 'Sudah dijawab, tidak ada gejala dilaporkan'
+                      : 'Tidak dibagikan'}
                   </DetailRow>
                 </dl>
 
                 <div className="space-y-3 rounded-card border border-obsidian-200 bg-obsidian-50 p-4">
                   <p className="flex items-center gap-2 text-[13px] font-semibold text-obsidian-900">
                     <Lock aria-hidden className="size-3.5 text-ct-700" />
-                    How your information is used
+                    Bagaimana informasimu dipakai
                   </p>
                   <ul className="space-y-1.5 text-[12.5px] leading-relaxed text-obsidian-600">
-                    <li>Your name and contact details identify your record and let a health worker reach you.</li>
-                    <li>Only professionals assigned to your care can open your records.</li>
-                    <li>Other patients can never see your information.</li>
-                    <li>You can edit or withdraw your health answers from your profile at any time.</li>
+                    <li>Nama dan kontakmu dipakai untuk mengenali record kamu dan agar petugas kesehatan bisa menghubungimu.</li>
+                    <li>Hanya tenaga profesional yang ditugaskan untuk perawatanmu yang bisa membuka record kamu.</li>
+                    <li>Pasien lain tidak akan pernah bisa melihat informasimu.</li>
+                    <li>Kamu bisa mengubah atau menarik jawaban kesehatanmu dari profil kapan saja.</li>
                   </ul>
 
                   <div className="space-y-2.5 pt-1">
                     <Checkbox
-                      label="I agree to my name, contact details and address being used to manage my account and care."
+                      label="Saya setuju nama, kontak, dan alamat saya dipakai untuk mengelola akun dan perawatan saya."
                       checked={consent.dataUse}
                       onChange={(checked) => {
                         setConsent((c) => ({ ...c, dataUse: checked }));
@@ -528,8 +529,8 @@ export function OnboardingPage() {
                     />
                     {health.shared ? (
                       <Checkbox
-                        label="I agree to my health answers being shared with the health professionals assigned to my care."
-                        description="Optional. Declining keeps your account; the answers simply stay unshared."
+                        label="Saya setuju jawaban kesehatan saya dibagikan ke tenaga kesehatan yang ditugaskan untuk perawatan saya."
+                        description="Opsional. Kalau menolak, akunmu tetap aktif; jawabannya hanya tidak dibagikan."
                         checked={consent.healthInfo}
                         onChange={(checked) => setConsent((c) => ({ ...c, healthInfo: checked }))}
                       />
@@ -544,8 +545,8 @@ export function OnboardingPage() {
                 </div>
 
                 <Notice tone="attention" compact>
-                  PULMO does not diagnose tuberculosis. Anything it shows you is there to help you
-                  decide whether to get tested, and to keep your records together.
+                  PULMO tidak mendiagnosis tuberkulosis. Semua yang ditampilkan hanya membantu kamu
+                  memutuskan perlu tes atau tidak, dan menyimpan record kamu dalam satu tempat.
                 </Notice>
               </CardBody>
             </>
@@ -560,13 +561,13 @@ export function OnboardingPage() {
             disabled={step === 0}
             leadingIcon={<ArrowLeft className="size-4" />}
           >
-            Back
+            Kembali
           </Button>
 
           <div className="flex items-center gap-2">
             {step === 2 ? (
               <Button variant="outline" onClick={skipHealth}>
-                Skip this step
+                Lewati langkah ini
               </Button>
             ) : null}
             <Button
@@ -576,13 +577,13 @@ export function OnboardingPage() {
                 step === 3 ? <Check className="size-4" /> : <ArrowRight className="size-4" />
               }
             >
-              {step === 3 ? 'Finish' : 'Continue'}
+              {step === 3 ? 'Selesai' : 'Lanjut'}
             </Button>
           </div>
         </div>
 
         <p className="mt-4 text-center text-xs text-obsidian-500">
-          Your answers are saved as you go, so you can close this and come back.
+          Jawabanmu tersimpan otomatis, jadi kamu bisa menutup halaman ini dan kembali lagi nanti.
         </p>
       </main>
     </div>

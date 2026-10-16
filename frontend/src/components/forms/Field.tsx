@@ -50,7 +50,7 @@ export function Field({
             *
           </span>
         ) : null}
-        {optional ? <span className="text-xs font-normal text-obsidian-400">optional</span> : null}
+        {optional ? <span className="text-xs font-normal text-obsidian-400">opsional</span> : null}
       </label>
 
       <div className="mt-1.5">{children({ id, describedBy, invalid: Boolean(error) })}</div>

@@ -43,7 +43,7 @@ export interface TimelineEntry {
 }
 
 function actorName(id: string): string {
-  return users.find((user) => user.id === id)?.name ?? 'Unknown user';
+  return users.find((user) => user.id === id)?.name ?? 'Pengguna tidak dikenal';
 }
 
 /**
@@ -65,7 +65,7 @@ export function buildTimeline(
     at: patient.registeredAt,
     icon: UserPlus,
     tone: 'neutral',
-    title: 'Registered at this facility',
+    title: 'Terdaftar di fasilitas ini',
     body: `${patient.village}, ${patient.district}`,
   });
 
@@ -77,17 +77,17 @@ export function buildTimeline(
       tone: screening.analysis?.outcome === 'flagged-for-review' ? 'attention' : 'ct',
       title:
         screening.status === 'draft'
-          ? 'Screening started but not completed'
-          : 'Chest X-ray screening recorded',
+          ? 'Screening dimulai tapi belum selesai'
+          : 'Screening X-ray dada tercatat',
       body: screening.analysis ? (
         <>
-          Demo output: {screeningOutcomeShort[screening.analysis.outcome]}
+          Output demo: {screeningOutcomeShort[screening.analysis.outcome]}
           {screening.analysis.regions.length > 0
-            ? ` · ${screening.analysis.regions.length} region${screening.analysis.regions.length === 1 ? '' : 's'} marked`
+            ? ` · ${screening.analysis.regions.length} region ditandai`
             : ''}
         </>
       ) : (
-        'No analysis output yet'
+        'Belum ada output analisis'
       ),
       actor: actorName(screening.operatorId),
       to: screening.status === 'draft' ? undefined : `/screenings/${screening.id}`,
@@ -99,7 +99,7 @@ export function buildTimeline(
         at: screening.review.reviewedAt,
         icon: ShieldCheck,
         tone: 'complete',
-        title: 'Screening reviewed',
+        title: 'Screening sudah ditinjau',
         body: screening.review.notes,
         actor: actorName(screening.review.reviewerId),
         to: `/screenings/${screening.id}`,
@@ -133,7 +133,7 @@ export function buildTimeline(
             </span>
           </>
         ),
-        body: event.note ?? `Destination: ${destination?.name ?? 'unknown facility'}`,
+        body: event.note ?? `Tujuan: ${destination?.name ?? 'fasilitas tidak dikenal'}`,
         actor: actorName(event.actorId),
         to: `/referrals?focus=${referral.id}`,
       });
@@ -149,7 +149,7 @@ export function buildTimeline(
         tone: attempt.outcome === 'reached' ? 'complete' : 'attention',
         title: (
           <>
-            Contact attempt ·{' '}
+            Percobaan kontak ·{' '}
             <span className="font-normal text-obsidian-600">
               {contactChannelLabel[attempt.channel].toLowerCase()},{' '}
               {(contactOutcomeLabel[attempt.outcome] ?? attempt.outcome).toLowerCase()}
@@ -168,7 +168,7 @@ export function buildTimeline(
         at: followUp.completedAt,
         icon: CalendarCheck,
         tone: 'complete',
-        title: `Follow-up completed · ${followUpReasonLabel[followUp.reason].toLowerCase()}`,
+        title: `Follow-up selesai · ${followUpReasonLabel[followUp.reason].toLowerCase()}`,
         to: `/followups?focus=${followUp.id}`,
       });
     }
@@ -186,7 +186,7 @@ export function buildTimeline(
         at: note.createdAt,
         icon: MessageSquare,
         tone: 'neutral',
-        title: 'Note added',
+        title: 'Catatan ditambahkan',
         body: note.body,
         actor: actorName(note.authorId),
       });

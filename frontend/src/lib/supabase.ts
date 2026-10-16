@@ -24,7 +24,7 @@ export const supabase: SupabaseClient | null = isAuthConfigured
 export function requireSupabase(): SupabaseClient {
   if (!supabase) {
     throw new Error(
-      'Sign-in is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in frontend/.env.',
+      'Fitur masuk belum dikonfigurasi. Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY di frontend/.env.',
     );
   }
   return supabase;

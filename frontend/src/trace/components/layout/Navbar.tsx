@@ -30,9 +30,9 @@ import { cn } from '@/utils/cn';
  */
 
 export const NAV_ITEMS = [
-  { to: '/', label: 'Home' },
-  { to: '/how-it-works', label: 'How it works' },
-  { to: '/demo', label: 'Screening Demo' },
+  { to: '/', label: 'Beranda' },
+  { to: '/how-it-works', label: 'Cara kerja' },
+  { to: '/demo', label: 'Demo Screening' },
 ] as const;
 
 export function Navbar() {
@@ -80,13 +80,13 @@ export function Navbar() {
         >
           <Link
             to="/"
-            aria-label="PULMO-TRACE, home"
+            aria-label="PULMO-TRACE, beranda"
             className="-ml-1 rounded-full px-1 py-1"
           >
             <TraceWordmark compact={collapsed} />
           </Link>
 
-          <nav aria-label="Primary" className="hidden justify-self-center md:block">
+          <nav aria-label="Utama" className="hidden justify-self-center md:block">
             <ul className="flex items-center gap-1">
               {NAV_ITEMS.map((item) => (
                 <li key={item.to}>
@@ -111,7 +111,7 @@ export function Navbar() {
 
           <div className="flex items-center gap-1.5 justify-self-end sm:gap-2">
             <TraceLinkButton to="/demo" size="sm" className="hidden sm:inline-flex">
-              Try the demo
+              Coba demo
             </TraceLinkButton>
 
             {/* Way into the clinical workflow prototype. It is a separate
@@ -122,7 +122,7 @@ export function Navbar() {
               className="hidden h-9 items-center gap-1.5 rounded-full px-3.5 text-[13px] text-trace-muted transition-colors hover:bg-trace-card hover:text-trace-text md:inline-flex"
             >
               <LogIn aria-hidden className="size-3.5" />
-              {signedIn ? 'Dashboard' : 'Log in'}
+              {signedIn ? 'Dashboard' : 'Masuk'}
             </Link>
 
             <button
@@ -132,7 +132,7 @@ export function Navbar() {
               aria-controls={panelId}
               className="grid size-10 place-items-center rounded-full border border-trace-line text-trace-muted transition-colors hover:border-trace-hover hover:text-trace-text md:hidden"
             >
-              <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
+              <span className="sr-only">{open ? 'Tutup menu' : 'Buka menu'}</span>
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
           </div>
@@ -146,7 +146,7 @@ export function Navbar() {
         className="border-t border-trace-line bg-trace-surface md:hidden"
       >
         <Container className="py-4">
-          <nav aria-label="Primary, mobile">
+          <nav aria-label="Utama, mobile">
             <ul className="space-y-1.5">
               {NAV_ITEMS.map((item) => (
                 <li key={item.to}>
@@ -169,14 +169,14 @@ export function Navbar() {
             </ul>
           </nav>
           <TraceLinkButton to="/demo" className="mt-4 w-full">
-            Try the demo
+            Coba demo
           </TraceLinkButton>
           <Link
             to={signedIn ? '/dashboard' : '/login'}
             className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-trace-line text-[14px] text-trace-muted"
           >
             <LogIn aria-hidden className="size-4" />
-            {signedIn ? 'Open dashboard' : 'Log in'}
+            {signedIn ? 'Buka dashboard' : 'Masuk'}
           </Link>
         </Container>
       </div>

@@ -29,11 +29,11 @@ export function OfflineBanner() {
     >
       <span className="inline-flex items-center gap-1.5 font-medium">
         <WifiOff aria-hidden className="size-4 shrink-0" />
-        {simulated && online ? 'Offline mode (simulated)' : 'No connection'}
+        {simulated && online ? 'Mode offline (simulasi)' : 'Tidak ada koneksi'}
       </span>
       <span className="text-attention-700">
-        Screening forms, drafts and record edits keep working and are saved on this device. Image
-        analysis needs a connection.
+        Form screening, draf, dan perubahan record tetap berjalan dan disimpan di perangkat ini.
+        Analisis gambar butuh koneksi.
       </span>
       {queued > 0 ? (
         <Link
@@ -41,7 +41,7 @@ export function OfflineBanner() {
           className="inline-flex items-center gap-1.5 font-medium text-attention-800 underline decoration-attention-400 underline-offset-2 transition-colors hover:text-attention-900"
         >
           <CloudOff aria-hidden className="size-3.5" />
-          {pluralise(queued, 'record')} waiting
+          {pluralise(queued, 'record', 'record')} menunggu
         </Link>
       ) : null}
     </div>

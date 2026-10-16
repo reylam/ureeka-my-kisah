@@ -208,6 +208,14 @@ export interface ScreeningAnalysis {
   predictedLabel: ClassLabel;
   /** Full probability distribution, mirrors `probabilities` from infer.py. */
   probabilities: Record<ClassLabel, number>;
+  /**
+   * Risk point, 0 to 100: the model's TB probability restated on a round scale.
+   * Not the chance that a person has TB. Absent on analyses stored before it
+   * existed; `riskOf` in `lib/risk.ts` derives it from `probabilities` then.
+   */
+  riskPoint?: number;
+  /** Presentation band for `riskPoint`, not a clinical threshold. */
+  riskLevel?: RiskLevel;
   /** Regions the demo model marked. Mirrors detection boxes from infer.py. */
   regions: LesionRegion[];
   model: ModelDescriptor;
@@ -219,6 +227,8 @@ export interface ScreeningAnalysis {
 }
 
 export type ClassLabel = 'Healthy' | 'Sick-non-TB' | 'TB';
+
+export type RiskLevel = 'low' | 'moderate' | 'high';
 
 export interface LesionRegion {
   id: string;

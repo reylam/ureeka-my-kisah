@@ -50,10 +50,10 @@ const STATUSES: ScreeningStatus[] = [
 const OUTCOMES: ScreeningOutcome[] = ['flagged-for-review', 'no-alert', 'inconclusive'];
 
 const DATE_PRESETS = [
-  { value: 'all', label: 'Any date' },
-  { value: '7', label: 'Last 7 days' },
-  { value: '30', label: 'Last 30 days' },
-  { value: '90', label: 'Last 90 days' },
+  { value: 'all', label: 'Semua tanggal' },
+  { value: '7', label: '7 hari terakhir' },
+  { value: '30', label: '30 hari terakhir' },
+  { value: '90', label: '90 hari terakhir' },
 ] as const;
 
 /** A report can only be produced once there is analysis output to describe. */
@@ -166,18 +166,18 @@ export function ReportsPage() {
     () => [
       {
         id: 'patient',
-        header: 'Patient',
+        header: 'Pasien',
         sortable: true,
         cell: (screening) => {
           const patient = patientsById.get(screening.patientId);
           return (
-            <StackedCell primary={patient?.name ?? 'Unknown patient'} secondary={patient?.mrn} />
+            <StackedCell primary={patient?.name ?? 'Pasien tidak dikenal'} secondary={patient?.mrn} />
           );
         },
       },
       {
         id: 'date',
-        header: 'Screened',
+        header: 'Tanggal screening',
         sortable: true,
         width: 'w-32',
         cell: (screening) => (
@@ -186,21 +186,21 @@ export function ReportsPage() {
       },
       {
         id: 'status',
-        header: 'Review status',
+        header: 'Status review',
         sortable: true,
         width: 'w-44',
         cell: (screening) => <ScreeningStatusBadge status={screening.status} size="sm" />,
       },
       {
         id: 'outcome',
-        header: 'Demo output',
+        header: 'Output demo',
         width: 'w-36',
         hideBelow: 'lg',
         cell: (screening) =>
           screening.analysis ? (
             <ScreeningOutcomeBadge outcome={screening.analysis.outcome} short size="sm" />
           ) : (
-            <span className="text-obsidian-400">Not analysed</span>
+            <span className="text-obsidian-400">Belum dianalisis</span>
           ),
       },
       {
@@ -215,18 +215,18 @@ export function ReportsPage() {
           return referral ? (
             <ReferralStatusBadge status={referral.status} size="sm" />
           ) : (
-            <span className="text-obsidian-400">None</span>
+            <span className="text-obsidian-400">Belum ada</span>
           );
         },
       },
       {
         id: 'operator',
-        header: 'Recorded by',
+        header: 'Dicatat oleh',
         width: 'w-36',
         hideBelow: 'xl',
         cell: (screening) => (
           <span className="truncate text-obsidian-600">
-            {users.find((u) => u.id === screening.operatorId)?.name ?? 'Unknown'}
+            {users.find((u) => u.id === screening.operatorId)?.name ?? 'Tidak diketahui'}
           </span>
         ),
       },
@@ -237,16 +237,16 @@ export function ReportsPage() {
         cell: (screening) =>
           hasReport(screening) ? (
             <Badge tone="neutral" size="sm" icon={<FileText />}>
-              Available
+              Tersedia
             </Badge>
           ) : (
-            <span className="text-obsidian-400">Pending</span>
+            <span className="text-obsidian-400">Menunggu</span>
           ),
       },
       {
         id: 'actions',
         header: '',
-        srHeader: 'Actions',
+        srHeader: 'Aksi',
         align: 'right',
         width: 'w-24',
         cell: (screening) => (
@@ -254,7 +254,7 @@ export function ReportsPage() {
             {hasReport(screening) ? (
               <IconButton
                 size="sm"
-                label="Open the printable report"
+                label="Buka report yang bisa dicetak"
                 icon={<Printer className="size-3.5" />}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -276,14 +276,14 @@ export function ReportsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Reports"
-        description="Every screening record taken at this facility, with a printable report once analysis output exists."
+        title="Report"
+        description="Semua catatan screening di fasilitas ini, dengan report yang bisa dicetak setelah hasil analisis tersedia."
         meta={
           <>
-            <HeaderMeta label="Records" value={all.length} />
-            <HeaderMeta label="Reports available" value={reportsAvailable} />
+            <HeaderMeta label="Catatan" value={all.length} />
+            <HeaderMeta label="Report tersedia" value={reportsAvailable} />
             <HeaderMeta
-              label="Awaiting review"
+              label="Menunggu review"
               value={all.filter((s) => s.status === 'awaiting-review').length}
             />
           </>
@@ -294,7 +294,7 @@ export function ReportsPage() {
             leadingIcon={<ScanLine className="size-4" />}
             onClick={() => navigate('/screenings/new')}
           >
-            New screening
+            Screening baru
           </Button>
         }
       />
@@ -307,8 +307,8 @@ export function ReportsPage() {
           onClearFilters={clearEverything}
           search={
             <SearchInput
-              label="Search screening records by patient, record number or file name"
-              placeholder="Patient, record no. or file"
+              label="Cari catatan screening berdasarkan pasien, nomor rekam medis, atau nama file"
+              placeholder="Pasien, no. rekam medis, atau file"
               value={controls.term}
               onChange={controls.setTerm}
             />
@@ -317,7 +317,7 @@ export function ReportsPage() {
             <>
               <FilterSelect
                 label="Status"
-                allLabel="Any status"
+                allLabel="Semua status"
                 value={controls.filterValues.status as ScreeningStatus | 'all'}
                 options={STATUSES.map((status) => ({
                   value: status,
@@ -328,33 +328,33 @@ export function ReportsPage() {
               />
               <FilterSelect
                 label="Output"
-                allLabel="Any output"
+                allLabel="Semua output"
                 value={controls.filterValues.outcome as ScreeningOutcome | 'all'}
                 options={OUTCOMES.map((outcome) => ({
                   value: outcome,
                   label:
                     outcome === 'flagged-for-review'
-                      ? 'Flagged'
+                      ? 'Ditandai'
                       : outcome === 'no-alert'
-                        ? 'No alert'
-                        : 'Inconclusive',
+                        ? 'Tanpa alert'
+                        : 'Belum meyakinkan',
                   count: all.filter((s) => s.analysis?.outcome === outcome).length,
                 }))}
                 onChange={(value) => controls.setFilter('outcome', value)}
               />
               <FilterSelect
                 label="Report"
-                allLabel="Any"
+                allLabel="Semua"
                 value={controls.filterValues.report}
                 options={[
-                  { value: 'available', label: 'Available', count: reportsAvailable },
-                  { value: 'pending', label: 'Pending', count: all.length - reportsAvailable },
+                  { value: 'available', label: 'Tersedia', count: reportsAvailable },
+                  { value: 'pending', label: 'Menunggu', count: all.length - reportsAvailable },
                 ]}
                 onChange={(value) => controls.setFilter('report', value)}
               />
               <FilterSelect
-                label="Recorded by"
-                allLabel="Anyone"
+                label="Dicatat oleh"
+                allLabel="Semua orang"
                 value={controls.filterValues.operator}
                 options={Array.from(new Set(all.map((s) => s.operatorId))).map((id) => ({
                   value: id,
@@ -365,13 +365,13 @@ export function ReportsPage() {
             </>
           }
           trailing={
-            <ResultCount shown={dateFiltered.length} total={all.length} noun="records" />
+            <ResultCount shown={dateFiltered.length} total={all.length} noun="catatan" />
           }
         />
 
         {/* Date window, given its own row so the main bar stays one line */}
         <div className="flex flex-wrap items-center gap-2 border-b border-obsidian-200 bg-obsidian-50/60 px-3 py-2 sm:px-4">
-          <span className="text-xs text-obsidian-500">Screening date</span>
+          <span className="text-xs text-obsidian-500">Tanggal screening</span>
           <div className="flex items-center gap-1 rounded-md bg-white p-0.5 ring-1 ring-obsidian-200">
             {DATE_PRESETS.map((item) => (
               <button
@@ -397,7 +397,7 @@ export function ReportsPage() {
 
           <div className="flex items-center gap-1.5">
             <label className="sr-only" htmlFor="reports-from">
-              From date
+              Dari tanggal
             </label>
             <TextInput
               id="reports-from"
@@ -412,10 +412,10 @@ export function ReportsPage() {
               className="h-8 w-auto text-[13px]"
             />
             <span aria-hidden className="text-xs text-obsidian-400">
-              to
+              sampai
             </span>
             <label className="sr-only" htmlFor="reports-to">
-              To date
+              Sampai tanggal
             </label>
             <TextInput
               id="reports-to"
@@ -441,7 +441,7 @@ export function ReportsPage() {
                   setPage(1);
                 }}
               >
-                Reset dates
+                Reset tanggal
               </Button>
             ) : null}
           </div>
@@ -454,20 +454,20 @@ export function ReportsPage() {
         ) : all.length === 0 ? (
           <EmptyState
             icon={<FileText />}
-            title="No screening records yet"
-            description="Records appear here as soon as a screening is submitted."
+            title="Belum ada catatan screening"
+            description="Catatan akan muncul di sini begitu screening dikirim."
             action={
               <Button variant="primary" onClick={() => navigate('/screenings/new')}>
-                Record a screening
+                Catat screening
               </Button>
             }
           />
         ) : dateFiltered.length === 0 ? (
-          <NoMatchesState entity="records" onClear={clearEverything} />
+          <NoMatchesState entity="catatan" onClear={clearEverything} />
         ) : (
           <>
             <DataTable
-              caption="Screening history"
+              caption="Riwayat screening"
               rows={visible}
               columns={columns}
               rowKey={(screening) => screening.id}
@@ -483,7 +483,7 @@ export function ReportsPage() {
                   <div className="flex items-start gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-obsidian-900">
-                        {patient?.name ?? 'Unknown patient'}
+                        {patient?.name ?? 'Pasien tidak dikenal'}
                       </p>
                       <p className="mt-0.5 truncate font-mono text-[11px] text-obsidian-500">
                         {patient?.mrn}

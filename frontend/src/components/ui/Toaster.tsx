@@ -88,7 +88,7 @@ export function Toaster() {
               <button
                 type="button"
                 onClick={() => dismiss(item.id)}
-                aria-label="Dismiss notification"
+                aria-label="Tutup notifikasi"
                 className="-mt-0.5 -mr-1 flex size-6 shrink-0 items-center justify-center rounded text-obsidian-400 transition-colors hover:bg-obsidian-100 hover:text-obsidian-700"
               >
                 <X aria-hidden className="size-3.5" />

@@ -54,10 +54,10 @@ const TAB_STATES: Record<TabId, SyncState[]> = {
 };
 
 const KIND_LABEL: Record<SyncQueueItem['kind'], string> = {
-  screening: 'Screening record',
+  screening: 'Record screening',
   referral: 'Referral',
   followup: 'Follow-up',
-  patient: 'Patient record',
+  patient: 'Data pasien',
 };
 
 export function OfflineQueuePage() {
@@ -112,16 +112,16 @@ export function OfflineQueuePage() {
 
     if (result.refused === 'offline') {
       toast.error(
-        'Cannot sync while offline.',
-        'Records stay on this device. Nothing was lost.',
+        'Sync tidak bisa dijalankan saat offline.',
+        'Record tetap tersimpan di perangkat ini. Tidak ada yang hilang.',
       );
       return;
     }
     if (result.attempted === 0) {
       toast.info(
-        'Nothing queued to sync.',
+        'Tidak ada antrean yang perlu di-sync.',
         result.skipped.length > 0
-          ? `${pluralise(result.skipped.length, 'record')} need attention first.`
+          ? `${pluralise(result.skipped.length, 'record', 'record')} perlu dicek dulu.`
           : undefined,
       );
       return;
@@ -129,15 +129,15 @@ export function OfflineQueuePage() {
 
     if (result.failed > 0) {
       toast.error(
-        `${pluralise(result.failed, 'record')} could not be sent.`,
-        'They stay on this device. Open the Failed tab to see why and retry.',
+        `${pluralise(result.failed, 'record', 'record')} gagal dikirim.`,
+        'Record tetap tersimpan di perangkat ini. Buka tab Gagal untuk melihat penyebabnya, lalu coba lagi.',
       );
       return;
     }
     toast.success(
-      `${pluralise(result.succeeded, 'record')} sent.`,
+      `${pluralise(result.succeeded, 'record', 'record')} berhasil dikirim.`,
       result.skipped.length > 0
-        ? `${pluralise(result.skipped.length, 'record')} skipped and left for review.`
+        ? `${pluralise(result.skipped.length, 'record', 'record')} dilewati dan menunggu review.`
         : undefined,
     );
   };
@@ -148,14 +148,14 @@ export function OfflineQueuePage() {
     setRetrying(null);
 
     if (outcome === 'offline') {
-      toast.error('Cannot retry while offline.');
+      toast.error('Tidak bisa mencoba ulang saat offline.');
       return;
     }
     if (outcome === 'failed') {
-      toast.error(`${item.label} could not be sent.`, 'See the reason on the record.');
+      toast.error(`${item.label} gagal dikirim.`, 'Lihat alasannya di record terkait.');
       return;
     }
-    toast.success(`${item.label} sent.`);
+    toast.success(`${item.label} berhasil dikirim.`);
   };
 
   const discard = async () => {
@@ -166,30 +166,30 @@ export function OfflineQueuePage() {
     } else {
       removeSyncItem(discarding.id);
     }
-    toast.info('Draft discarded from this device.');
+    toast.info('Draf dihapus dari perangkat ini.');
     setDiscarding(null);
   };
 
   const emptyCopy: Record<TabId, { title: string; description: string }> = {
     pending: {
-      title: 'Nothing waiting to sync',
-      description: 'Every completed record on this device has been sent.',
+      title: 'Tidak ada yang menunggu sync',
+      description: 'Semua record yang sudah selesai di perangkat ini sudah terkirim.',
     },
     drafts: {
-      title: 'No local drafts',
-      description: 'Screenings saved before they were finished would appear here.',
+      title: 'Belum ada draf lokal',
+      description: 'Screening yang disimpan sebelum selesai akan muncul di sini.',
     },
     failed: {
-      title: 'No failed attempts',
-      description: 'Records that could not be synced would be listed here for retry.',
+      title: 'Tidak ada percobaan yang gagal',
+      description: 'Record yang gagal di-sync akan muncul di sini untuk dicoba lagi.',
     },
     conflicts: {
-      title: 'No conflicts',
-      description: 'Nothing on this device has been changed by someone else in the meantime.',
+      title: 'Tidak ada konflik',
+      description: 'Belum ada data di perangkat ini yang diubah orang lain dalam waktu bersamaan.',
     },
     synced: {
-      title: 'Nothing synced yet',
-      description: 'Records leave this list as soon as the server has them.',
+      title: 'Belum ada yang ter-sync',
+      description: 'Record akan hilang dari daftar ini begitu sudah diterima server.',
     },
   };
 
@@ -197,13 +197,13 @@ export function OfflineQueuePage() {
     <div className="space-y-4">
       <PageHeader
         title="Offline queue"
-        description="What is stored on this device, what is waiting, and what needs a decision before it can move."
+        description="Apa saja yang tersimpan di perangkat ini, apa yang sedang menunggu, dan apa yang perlu keputusan sebelum bisa dikirim."
         meta={
           <>
-            <HeaderMeta label="Waiting" value={counts.pending} />
-            <HeaderMeta label="Drafts" value={counts['local-draft']} />
-            <HeaderMeta label="Needs attention" value={counts.failed + counts.conflict} />
-            <HeaderMeta label="On device" value={formatBytes(pendingBytes)} />
+            <HeaderMeta label="Menunggu" value={counts.pending} />
+            <HeaderMeta label="Draf" value={counts['local-draft']} />
+            <HeaderMeta label="Perlu dicek" value={counts.failed + counts.conflict} />
+            <HeaderMeta label="Di perangkat" value={formatBytes(pendingBytes)} />
           </>
         }
         actions={
@@ -214,7 +214,7 @@ export function OfflineQueuePage() {
             leadingIcon={<CloudUpload className="size-4" />}
             onClick={() => void runSync()}
           >
-            {running ? 'Syncing' : 'Sync now'}
+            {running ? 'Sedang sync' : 'Sync sekarang'}
           </Button>
         }
       />
@@ -224,40 +224,40 @@ export function OfflineQueuePage() {
         <Card>
           <CardHeader
             icon={connected ? <CloudUpload /> : <WifiOff />}
-            title="Connection"
+            title="Koneksi"
             description={
               connected
-                ? 'A connection is available, so queued records can be sent.'
-                : 'No connection. Forms and drafts keep working on this device.'
+                ? 'Koneksi tersedia, jadi record dalam antrean bisa dikirim.'
+                : 'Tidak ada koneksi. Form dan draf tetap bisa dipakai di perangkat ini.'
             }
           />
           <CardBody className="space-y-3">
             <dl className="divide-y divide-obsidian-100">
-              <DetailRow label="Browser reports">
+              <DetailRow label="Status dari browser">
                 {browserOnline ? (
                   <span className="inline-flex items-center gap-1.5 text-complete-800">
                     <CheckCircle2 aria-hidden className="size-3.5" />
-                    Connected
+                    Terhubung
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-attention-800">
                     <WifiOff aria-hidden className="size-3.5" />
-                    No connection
+                    Tidak ada koneksi
                   </span>
                 )}
               </DetailRow>
-              <DetailRow label="Last sync">
+              <DetailRow label="Sync terakhir">
                 {lastSyncAt ? (
                   <>
                     {formatRelative(lastSyncAt)}
                     <span className="ml-1.5 text-obsidian-400">{formatDateTime(lastSyncAt)}</span>
                   </>
                 ) : (
-                  'Not run yet'
+                  'Belum pernah dijalankan'
                 )}
               </DetailRow>
-              <DetailRow label="Image analysis">
-                {connected ? 'Available' : 'Unavailable until a connection returns'}
+              <DetailRow label="Analisis gambar">
+                {connected ? 'Tersedia' : 'Tidak tersedia sampai koneksi kembali'}
               </DetailRow>
             </dl>
 
@@ -268,21 +268,21 @@ export function OfflineQueuePage() {
                 onChange={(value) => {
                   setSimulatedOffline(value);
                   toast.info(
-                    value ? 'Offline mode simulated.' : 'Offline simulation switched off.',
+                    value ? 'Mode offline disimulasikan.' : 'Simulasi offline dimatikan.',
                     value
-                      ? 'The app now behaves as if there were no connection.'
+                      ? 'Aplikasi sekarang berperilaku seolah-olah tidak ada koneksi.'
                       : undefined,
                   );
                 }}
-                label="Work offline"
-                description="Forces the offline behaviour without disconnecting the network, so the queue and draft flow can be demonstrated."
+                label="Kerja offline"
+                description="Memaksa perilaku offline tanpa memutus jaringan, jadi alur queue dan draf bisa didemokan."
               />
             </div>
 
             {running ? (
               <ProgressBar
                 value={progress.total === 0 ? 0 : (progress.done / progress.total) * 100}
-                label={`Processing ${progress.done} of ${progress.total} records`}
+                label={`Memproses ${progress.done} dari ${progress.total} record`}
               />
             ) : null}
           </CardBody>
@@ -291,33 +291,33 @@ export function OfflineQueuePage() {
         <Card>
           <CardHeader
             icon={<Database />}
-            title="What this actually means"
-            description="Four different things, kept separate on purpose."
+            title="Apa artinya sebenarnya"
+            description="Empat hal berbeda yang sengaja dipisahkan."
           />
           <CardBody>
             <dl className="space-y-3 text-[13px]">
               <Meaning
                 icon={<FileEdit />}
-                term="Offline form entry"
-                detail="Screening forms, referrals and follow-up edits all work with no connection."
+                term="Pengisian form offline"
+                detail="Form screening, referral, dan perubahan follow-up semuanya bisa dipakai tanpa koneksi."
                 available
               />
               <Meaning
                 icon={<HardDrive />}
-                term="Local persistence"
-                detail="Screenings captured offline are written to this browser's storage. Their radiographs go to IndexedDB, never into the service worker cache, and are removed once the record has been sent."
+                term="Penyimpanan lokal"
+                detail="Screening yang dibuat saat offline disimpan di storage browser ini. X-ray-nya masuk ke IndexedDB, tidak pernah ke cache service worker, dan dihapus setelah record terkirim."
                 available
               />
               <Meaning
                 icon={<CloudUpload />}
-                term="Synchronisation"
-                detail="Sync sends each queued screening to the PULMO server and uploads its radiograph, then removes the copy on this device."
+                term="Sinkronisasi"
+                detail="Sync mengirim setiap screening dalam antrean ke server PULMO dan meng-upload X-ray-nya, lalu menghapus salinan di perangkat ini."
                 available
               />
               <Meaning
                 icon={<CloudOff />}
-                term="Model inference"
-                detail="Analysis is not performed on the device. It needs a connection, so queued records wait."
+                term="Inferensi model"
+                detail="Analisis tidak dijalankan di perangkat. Butuh koneksi, jadi record dalam antrean menunggu."
                 available={connected}
               />
             </dl>
@@ -325,9 +325,9 @@ export function OfflineQueuePage() {
         </Card>
       </div>
 
-      <Notice tone="demo" title="Held on this device until they are sent">
-        Queued records and their radiographs sit in this browser's storage. Anyone with access to
-        this device profile can read them until a sync completes.
+      <Notice tone="demo" title="Tersimpan di perangkat ini sampai terkirim">
+        Record dalam antrean beserta X-ray-nya berada di storage browser ini. Siapa pun yang
+        punya akses ke profil perangkat ini bisa membacanya sampai sync selesai.
       </Notice>
 
       {/* Queue */}
@@ -337,23 +337,23 @@ export function OfflineQueuePage() {
           onChange={setTab}
           className="px-2"
           items={[
-            { id: 'pending', label: 'Waiting', count: counts.pending, icon: <CloudUpload /> },
-            { id: 'drafts', label: 'Drafts', count: counts['local-draft'], icon: <FileEdit /> },
+            { id: 'pending', label: 'Menunggu', count: counts.pending, icon: <CloudUpload /> },
+            { id: 'drafts', label: 'Draf', count: counts['local-draft'], icon: <FileEdit /> },
             {
               id: 'failed',
-              label: 'Failed',
+              label: 'Gagal',
               count: counts.failed,
               countTone: counts.failed > 0 ? 'urgent' : 'neutral',
               icon: <XCircle />,
             },
             {
               id: 'conflicts',
-              label: 'Conflicts',
+              label: 'Konflik',
               count: counts.conflict,
               countTone: counts.conflict > 0 ? 'urgent' : 'neutral',
               icon: <GitCompareArrows />,
             },
-            { id: 'synced', label: 'Synced', count: counts.synced, icon: <CheckCircle2 /> },
+            { id: 'synced', label: 'Ter-sync', count: counts.synced, icon: <CheckCircle2 /> },
           ]}
         />
 
@@ -381,10 +381,10 @@ export function OfflineQueuePage() {
                         <SyncStateBadge state={item.state} size="sm" />
                       </div>
                       <p className="mt-1 text-xs text-obsidian-500 tabular">
-                        {KIND_LABEL[item.kind]} · queued {formatRelative(item.queuedAt)} ·{' '}
+                        {KIND_LABEL[item.kind]} · masuk antrean {formatRelative(item.queuedAt)} ·{' '}
                         {formatBytes(item.sizeBytes)}
                         {item.attempts > 0
-                          ? ` · ${pluralise(item.attempts, 'attempt')}`
+                          ? ` · ${pluralise(item.attempts, 'percobaan', 'percobaan')}`
                           : ''}
                       </p>
 
@@ -397,7 +397,7 @@ export function OfflineQueuePage() {
 
                       {item.state === 'local-draft' ? (
                         <p className="mt-1.5 text-xs leading-relaxed text-obsidian-500">
-                          {SKIP_COPY['draft-incomplete']}. Finish the record to queue it.
+                          {SKIP_COPY['draft-incomplete']}. Selesaikan record agar masuk antrean.
                         </p>
                       ) : null}
 
@@ -416,7 +416,7 @@ export function OfflineQueuePage() {
                             )
                           }
                         >
-                          {screening.status === 'draft' ? 'Finish record' : 'Open record'}
+                          {screening.status === 'draft' ? 'Selesaikan record' : 'Buka record'}
                         </Button>
                       ) : null}
 
@@ -429,7 +429,7 @@ export function OfflineQueuePage() {
                           leadingIcon={<RefreshCw className="size-3.5" />}
                           onClick={() => void handleRetry(item)}
                         >
-                          Retry
+                          Coba lagi
                         </Button>
                       ) : null}
 
@@ -440,7 +440,7 @@ export function OfflineQueuePage() {
                           leadingIcon={<Trash2 className="size-3.5" />}
                           onClick={() => setDiscarding(item)}
                         >
-                          Discard
+                          Buang
                         </Button>
                       ) : null}
                     </div>
@@ -458,13 +458,13 @@ export function OfflineQueuePage() {
         onClose={() => setDiscarding(null)}
         onConfirm={() => void discard()}
         tone="danger"
-        title="Discard this draft?"
+        title="Buang draf ini?"
         description={
           discarding?.kind === 'screening'
-            ? 'The screening record and the radiograph stored with it will be deleted from this device. This cannot be undone.'
-            : 'The queued record will be removed from this device. This cannot be undone.'
+            ? 'Record screening dan X-ray yang tersimpan bersamanya akan dihapus dari perangkat ini. Tindakan ini tidak bisa dibatalkan.'
+            : 'Record dalam antrean akan dihapus dari perangkat ini. Tindakan ini tidak bisa dibatalkan.'
         }
-        confirmLabel="Discard draft"
+        confirmLabel="Buang draf"
       />
     </div>
   );
@@ -503,7 +503,7 @@ function Meaning({
                 : 'rounded bg-attention-50 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-attention-800 uppercase'
             }
           >
-            {available ? 'Working' : 'Needs connection'}
+            {available ? 'Berfungsi' : 'Butuh koneksi'}
           </span>
         </dt>
         <dd className="mt-0.5 text-xs leading-relaxed text-obsidian-600">{detail}</dd>

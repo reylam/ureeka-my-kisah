@@ -14,7 +14,7 @@ import type { ModelDescriptor } from '@/types/domain';
  */
 export const DEMO_MODEL: ModelDescriptor = {
   name: 'PULMO screening model',
-  version: 'not yet connected',
+  version: 'belum terhubung',
   backbone: 'densenet121 (label set mirrored from tb-train)',
   labels: ['Healthy', 'Sick-non-TB', 'TB'],
   validation: null,
@@ -33,7 +33,7 @@ export const DEMO_MODEL: ModelDescriptor = {
  * `MODEL_RESULT_NOTICE` (see `components/ui/Notice.tsx`).
  */
 export const SIMULATED_RESULT_NOTICE =
-  'The screening model is not connected, so no model output is shown.';
+  'Model screening belum terhubung, jadi tidak ada output model yang ditampilkan.';
 
 /** Shown instead once a model is connected: model output is a screening aid only. */
-export const MODEL_RESULT_NOTICE = 'Screening aid, not a diagnosis.';
+export const MODEL_RESULT_NOTICE = 'Alat bantu screening, bukan diagnosis.';

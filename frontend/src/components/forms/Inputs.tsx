@@ -223,7 +223,7 @@ export function RadioGroup<T extends string>({
 export function SearchInput({
   value,
   onChange,
-  placeholder = 'Search',
+  placeholder = 'Cari',
   label,
   className,
 }: {
@@ -253,7 +253,7 @@ export function SearchInput({
         <button
           type="button"
           onClick={() => onChange('')}
-          aria-label="Clear search"
+          aria-label="Hapus pencarian"
           className="absolute top-1/2 right-2 flex size-6 -translate-y-1/2 items-center justify-center rounded text-obsidian-400 transition-colors hover:bg-obsidian-100 hover:text-obsidian-700"
         >
           <X aria-hidden className="size-3.5" />

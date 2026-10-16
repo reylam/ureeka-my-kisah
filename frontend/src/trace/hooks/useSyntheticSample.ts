@@ -28,7 +28,7 @@ export function useSyntheticSample(
   const load = useCallback(() => {
     const svg = containerRef.current?.querySelector('svg');
     if (!svg) {
-      setError('The sample radiograph could not be prepared in this browser.');
+      setError('Sample radiograph tidak bisa disiapkan di browser ini.');
       return;
     }
 
@@ -58,7 +58,7 @@ export function useSyntheticSample(
       if (!context) {
         URL.revokeObjectURL(svgUrl);
         setIsBuilding(false);
-        setError('This browser did not provide a 2D canvas, so the sample cannot be rasterised.');
+        setError('Browser ini tidak menyediakan canvas 2D, jadi sample tidak bisa dirasterisasi.');
         return;
       }
       context.fillStyle = '#0a0c10';
@@ -69,7 +69,7 @@ export function useSyntheticSample(
       canvas.toBlob((blob) => {
         setIsBuilding(false);
         if (!blob) {
-          setError('The sample image could not be encoded as a PNG.');
+          setError('Gambar sample tidak bisa di-encode menjadi PNG.');
           return;
         }
         onFile(
@@ -86,7 +86,7 @@ export function useSyntheticSample(
     probe.onerror = () => {
       URL.revokeObjectURL(svgUrl);
       setIsBuilding(false);
-      setError('The sample radiograph could not be rendered in this browser.');
+      setError('Sample radiograph tidak bisa dirender di browser ini.');
     };
 
     probe.src = svgUrl;

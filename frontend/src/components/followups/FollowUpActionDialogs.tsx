@@ -51,20 +51,20 @@ export function ContactAttemptDialog({
   const submit = async () => {
     // A failed attempt is only useful if it says what happened.
     if (outcome !== 'reached' && note.trim().length < 5) {
-      setError('Say what happened, so the next attempt is better informed.');
+      setError('Jelaskan apa yang terjadi, supaya percobaan berikutnya lebih terarah.');
       return;
     }
     try {
       await logContactAttempt(followUp.id, channel, outcome, note.trim() || null);
       toast.success(
-        'Contact attempt logged.',
+        'Upaya kontak dicatat.',
         outcome === 'reached'
-          ? 'The follow-up is now in progress.'
-          : 'The follow-up stays open for another attempt.',
+          ? 'Follow-up sekarang berstatus sedang berjalan.'
+          : 'Follow-up tetap terbuka untuk upaya berikutnya.',
       );
       onClose();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'The attempt could not be saved.');
+      setError(cause instanceof Error ? cause.message : 'Upaya kontak gagal disimpan.');
     }
   };
 
@@ -72,29 +72,29 @@ export function ContactAttemptDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={`Log a contact attempt for ${followUp.code}`}
+      title={`Catat upaya kontak untuk ${followUp.code}`}
       description={
         patient
-          ? `${patient.name} · ${patient.phone ?? 'no phone number on file'}`
+          ? `${patient.name} · ${patient.phone ?? 'belum ada nomor telepon'}`
           : undefined
       }
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            Batal
           </Button>
           <Button
             variant="primary"
             leadingIcon={<PhoneCall className="size-4" />}
             onClick={submit}
           >
-            Log attempt
+            Catat upaya
           </Button>
         </>
       }
     >
       <div className="space-y-4">
-        <Field label="How did you try to reach them?" required>
+        <Field label="Bagaimana Anda mencoba menghubungi pasien?" required>
           {({ id }) => (
             <Select
               id={id}
@@ -104,14 +104,14 @@ export function ContactAttemptDialog({
               {CHANNELS.map((item) => (
                 <option key={item} value={item} disabled={!patient?.phone && item === 'phone'}>
                   {contactChannelLabel[item]}
-                  {!patient?.phone && item === 'phone' ? ' (no number on file)' : ''}
+                  {!patient?.phone && item === 'phone' ? ' (belum ada nomor)' : ''}
                 </option>
               ))}
             </Select>
           )}
         </Field>
 
-        <Field label="What happened?" required>
+        <Field label="Apa yang terjadi?" required>
           {() => (
             <RadioGroup<Outcome>
               name="attempt-outcome"
@@ -120,24 +120,24 @@ export function ContactAttemptDialog({
               options={[
                 {
                   value: 'reached',
-                  label: 'Reached the patient',
-                  description: 'Spoke to the patient or a household member.',
+                  label: 'Pasien berhasil dihubungi',
+                  description: 'Sudah bicara dengan pasien atau anggota keluarga.',
                 },
-                { value: 'no-answer', label: 'No answer', description: 'Nobody responded.' },
+                { value: 'no-answer', label: 'Tidak ada jawaban', description: 'Tidak ada yang merespons.' },
                 {
                   value: 'wrong-number',
-                  label: 'Wrong number',
-                  description: 'Contact details need re-verifying.',
+                  label: 'Nomor salah',
+                  description: 'Data kontak perlu diverifikasi ulang.',
                 },
                 {
                   value: 'moved-away',
-                  label: 'Moved away',
-                  description: 'The patient no longer lives at this address.',
+                  label: 'Sudah pindah',
+                  description: 'Pasien tidak lagi tinggal di alamat ini.',
                 },
                 {
                   value: 'rescheduled',
-                  label: 'Agreed a new date',
-                  description: 'Reschedule the follow-up separately after logging this.',
+                  label: 'Sepakat tanggal baru',
+                  description: 'Jadwalkan ulang follow-up secara terpisah setelah mencatat ini.',
                 },
               ]}
             />
@@ -145,7 +145,7 @@ export function ContactAttemptDialog({
         </Field>
 
         <Field
-          label="Note"
+          label="Catatan"
           error={error}
           optional={outcome === 'reached'}
           required={outcome !== 'reached'}
@@ -158,13 +158,13 @@ export function ContactAttemptDialog({
               describedBy={describedBy}
               invalid={invalid}
               rows={3}
-              placeholder="e.g. Household says he is away until Friday; cadre will pass on the message."
+              placeholder="mis. Keluarga bilang pasien pergi sampai Jumat; kader akan menyampaikan pesan."
             />
           )}
         </Field>
 
         <Notice tone="demo" compact>
-          This records what a worker did. The prototype does not place calls or send messages.
+          Ini hanya mencatat apa yang dilakukan petugas. Prototipe ini tidak melakukan panggilan atau mengirim pesan.
         </Notice>
       </div>
     </Dialog>
@@ -193,15 +193,15 @@ export function CompleteFollowUpDialog({
 
   const submit = async () => {
     if (note.trim().length < 5) {
-      setError('Record the outcome, even briefly. It goes on the patient timeline.');
+      setError('Catat hasilnya, walau singkat. Catatan ini masuk ke timeline pasien.');
       return;
     }
     try {
       await completeFollowUp(followUp.id, note.trim());
-      toast.success(`${followUp.code} completed.`, 'The outcome was added to the patient timeline.');
+      toast.success(`${followUp.code} selesai.`, 'Hasilnya sudah ditambahkan ke timeline pasien.');
       onClose();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'The follow-up could not be completed.');
+      setError(cause instanceof Error ? cause.message : 'Follow-up gagal diselesaikan.');
     }
   };
 
@@ -210,24 +210,24 @@ export function CompleteFollowUpDialog({
       open={open}
       onClose={onClose}
       size="sm"
-      title={`Complete ${followUp.code}`}
-      description="Close this task and record what the outcome was."
+      title={`Selesaikan ${followUp.code}`}
+      description="Tutup tugas ini dan catat hasilnya."
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            Batal
           </Button>
           <Button
             variant="primary"
             leadingIcon={<CheckCircle2 className="size-4" />}
             onClick={submit}
           >
-            Mark completed
+            Tandai selesai
           </Button>
         </>
       }
     >
-      <Field label="Outcome" error={error} required>
+      <Field label="Hasil" error={error} required>
         {({ id, describedBy, invalid }) => (
           <TextArea
             id={id}
@@ -236,7 +236,7 @@ export function CompleteFollowUpDialog({
             describedBy={describedBy}
             invalid={invalid}
             rows={4}
-            placeholder="e.g. Attended the district hospital on Tuesday; sputum sample collected, result pending."
+            placeholder="mis. Datang ke rumah sakit daerah hari Selasa; sampel dahak sudah diambil, hasil masih menunggu."
           />
         )}
       </Field>
@@ -266,18 +266,18 @@ export function UnresolvedFollowUpDialog({
 
   const submit = async () => {
     if (reason.trim().length < 10) {
-      setError('Explain what blocked this, in enough detail for someone else to pick it up.');
+      setError('Jelaskan apa yang menghambat, cukup rinci agar orang lain bisa melanjutkannya.');
       return;
     }
     try {
       await markFollowUpUnresolved(followUp.id, reason.trim());
       toast.attention(
-        `${followUp.code} marked unresolved.`,
-        'It stays visible in the unresolved queue rather than disappearing.',
+        `${followUp.code} ditandai belum terselesaikan.`,
+        'Tetap terlihat di queue belum terselesaikan dan tidak hilang begitu saja.',
       );
       onClose();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'The follow-up could not be updated.');
+      setError(cause instanceof Error ? cause.message : 'Follow-up gagal diperbarui.');
     }
   };
 
@@ -286,25 +286,25 @@ export function UnresolvedFollowUpDialog({
       open={open}
       onClose={onClose}
       size="sm"
-      title={`Mark ${followUp.code} unresolved`}
-      description="Use this when the patient genuinely cannot be reached or followed up."
+      title={`Tandai ${followUp.code} belum terselesaikan`}
+      description="Gunakan ini bila pasien benar-benar tidak bisa dihubungi atau di-follow-up."
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            Batal
           </Button>
           <Button
             variant="primary"
             leadingIcon={<CircleSlash className="size-4" />}
             onClick={submit}
           >
-            Mark unresolved
+            Tandai belum terselesaikan
           </Button>
         </>
       }
     >
       <div className="space-y-3">
-        <Field label="Why can this not be closed?" error={error} required>
+        <Field label="Kenapa tugas ini tidak bisa ditutup?" error={error} required>
           {({ id, describedBy, invalid }) => (
             <TextArea
               id={id}
@@ -313,13 +313,13 @@ export function UnresolvedFollowUpDialog({
               describedBy={describedBy}
               invalid={invalid}
               rows={4}
-              placeholder="e.g. Family moved to another district for work; no working number and the new address is unknown."
+              placeholder="mis. Keluarga pindah ke kabupaten lain untuk bekerja; nomor tidak aktif dan alamat baru tidak diketahui."
             />
           )}
         </Field>
         <Notice tone="attention" compact>
-          Unresolved follow-ups stay in their own queue. They are not closed and not counted as
-          completed.
+          Follow-up yang belum terselesaikan tetap berada di queue-nya sendiri. Tidak ditutup dan
+          tidak dihitung sebagai selesai.
         </Notice>
       </div>
     </Dialog>

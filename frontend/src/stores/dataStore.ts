@@ -360,7 +360,7 @@ export const useDataStore = create<DataState>()((set, get) => {
   const uploadFromDevice = async (screeningId: string, imageKey: string): Promise<Screening> => {
     const blob = await getImage(imageKey);
     if (!blob) {
-      throw new ApiError(0, 'IMAGE_MISSING', 'The radiograph is no longer stored on this device.');
+      throw new ApiError(0, 'IMAGE_MISSING', 'Radiograf tidak lagi tersimpan di perangkat ini.');
     }
     const form = new FormData();
     form.append('image', blob, 'radiograph');
@@ -414,7 +414,7 @@ export const useDataStore = create<DataState>()((set, get) => {
       return sent;
     } catch (cause) {
       const message =
-        cause instanceof Error && cause.message ? cause.message : 'The record could not be sent.';
+        cause instanceof Error && cause.message ? cause.message : 'Rekam tidak bisa dikirim.';
       commit({
         syncQueue: get().syncQueue.map((entry) =>
           entry.id === itemId

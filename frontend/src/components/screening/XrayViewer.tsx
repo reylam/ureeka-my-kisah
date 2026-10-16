@@ -63,14 +63,14 @@ export function XrayViewer({
         {showOverlayControl ? (
           <div
             role="group"
-            aria-label="Image view"
+            aria-label="Tampilan gambar"
             className="flex items-center rounded-md bg-white/[0.06] p-0.5"
           >
             <ViewToggle
               active={!overlayVisible}
               onClick={() => setOverlayState(false)}
               icon={<SquareDashedMousePointer className="size-3.5" />}
-              label="Original"
+              label="Asli"
             />
             <ViewToggle
               active={overlayVisible}
@@ -78,14 +78,14 @@ export function XrayViewer({
               icon={<Layers className="size-3.5" />}
               label="Overlay"
               disabled={!hasRegions}
-              disabledHint="No regions were reported for this record"
+              disabledHint="Tidak ada region yang dilaporkan untuk data ini"
             />
           </div>
         ) : null}
 
         <div className="ml-auto flex items-center gap-0.5">
           <ViewerButton
-            label="Zoom out"
+            label="Perkecil"
             disabled={zoom <= 1}
             onClick={() => setZoom((value) => Math.max(1, Number((value - 0.25).toFixed(2))))}
           >
@@ -95,14 +95,14 @@ export function XrayViewer({
             {Math.round(zoom * 100)}%
           </span>
           <ViewerButton
-            label="Zoom in"
+            label="Perbesar"
             disabled={zoom >= 3}
             onClick={() => setZoom((value) => Math.min(3, Number((value + 0.25).toFixed(2))))}
           >
             <Plus className="size-4" />
           </ViewerButton>
           <ViewerButton
-            label="Reset view"
+            label="Reset tampilan"
             disabled={zoom === 1 && !inverted}
             onClick={() => {
               setZoom(1);
@@ -112,7 +112,7 @@ export function XrayViewer({
             <RotateCcw className="size-4" />
           </ViewerButton>
           <ViewerButton
-            label={inverted ? 'Show normal greyscale' : 'Invert greyscale'}
+            label={inverted ? 'Tampilkan greyscale normal' : 'Invert greyscale'}
             active={inverted}
             onClick={() => setInverted((value) => !value)}
           >
@@ -128,9 +128,9 @@ export function XrayViewer({
         ) : image.missing ? (
           <div className="flex flex-col items-center gap-2 px-6 text-center">
             <ImageOff aria-hidden className="size-6 text-obsidian-600" />
-            <p className="text-[13px] font-medium text-obsidian-300">No radiograph attached</p>
+            <p className="text-[13px] font-medium text-obsidian-300">Belum ada radiograf terlampir</p>
             <p className="max-w-xs text-xs leading-relaxed text-obsidian-500">
-              This record was saved as a draft before an image was added.
+              Data ini disimpan sebagai draf sebelum gambar ditambahkan.
             </p>
           </div>
         ) : (
@@ -142,7 +142,7 @@ export function XrayViewer({
               {image.url ? (
                 <img
                   src={image.url}
-                  alt={`Chest radiograph for screening record ${screening.id}`}
+                  alt={`Radiograf dada untuk data screening ${screening.id}`}
                   className="size-full object-contain"
                 />
               ) : image.sample ? (
@@ -155,7 +155,7 @@ export function XrayViewer({
               <svg
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
-                aria-label="Illustrative region overlay"
+                aria-label="Overlay region ilustratif"
                 className="pointer-events-none absolute inset-0 size-full"
               >
                 {regions.map((region) => {
@@ -186,15 +186,15 @@ export function XrayViewer({
         <div className="pointer-events-none absolute inset-0 p-2.5 font-mono text-[10px] tracking-wide text-obsidian-500">
           <span className="absolute top-2.5 left-2.5">PA · UPRIGHT</span>
           <span className="absolute top-2.5 right-2.5">
-            {image.url ? 'UPLOADED' : 'SYNTHETIC SAMPLE'}
+            {image.url ? 'DI-UPLOAD' : 'SAMPEL SINTETIS'}
           </span>
           <span className="absolute bottom-2.5 left-2.5">
             R
-            <span className="ml-1 text-obsidian-600">patient right</span>
+            <span className="ml-1 text-obsidian-600">kanan pasien</span>
           </span>
           {overlayVisible ? (
             <span className="absolute bottom-2.5 right-2.5 text-ct-400">
-              OVERLAY · ILLUSTRATIVE
+              OVERLAY · ILUSTRATIF
             </span>
           ) : null}
         </div>
@@ -233,8 +233,8 @@ export function XrayViewer({
 
       <p className="border-t border-white/8 px-3 py-2 text-[11px] leading-relaxed text-obsidian-500">
         {hasRegions
-          ? 'Overlay regions are illustrative. A highlighted region is a prompt to look, not evidence of disease.'
-          : 'No region overlay is available for this record.'}
+          ? 'Region pada overlay hanya ilustrasi. Region yang disorot adalah petunjuk untuk diperiksa, bukan bukti penyakit.'
+          : 'Overlay region tidak tersedia untuk data ini.'}
       </p>
     </div>
   );
@@ -336,7 +336,7 @@ export function XrayFrame({
         ) : image.missing ? (
           <div className="flex size-full flex-col items-center justify-center gap-2">
             <Maximize2 aria-hidden className="size-5 text-obsidian-600" />
-            <p className="text-xs text-obsidian-500">No image</p>
+            <p className="text-xs text-obsidian-500">Tidak ada gambar</p>
           </div>
         ) : image.url ? (
           <img src={image.url} alt={label} className="size-full object-contain" />

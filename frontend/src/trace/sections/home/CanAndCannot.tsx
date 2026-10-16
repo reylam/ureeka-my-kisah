@@ -20,30 +20,31 @@ export function CanAndCannot() {
         <SectionHeading
           id="meaning-heading"
           index="03"
-          eyebrow="What a result means"
-          title="What a tool like this can tell you, and what it cannot"
-          standfirst="Worth reading before the demo, because the gap between these two lists is where screening tools get misused."
+          eyebrow="Arti sebuah hasil"
+          title="Apa yang bisa dan tidak bisa dikatakan tools seperti ini"
+          standfirst="Layak dibaca sebelum mencoba demo, karena jarak antara dua daftar ini adalah titik di mana tools screening sering disalahgunakan."
         />
 
         <div className="mt-11 grid gap-5 lg:grid-cols-2">
           <List
             tone="can"
-            title="It can"
+            title="Yang bisa dilakukan"
             items={CAN_DO}
-            footnote="These are the things a well-built screening tool is genuinely good at."
+            footnote="Ini hal-hal yang memang dikuasai tools screening yang dibangun dengan baik."
           />
           <List
             tone="cannot"
-            title="It cannot"
+            title="Yang tidak bisa dilakukan"
             items={CANNOT_DO}
-            footnote="No amount of accuracy moves an item from the right list to the left one."
+            footnote="Setinggi apa pun akurasinya, tidak ada item dari daftar kanan yang bisa pindah ke daftar kiri."
           />
         </div>
 
-        <Callout label="Put the simplest way" className="mt-11 max-w-3xl">
-          A flag means <strong>“someone should look at this and run a test”</strong>. No flag means{' '}
-          <strong>“nothing stood out in this picture”</strong>. Neither one means a person has, or
-          does not have, tuberculosis. Only a lab test and a doctor can get you there.
+        <Callout label="Singkatnya" className="mt-11 max-w-3xl">
+          Tanda berarti <strong>“perlu ada yang memeriksa ini dan menjalankan tes”</strong>. Tanpa
+          tanda berarti <strong>“tidak ada yang menonjol di gambar ini”</strong>. Keduanya tidak
+          berarti seseorang menderita, atau tidak menderita, tuberkulosis. Hanya tes lab dan dokter
+          yang bisa sampai ke kesimpulan itu.
         </Callout>
       </Container>
     </SectionBand>

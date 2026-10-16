@@ -25,12 +25,12 @@ export function OutputGlossary() {
         ))}
       </dl>
 
-      <Callout label="Why the three are not the same" className="mt-8 max-w-3xl">
-        They are not three strengths of the same thing. The first is a number worked out from a
-        picture. The second is the software’s own claim about that number. The third is a
-        conclusion about a person, reached with tests the software has no access to, by someone who
-        is accountable for being wrong. Treating the first as if it were the third is the mistake
-        this whole site is arranged to prevent.
+      <Callout label="Kenapa ketiganya tidak sama" className="mt-8 max-w-3xl">
+        Ketiganya bukan tiga tingkat kekuatan dari hal yang sama. Yang pertama adalah angka yang
+        dihitung dari sebuah gambar. Yang kedua adalah klaim software sendiri tentang angka itu.
+        Yang ketiga adalah kesimpulan tentang seseorang, ditarik lewat tes yang tidak bisa diakses
+        software, oleh pihak yang bertanggung jawab kalau salah. Menganggap yang pertama sama
+        dengan yang ketiga adalah kekeliruan yang justru ingin dicegah oleh seluruh situs ini.
       </Callout>
     </div>
   );

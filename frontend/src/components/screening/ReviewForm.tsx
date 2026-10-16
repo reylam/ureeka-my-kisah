@@ -55,20 +55,20 @@ export function ReviewForm({
     // stored values read as the reviewer's own conclusion about the image.
     const agreementText: Record<Agreement, string> = screening.analysis
       ? {
-          agrees: 'Agreed with the screening output',
-          disagrees: 'Disagreed with the screening output',
-          'needs-more-data': 'Could not conclude without more data',
+          agrees: 'Sesuai dengan output screening',
+          disagrees: 'Tidak sesuai dengan output screening',
+          'needs-more-data': 'Belum bisa disimpulkan tanpa data tambahan',
         }
       : {
-          agrees: 'Reviewed the image, no concern raised',
-          disagrees: 'Reviewed the image, concern raised',
-          'needs-more-data': 'Could not conclude without more data',
+          agrees: 'Gambar sudah ditinjau, tidak ada temuan mengkhawatirkan',
+          disagrees: 'Gambar sudah ditinjau, ada temuan mengkhawatirkan',
+          'needs-more-data': 'Belum bisa disimpulkan tanpa data tambahan',
         };
     const decisionText: Record<Decision, string> = {
-      refer: 'Refer for diagnostic testing',
-      'repeat-image': 'Repeat the radiograph',
-      observe: 'Observe and recheck',
-      'no-action': 'No further action',
+      refer: 'Rujuk untuk pemeriksaan diagnostik',
+      'repeat-image': 'Ulangi radiograf',
+      observe: 'Observasi dan periksa ulang',
+      'no-action': 'Tidak ada tindakan lanjutan',
     };
 
     return (
@@ -77,7 +77,7 @@ export function ReviewForm({
           <ShieldCheck aria-hidden className="mt-px size-4 shrink-0 text-complete-700" />
           <div className="min-w-0 text-[13px]">
             <p className="font-medium text-complete-800">
-              Reviewed by {reviewer?.name ?? 'a clinician'}
+              Ditinjau oleh {reviewer?.name ?? 'seorang klinisi'}
             </p>
             <p className="mt-0.5 text-obsidian-600">
               {formatDateTime(screening.review.reviewedAt)}
@@ -88,15 +88,15 @@ export function ReviewForm({
 
         <dl className="divide-y divide-obsidian-100 text-[13px]">
           <div className="grid grid-cols-[8rem_1fr] gap-3 py-2">
-            <dt className="text-obsidian-500">Assessment</dt>
+            <dt className="text-obsidian-500">Penilaian</dt>
             <dd className="text-obsidian-900">{agreementText[screening.review.agreement]}</dd>
           </div>
           <div className="grid grid-cols-[8rem_1fr] gap-3 py-2">
-            <dt className="text-obsidian-500">Decision</dt>
+            <dt className="text-obsidian-500">Keputusan</dt>
             <dd className="text-obsidian-900">{decisionText[screening.review.decision]}</dd>
           </div>
           <div className="grid grid-cols-[8rem_1fr] gap-3 py-2">
-            <dt className="text-obsidian-500">Notes</dt>
+            <dt className="text-obsidian-500">Catatan</dt>
             <dd className="leading-relaxed text-obsidian-700">{screening.review.notes}</dd>
           </div>
         </dl>
@@ -108,7 +108,7 @@ export function ReviewForm({
   if (screening.status === 'draft') {
     return (
       <Notice tone="demo" compact>
-        This record is still a draft. Finish and submit it before it can be reviewed.
+        Data ini masih berupa draf. Selesaikan dan kirim dulu sebelum bisa ditinjau.
       </Notice>
     );
   }
@@ -120,10 +120,10 @@ export function ReviewForm({
         <div className="flex items-start gap-2.5 rounded-md border border-obsidian-200 bg-obsidian-50 px-3.5 py-3">
           <Lock aria-hidden className="mt-px size-4 shrink-0 text-obsidian-400" />
           <div className="min-w-0 text-[13px]">
-            <p className="font-medium text-obsidian-900">Awaiting a clinical reviewer</p>
+            <p className="font-medium text-obsidian-900">Menunggu reviewer klinis</p>
             <p className="mt-0.5 leading-relaxed text-obsidian-600">
-              Your role ({user ? userRoleLabel[user.role] : 'unknown'}) records screenings but does
-              not sign off reviews. A nurse or physician needs to look at this image.
+              Peran Anda ({user ? userRoleLabel[user.role] : 'tidak diketahui'}) bisa mencatat
+              screening tetapi tidak bisa mengesahkan review. Perawat atau dokter perlu melihat gambar ini.
             </p>
           </div>
         </div>
@@ -133,18 +133,18 @@ export function ReviewForm({
 
   const handleSubmit = async () => {
     if (notes.trim().length < 10) {
-      setError('Add a short note explaining your read. At least 10 characters.');
+      setError('Tambahkan catatan singkat tentang pembacaan Anda. Minimal 10 karakter.');
       return;
     }
     setError(null);
     setSaving(true);
     try {
       await submitReview(screening.id, { agreement, decision, notes: notes.trim() });
-      toast.success('Review recorded.', 'The screening record has been signed off.');
+      toast.success('Review tercatat.', 'Data screening sudah disahkan.');
       onReviewed?.();
     } catch (cause) {
       // The server re-checks that this person may sign off and that the record is open.
-      toast.error('The review could not be recorded.', errorMessage(cause));
+      toast.error('Review gagal dicatat.', errorMessage(cause));
     } finally {
       setSaving(false);
     }
@@ -152,7 +152,7 @@ export function ReviewForm({
 
   return (
     <div className="space-y-4">
-      <Fieldset legend="Your read of the image">
+      <Fieldset legend="Pembacaan Anda atas gambar">
         <RadioGroup<Agreement>
           name="agreement"
           value={agreement}
@@ -160,28 +160,28 @@ export function ReviewForm({
           options={[
             {
               value: 'agrees',
-              label: screening.analysis ? 'Consistent with the screening output' : 'No concern on this image',
+              label: screening.analysis ? 'Sesuai dengan output screening' : 'Tidak ada temuan mengkhawatirkan pada gambar ini',
               description: screening.analysis
-                ? 'What I see matches what the model reported.'
-                : 'I looked at the image and nothing needs escalating.',
+                ? 'Yang saya lihat sesuai dengan laporan model.'
+                : 'Saya sudah melihat gambar dan tidak ada yang perlu dieskalasi.',
             },
             {
               value: 'disagrees',
-              label: screening.analysis ? 'Not consistent with the screening output' : 'Concern on this image',
+              label: screening.analysis ? 'Tidak sesuai dengan output screening' : 'Ada temuan mengkhawatirkan pada gambar ini',
               description: screening.analysis
-                ? 'My read differs. The record should follow my assessment.'
-                : 'I see something that needs follow-up.',
+                ? 'Pembacaan saya berbeda. Data harus mengikuti penilaian saya.'
+                : 'Saya melihat sesuatu yang perlu di-follow-up.',
             },
             {
               value: 'needs-more-data',
-              label: 'Cannot conclude from this image',
-              description: 'Quality or positioning prevents a reliable read.',
+              label: 'Tidak bisa disimpulkan dari gambar ini',
+              description: 'Kualitas atau posisi gambar membuat pembacaan tidak andal.',
             },
           ]}
         />
       </Fieldset>
 
-      <Fieldset legend="What happens next" hint="This drives the record’s workflow state.">
+      <Fieldset legend="Langkah selanjutnya" hint="Pilihan ini menentukan status alur kerja data.">
         <RadioGroup<Decision>
           name="decision"
           value={decision}
@@ -189,29 +189,29 @@ export function ReviewForm({
           options={[
             {
               value: 'refer',
-              label: 'Refer for diagnostic testing',
-              description: 'Escalate to a facility that can confirm or exclude TB.',
+              label: 'Rujuk untuk pemeriksaan diagnostik',
+              description: 'Eskalasi ke fasilitas yang bisa memastikan atau menyingkirkan TB.',
             },
             {
               value: 'repeat-image',
-              label: 'Repeat the radiograph',
-              description: 'Bring the patient back for a better image.',
+              label: 'Ulangi radiograf',
+              description: 'Minta pasien kembali untuk mendapatkan gambar yang lebih baik.',
             },
             {
               value: 'observe',
-              label: 'Observe and recheck',
-              description: 'Keep the record open and schedule a symptom recheck.',
+              label: 'Observasi dan periksa ulang',
+              description: 'Biarkan data tetap terbuka dan jadwalkan pemeriksaan ulang gejala.',
             },
             {
               value: 'no-action',
-              label: 'No further action',
-              description: 'Close the record. The patient is advised to return if symptoms change.',
+              label: 'Tidak ada tindakan lanjutan',
+              description: 'Tutup data. Pasien disarankan kembali jika gejala berubah.',
             },
           ]}
         />
       </Fieldset>
 
-      <Field label="Review note" error={error} required>
+      <Field label="Catatan review" error={error} required>
         {({ id, describedBy, invalid }) => (
           <TextArea
             id={id}
@@ -220,14 +220,14 @@ export function ReviewForm({
             describedBy={describedBy}
             invalid={invalid}
             rows={3}
-            placeholder="What you saw, and why you reached this decision."
+            placeholder="Apa yang Anda lihat, dan alasan Anda mengambil keputusan ini."
           />
         )}
       </Field>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-obsidian-500">
-          Signing as <span className="font-medium text-obsidian-800">{user.name}</span> ·{' '}
+          Disahkan oleh <span className="font-medium text-obsidian-800">{user.name}</span> ·{' '}
           {userRoleLabel[user.role]}
         </p>
         <Button
@@ -236,7 +236,7 @@ export function ReviewForm({
           leadingIcon={<ShieldCheck className="size-4" />}
           onClick={() => void handleSubmit()}
         >
-          Record review
+          Catat review
         </Button>
       </div>
     </div>

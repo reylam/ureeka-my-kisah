@@ -130,14 +130,14 @@ export function FacilitiesPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Healthcare facilities"
-        description="Sample directory of facilities around this district, with the services each one offers."
+        title="Fasilitas kesehatan"
+        description="Direktori contoh fasilitas di sekitar distrik ini, lengkap dengan layanan yang tersedia di masing-masing."
         meta={
           <>
-            <HeaderMeta label="Facilities" value={all.length} />
-            <HeaderMeta label="Can test for TB" value={tbCapable} />
+            <HeaderMeta label="Fasilitas" value={all.length} />
+            <HeaderMeta label="Bisa tes TB" value={tbCapable} />
             <HeaderMeta
-              label="Needing review"
+              label="Perlu ditinjau"
               value={all.filter((f) => f.infoStatus !== 'verified-sample').length}
             />
           </>
@@ -145,9 +145,9 @@ export function FacilitiesPage() {
       />
 
       <Notice tone="demo">
-        Every facility here is invented for the prototype. Addresses, phone numbers, opening hours,
-        services and travel estimates are illustrative sample values and must not be treated as
-        verified real-world information.
+        Semua fasilitas di sini dibuat khusus untuk prototype. Alamat, nomor telepon, jam buka,
+        layanan, dan estimasi perjalanan hanyalah contoh ilustrasi dan tidak boleh dianggap sebagai
+        informasi dunia nyata yang sudah terverifikasi.
       </Notice>
 
       <Card className="overflow-hidden">
@@ -156,8 +156,8 @@ export function FacilitiesPage() {
           onClearFilters={controls.clearAll}
           search={
             <SearchInput
-              label="Search facilities by name, region, address or service"
-              placeholder="Name, region or service"
+              label="Cari fasilitas berdasarkan nama, wilayah, alamat, atau layanan"
+              placeholder="Nama, wilayah, atau layanan"
               value={controls.term}
               onChange={controls.setTerm}
             />
@@ -165,8 +165,8 @@ export function FacilitiesPage() {
           filters={
             <>
               <FilterSelect
-                label="Region"
-                allLabel="All regions"
+                label="Wilayah"
+                allLabel="Semua wilayah"
                 value={controls.filterValues.region}
                 options={DISTRICTS.map((district) => ({
                   value: district,
@@ -176,8 +176,8 @@ export function FacilitiesPage() {
                 onChange={(value) => controls.setFilter('region', value)}
               />
               <FilterSelect
-                label="Type"
-                allLabel="All types"
+                label="Tipe"
+                allLabel="Semua tipe"
                 value={controls.filterValues.type as FacilityType | 'all'}
                 options={TYPES.map((type) => ({
                   value: type,
@@ -187,8 +187,8 @@ export function FacilitiesPage() {
                 onChange={(value) => controls.setFilter('type', value)}
               />
               <FilterSelect
-                label="Service"
-                allLabel="Any service"
+                label="Layanan"
+                allLabel="Semua layanan"
                 value={controls.filterValues.service as FacilityService | 'all'}
                 options={SERVICES.map((service) => ({
                   value: service,
@@ -204,24 +204,24 @@ export function FacilitiesPage() {
               <ResultCount
                 shown={controls.filtered.length}
                 total={all.length}
-                noun="facilities"
+                noun="fasilitas"
               />
               <div
                 role="group"
-                aria-label="View mode"
+                aria-label="Mode tampilan"
                 className="flex items-center rounded-md bg-obsidian-100 p-0.5"
               >
                 <ViewButton
                   active={view === 'list'}
                   onClick={() => setView('list')}
                   icon={<List className="size-3.5" />}
-                  label="List"
+                  label="Daftar"
                 />
                 <ViewButton
                   active={view === 'map'}
                   onClick={() => setView('map')}
                   icon={<MapIcon className="size-3.5" />}
-                  label="Map"
+                  label="Peta"
                 />
               </div>
             </>
@@ -237,11 +237,11 @@ export function FacilitiesPage() {
         ) : all.length === 0 ? (
           <EmptyState
             icon={<Building2 />}
-            title="No facilities in the directory"
-            description="The sample directory could not be loaded."
+            title="Belum ada fasilitas di direktori"
+            description="Direktori contoh tidak berhasil dimuat."
           />
         ) : controls.filtered.length === 0 ? (
-          <NoMatchesState entity="facilities" onClear={controls.clearAll} />
+          <NoMatchesState entity="fasilitas" onClear={controls.clearAll} />
         ) : view === 'map' ? (
           <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
             <FacilityMap
@@ -251,7 +251,7 @@ export function FacilitiesPage() {
             />
             <div>
               <h2 className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-                Nearest first
+                Terdekat dulu
               </h2>
               <ul className="mt-2 divide-y divide-obsidian-100 overflow-hidden rounded-md border border-obsidian-200">
                 {sorted.map((facility) => (
@@ -274,7 +274,7 @@ export function FacilitiesPage() {
                       </span>
                       <span className="shrink-0 text-right text-xs text-obsidian-500 tabular">
                         {facility.id === OPERATING_FACILITY_ID
-                          ? 'Here'
+                          ? 'Di sini'
                           : formatDistance(facility.distanceKm)}
                       </span>
                     </button>
@@ -303,7 +303,7 @@ export function FacilitiesPage() {
         open={Boolean(focused)}
         onClose={() => setFocus(null)}
         size="lg"
-        title={focused?.name ?? 'Facility'}
+        title={focused?.name ?? 'Fasilitas'}
         description={
           focused
             ? `${facilityTypeLabel[focused.type]} · ${focused.region}, ${focused.province}`
@@ -313,7 +313,7 @@ export function FacilitiesPage() {
           focused ? (
             <>
               <Button variant="ghost" onClick={() => setFocus(null)}>
-                Close
+                Tutup
               </Button>
               {focused.id !== OPERATING_FACILITY_ID ? (
                 <Button
@@ -324,7 +324,7 @@ export function FacilitiesPage() {
                     setFocus(null);
                   }}
                 >
-                  Refer a patient here
+                  Rujuk pasien ke sini
                 </Button>
               ) : null}
             </>
@@ -340,14 +340,14 @@ export function FacilitiesPage() {
               <FacilityInfoBadge status={focused.infoStatus} />
               {focused.id === OPERATING_FACILITY_ID ? (
                 <Badge tone="info" icon={<UserRound />}>
-                  Your facility
+                  Fasilitasmu
                 </Badge>
               ) : null}
             </div>
 
             <dl className="divide-y divide-obsidian-100">
-              <DetailRow label="Address">{focused.address}</DetailRow>
-              <DetailRow label="Phone">
+              <DetailRow label="Alamat">{focused.address}</DetailRow>
+              <DetailRow label="Telepon">
                 <a
                   href={`tel:${focused.phone.replace(/[^\d+]/g, '')}`}
                   className="text-ct-700 underline decoration-ct-300 underline-offset-2"
@@ -355,10 +355,10 @@ export function FacilitiesPage() {
                   {focused.phone}
                 </a>
               </DetailRow>
-              <DetailRow label="Opening hours">{focused.operatingHours}</DetailRow>
-              <DetailRow label="Travel from here">
+              <DetailRow label="Jam buka">{focused.operatingHours}</DetailRow>
+              <DetailRow label="Perjalanan dari sini">
                 {focused.id === OPERATING_FACILITY_ID ? (
-                  'This is your facility'
+                  'Ini fasilitasmu'
                 ) : (
                   <span className="tabular">
                     {formatDistance(focused.distanceKm)} ·{' '}
@@ -366,17 +366,17 @@ export function FacilitiesPage() {
                   </span>
                 )}
               </DetailRow>
-              <DetailRow label="TB programme contact">
-                {focused.tbProgrammeContact ?? 'No named contact on file'}
+              <DetailRow label="Kontak program TB">
+                {focused.tbProgrammeContact ?? 'Belum ada kontak yang tercatat'}
               </DetailRow>
-              <DetailRow label="Entry last checked">
+              <DetailRow label="Terakhir dicek">
                 {formatDate(focused.infoUpdatedAt)}
               </DetailRow>
             </dl>
 
             <div>
               <h3 className="text-[11px] font-semibold tracking-wide text-obsidian-500 uppercase">
-                Services listed
+                Layanan yang tersedia
               </h3>
               <ul className="mt-2 flex flex-wrap gap-1.5">
                 {focused.services.map((service) => (
@@ -390,9 +390,9 @@ export function FacilitiesPage() {
             </div>
 
             {focused.infoStatus !== 'verified-sample' ? (
-              <Notice tone="attention" title="This entry may be out of date">
-                It was last checked on {formatDate(focused.infoUpdatedAt)}. Confirm services and
-                opening hours by phone before sending a patient on a long journey.
+              <Notice tone="attention" title="Data ini mungkin sudah usang">
+                Terakhir dicek pada {formatDate(focused.infoUpdatedAt)}. Konfirmasi layanan dan jam
+                buka lewat telepon sebelum mengirim pasien menempuh perjalanan jauh.
               </Notice>
             ) : null}
           </div>
@@ -439,7 +439,7 @@ function FacilityCard({
         </div>
         {isOperating ? (
           <Badge tone="info" size="sm" icon={<UserRound />}>
-            Here
+            Di sini
           </Badge>
         ) : (
           <span className="shrink-0 text-right text-xs font-medium text-obsidian-700 tabular">
@@ -464,19 +464,19 @@ function FacilityCard({
         ))}
         {facility.services.length > 4 ? (
           <li className="rounded px-1.5 py-0.5 text-[11px] text-obsidian-400">
-            +{facility.services.length - 4} more
+            +{facility.services.length - 4} lainnya
           </li>
         ) : null}
       </ul>
 
       <dl className="mt-3 space-y-1 text-xs text-obsidian-500">
         <div className="flex items-start gap-1.5">
-          <dt className="sr-only">Phone</dt>
+          <dt className="sr-only">Telepon</dt>
           <Phone aria-hidden className="mt-0.5 size-3 shrink-0" />
           <dd>{facility.phone}</dd>
         </div>
         <div className="flex items-start gap-1.5">
-          <dt className="sr-only">Opening hours</dt>
+          <dt className="sr-only">Jam buka</dt>
           <Clock aria-hidden className="mt-0.5 size-3 shrink-0" />
           <dd className="leading-relaxed">{facility.operatingHours}</dd>
         </div>
@@ -486,11 +486,11 @@ function FacilityCard({
         <FacilityInfoBadge status={facility.infoStatus} size="sm" />
         <div className="flex gap-1">
           <Button size="sm" variant="ghost" onClick={onOpen}>
-            Details
+            Detail
           </Button>
           {!isOperating ? (
             <Button size="sm" variant="outline" onClick={onRefer}>
-              Refer
+              Rujuk
             </Button>
           ) : null}
         </div>

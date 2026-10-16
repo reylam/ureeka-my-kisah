@@ -47,7 +47,7 @@ export function Toolbar({
               onClick={onClearFilters}
               leadingIcon={<X className="size-3.5" />}
             >
-              Clear {activeFilterCount}
+              Hapus {activeFilterCount}
             </Button>
           ) : null}
         </div>
@@ -67,7 +67,7 @@ export function FilterSelect<T extends string>({
   value,
   options,
   onChange,
-  allLabel = 'All',
+  allLabel = 'Semua',
   className,
 }: {
   label: string;
@@ -107,7 +107,7 @@ export function ResultCount({ shown, total, noun }: { shown: number; total: numb
         </>
       ) : (
         <>
-          <span className="font-medium text-obsidian-800">{shown}</span> of {total} {noun}
+          <span className="font-medium text-obsidian-800">{shown}</span> dari {total} {noun}
         </>
       )}
     </p>

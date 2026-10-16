@@ -82,7 +82,7 @@ export function FacilityMap({
           className,
         )}
       >
-        <p className="text-[13px] text-obsidian-500">No facilities match these filters.</p>
+        <p className="text-[13px] text-obsidian-500">Tidak ada fasilitas yang cocok dengan filter ini.</p>
       </div>
     );
   }
@@ -153,7 +153,7 @@ export function FacilityMap({
                   onMouseLeave={() => setHovered(null)}
                   onFocus={() => setHovered(facility.id)}
                   onBlur={() => setHovered(null)}
-                  aria-label={`${facility.name}, ${facilityTypeLabel[facility.type]}, ${formatDistance(facility.distanceKm)} away`}
+                  aria-label={`${facility.name}, ${facilityTypeLabel[facility.type]}, ${formatDistance(facility.distanceKm)} dari sini`}
                   aria-pressed={facility.id === selectedId}
                   className="absolute -translate-x-1/2 -translate-y-1/2"
                 >
@@ -193,12 +193,12 @@ export function FacilityMap({
             {activePoint.facility.id !== OPERATING_FACILITY_ID ? (
               <p className="mt-1 text-xs text-obsidian-600 tabular">
                 {formatDistance(activePoint.facility.distanceKm)} ·{' '}
-                {formatTravelTime(activePoint.facility.travelTimeMinutes)} travel
+                {formatTravelTime(activePoint.facility.travelTimeMinutes)} perjalanan
               </p>
             ) : (
               <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-ct-700">
                 <Crosshair aria-hidden className="size-3" />
-                Your facility
+                Fasilitasmu
               </p>
             )}
           </div>
@@ -229,8 +229,8 @@ export function FacilityMap({
         </ul>
         <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-obsidian-500">
           <Info aria-hidden className="mt-px size-3 shrink-0" />
-          Schematic plot of sample coordinates, not a navigable map. Relative positions are
-          approximate and no mapping provider is connected.
+          Plot skematis dari koordinat contoh, bukan peta untuk navigasi. Posisi relatifnya
+          hanya perkiraan dan belum ada penyedia peta yang terhubung.
         </p>
       </div>
     </div>

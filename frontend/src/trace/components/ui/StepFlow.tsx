@@ -21,7 +21,7 @@ export function StepFlow({
   return (
     <ol className={cn('grid gap-5 lg:grid-cols-4 lg:gap-6', className)}>
       {steps.map((step, index) => {
-        const built = !step.note.toLowerCase().startsWith('not built');
+        const built = !step.note.toLowerCase().startsWith('belum dibuat');
         return (
           <li key={step.id} className="relative flex gap-4 lg:block">
             {/* Marker and connector */}

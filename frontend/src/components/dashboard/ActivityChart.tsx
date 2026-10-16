@@ -36,7 +36,7 @@ export function ActivityChart({
     return (
       <div className={cn('flex h-40 items-center justify-center', className)}>
         <p className="text-[13px] text-obsidian-500">
-          No screenings recorded in the last {data.length} days.
+          Belum ada screening yang tercatat dalam {data.length} hari terakhir.
         </p>
       </div>
     );
@@ -46,10 +46,10 @@ export function ActivityChart({
     <div className={className}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
         <div className="flex items-baseline gap-4">
-          <Legend swatch="bg-ct-400" label="Screenings" value={total} />
-          <Legend swatch="bg-attention-500" label="Flagged for review" value={flagged} />
+          <Legend swatch="bg-ct-400" label="Screening" value={total} />
+          <Legend swatch="bg-attention-500" label="Ditandai untuk review" value={flagged} />
         </div>
-        <p className="text-xs text-obsidian-400">Last {data.length} days</p>
+        <p className="text-xs text-obsidian-400">{data.length} hari terakhir</p>
       </div>
 
       <div className="relative mt-3" style={{ height }}>
@@ -79,7 +79,7 @@ export function ActivityChart({
                 onMouseLeave={() => setActive(null)}
                 onFocus={() => setActive(index)}
                 onBlur={() => setActive(null)}
-                aria-label={`${formatDateShort(point.date)}: ${point.total} screenings, ${point.flagged} flagged for review`}
+                aria-label={`${formatDateShort(point.date)}: ${point.total} screening, ${point.flagged} ditandai untuk review`}
                 className="group relative flex h-full flex-1 cursor-default flex-col justify-end rounded-sm"
                 style={{ marginRight: barGap - 3 }}
               >
@@ -121,17 +121,17 @@ export function ActivityChart({
             className="pointer-events-none absolute -top-1 right-0 z-10 rounded-md border border-obsidian-200 bg-white px-2.5 py-1.5 text-xs shadow-overlay"
           >
             <p className="font-medium text-obsidian-900">
-              {parseISODate(data[active].date).toLocaleDateString('en-GB', {
+              {parseISODate(data[active].date).toLocaleDateString('id-ID', {
                 weekday: 'short',
                 day: '2-digit',
                 month: 'short',
               })}
             </p>
             <p className="mt-0.5 text-obsidian-600 tabular">
-              {data[active].total} screening{data[active].total === 1 ? '' : 's'}
+              {data[active].total} screening
             </p>
             {data[active].flagged > 0 ? (
-              <p className="text-attention-700 tabular">{data[active].flagged} flagged</p>
+              <p className="text-attention-700 tabular">{data[active].flagged} ditandai</p>
             ) : null}
           </div>
         ) : null}
@@ -146,7 +146,7 @@ export function ActivityChart({
             ? formatDateShort(data[Math.floor(data.length / 2)]!.date)
             : ''}
         </span>
-        <span className="font-medium text-obsidian-600">Today</span>
+        <span className="font-medium text-obsidian-600">Hari ini</span>
       </div>
     </div>
   );

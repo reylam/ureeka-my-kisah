@@ -43,11 +43,11 @@ export function RegisterPage() {
 
   const validate = () => {
     const next: Record<string, string> = {};
-    if (form.name.trim().length < 2) next.name = 'Enter your full name.';
+    if (form.name.trim().length < 2) next.name = 'Masukkan nama lengkap kamu.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-      next.email = 'Enter a valid email address.';
-    if (!strength.ok) next.password = `Password needs ${strength.problems.join(', ')}.`;
-    if (form.confirm !== form.password) next.confirm = 'The two passwords do not match.';
+      next.email = 'Masukkan alamat email yang valid.';
+    if (!strength.ok) next.password = `Password harus memuat ${strength.problems.join(', ')}.`;
+    if (form.confirm !== form.password) next.confirm = 'Kedua password tidak sama.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -68,42 +68,42 @@ export function RegisterPage() {
 
     // When the project requires email confirmation there is no session yet.
     if (result.confirmationRequired) {
-      toast.success('Account created.', 'Check your email to confirm the address, then sign in.');
+      toast.success('Akun berhasil dibuat.', 'Cek email kamu untuk konfirmasi alamat, lalu masuk.');
       navigate('/login', { replace: true });
       return;
     }
 
-    // Straight into the session, then onboarding. Asking someone to sign in
-    // again immediately after registering is a pointless extra step.
-    toast.success('Account created.', 'A few questions next, so your records are complete.');
-    navigate('/onboarding', { replace: true });
+    // Straight into the session and the dashboard. Asking someone to sign in
+    // again, or to answer a questionnaire first, is a pointless extra step.
+    toast.success('Akun berhasil dibuat.', 'Selamat datang di PULMO.');
+    navigate('/app', { replace: true });
   };
 
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
       {/* Logo pinned top-left; the pitch sits centred in the space below it. */}
-      <div className="on-dark flex shrink-0 flex-col bg-obsidian-950 px-6 py-7 sm:px-10 lg:w-[28rem] lg:py-10">
+      <div className="flex shrink-0 flex-col border-b border-obsidian-200 bg-white px-6 py-7 sm:px-10 lg:w-[28rem] lg:border-r lg:border-b-0 lg:py-10">
         <Link to="/" className="inline-flex w-fit">
-          <Logo tone="light" />
+          <Logo tone="dark" />
         </Link>
 
         <div className="mt-8 flex flex-col items-center text-center lg:mt-0 lg:flex-1 lg:justify-center">
-          <h1 className="text-xl leading-snug font-semibold text-white lg:text-2xl">
-            Create a patient account
+          <h1 className="text-xl leading-snug font-semibold text-obsidian-950 lg:text-2xl">
+            Buat akun pasien
           </h1>
-          <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-obsidian-300">
-            Keep your screening history in one place, see follow-up dates, and read TB information
-            written for patients rather than for clinicians.
+          <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-obsidian-600">
+            Simpan riwayat screening kamu di satu tempat, lihat jadwal follow-up, dan baca
+            informasi TB yang ditulis untuk pasien, bukan untuk tenaga medis.
           </p>
 
-          <ul className="mt-6 space-y-2.5 text-[13px] text-obsidian-300">
+          <ul className="mt-6 space-y-2.5 text-[13px] text-obsidian-600">
             {[
-              'Your records stay yours. No other patient can see them.',
-              'Health questions are optional and explained before they are asked.',
-              'Health worker and administrator accounts are created by an administrator, not here.',
+              'Datamu tetap milikmu. Pasien lain tidak bisa melihatnya.',
+              'Pertanyaan kesehatan bersifat opsional dan dijelaskan dulu sebelum ditanyakan.',
+              'Akun petugas kesehatan dan administrator dibuat oleh administrator, bukan di sini.',
             ].map((item) => (
               <li key={item} className="flex items-start gap-2.5 text-left">
-                <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ct-400" />
+                <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ct-600" />
                 {item}
               </li>
             ))}
@@ -118,14 +118,14 @@ export function RegisterPage() {
             className="inline-flex items-center gap-1.5 text-[13px] text-obsidian-500 transition-colors hover:text-obsidian-900"
           >
             <ArrowLeft aria-hidden className="size-3.5" />
-            I already have an account
+            Aku sudah punya akun
           </Link>
 
-          <h2 className="mt-5 text-lg font-semibold text-obsidian-950">Sign up</h2>
-          <p className="mt-1 text-[13px] text-obsidian-500">Takes about a minute.</p>
+          <h2 className="mt-5 text-lg font-semibold text-obsidian-950">Daftar</h2>
+          <p className="mt-1 text-[13px] text-obsidian-500">Cuma butuh sekitar satu menit.</p>
 
           <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
-            <Field label="Full name" error={errors.name ?? null} required>
+            <Field label="Nama lengkap" error={errors.name ?? null} required>
               {({ id, describedBy, invalid }) => (
                 <TextInput
                   id={id}
@@ -140,7 +140,7 @@ export function RegisterPage() {
               )}
             </Field>
 
-            <Field label="Email address" error={errors.email ?? null} required>
+            <Field label="Alamat email" error={errors.email ?? null} required>
               {({ id, describedBy, invalid }) => (
                 <TextInput
                   id={id}
@@ -151,7 +151,7 @@ export function RegisterPage() {
                   describedBy={describedBy}
                   invalid={invalid}
                   leadingIcon={<Mail />}
-                  placeholder="you@example.com"
+                  placeholder="kamu@contoh.com"
                 />
               )}
             </Field>
@@ -159,7 +159,7 @@ export function RegisterPage() {
             <Field
               label="Password"
               error={errors.password ?? null}
-              hint="At least 8 characters, with upper and lower case and a number."
+              hint="Minimal 8 karakter, dengan huruf besar, huruf kecil, dan angka."
               required
             >
               {({ id, describedBy, invalid }) => (
@@ -179,7 +179,7 @@ export function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
                     className="absolute top-1/2 right-2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-obsidian-400 transition-colors hover:bg-obsidian-100 hover:text-obsidian-700"
                   >
                     {showPassword ? (
@@ -195,7 +195,7 @@ export function RegisterPage() {
             {/* Live requirement list, so nobody has to submit to find out */}
             {form.password ? (
               <ul className="-mt-1 flex flex-wrap gap-x-3 gap-y-1">
-                {['at least 8 characters', 'a lower-case letter', 'an upper-case letter', 'a number'].map(
+                {['minimal 8 karakter', 'huruf kecil', 'huruf besar', 'angka'].map(
                   (requirement) => {
                     const met = !strength.problems.includes(requirement);
                     return (
@@ -214,7 +214,7 @@ export function RegisterPage() {
               </ul>
             ) : null}
 
-            <Field label="Confirm password" error={errors.confirm ?? null} required>
+            <Field label="Konfirmasi password" error={errors.confirm ?? null} required>
               {({ id, describedBy, invalid }) => (
                 <TextInput
                   id={id}
@@ -248,13 +248,13 @@ export function RegisterPage() {
               loading={submitting}
               trailingIcon={<ArrowRight className="size-4" />}
             >
-              {submitting ? 'Creating account' : 'Create account'}
+              {submitting ? 'Membuat akun' : 'Buat akun'}
             </Button>
           </form>
 
           <p className="mt-5 border-t border-obsidian-200 pt-4 text-xs leading-relaxed text-obsidian-500">
-            Your password is checked and stored by the sign-in service. PULMO never sees it again
-            after you submit this form.
+            Password kamu diperiksa dan disimpan oleh layanan autentikasi. PULMO tidak akan
+            melihatnya lagi setelah form ini dikirim.
           </p>
         </div>
       </div>

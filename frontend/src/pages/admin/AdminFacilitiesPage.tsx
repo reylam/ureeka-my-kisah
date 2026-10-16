@@ -98,11 +98,11 @@ export function AdminFacilitiesPage() {
 
   const validate = () => {
     const next: Record<string, string> = {};
-    if (draft.name.trim().length < 3) next.name = 'Enter the facility name.';
-    if (!draft.region.trim()) next.region = 'Choose the district.';
-    if (!draft.address.trim()) next.address = 'Enter an address.';
-    if (draft.phone.replace(/\D/g, '').length < 7) next.phone = 'Enter a contact number.';
-    if (draft.services.length === 0) next.services = 'Select at least one service.';
+    if (draft.name.trim().length < 3) next.name = 'Isi nama fasilitas.';
+    if (!draft.region.trim()) next.region = 'Pilih kabupaten/kota.';
+    if (!draft.address.trim()) next.address = 'Isi alamat.';
+    if (draft.phone.replace(/\D/g, '').length < 7) next.phone = 'Isi nomor kontak.';
+    if (draft.services.length === 0) next.services = 'Pilih minimal satu layanan.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -114,16 +114,16 @@ export function AdminFacilitiesPage() {
     try {
       if (editing) {
         await updateFacility(editing.id, draft);
-        toast.success('Facility updated.', 'Marked as needing review again.');
+        toast.success('Fasilitas diperbarui.', 'Ditandai perlu review lagi.');
         setEditing(null);
         return;
       }
 
       await createFacility(draft);
-      toast.success('Facility added.', 'Publish it once the details have been checked.');
+      toast.success('Fasilitas ditambahkan.', 'Publikasikan setelah detailnya dicek.');
       setCreating(false);
     } catch (cause) {
-      toast.error('Could not save the facility.', errorMessage(cause));
+      toast.error('Fasilitas tidak bisa disimpan.', errorMessage(cause));
     }
   };
 
@@ -131,16 +131,16 @@ export function AdminFacilitiesPage() {
     const next = !facility.published;
     try {
       await setPublished(facility.id, next);
-      toast.success(next ? 'Published to the directory.' : 'Removed from the directory.');
+      toast.success(next ? 'Dipublikasikan ke direktori.' : 'Dihapus dari direktori.');
     } catch (cause) {
-      toast.error('Could not change publication.', errorMessage(cause));
+      toast.error('Status publikasi tidak bisa diubah.', errorMessage(cause));
     }
   };
 
   const columns: Column<ManagedFacility>[] = [
     {
       id: 'name',
-      header: 'Facility',
+      header: 'Fasilitas',
       cell: (facility) => (
         <StackedCell
           primary={facility.name}
@@ -150,19 +150,19 @@ export function AdminFacilitiesPage() {
     },
     {
       id: 'services',
-      header: 'Services',
+      header: 'Layanan',
       hideBelow: 'lg',
       cell: (facility) => (
         <span className="text-obsidian-600">
           {facility.services.length === 0
-            ? 'None recorded'
+            ? 'Belum ada yang tercatat'
             : facility.services.map((service) => facilityServiceLabel[service]).join(', ')}
         </span>
       ),
     },
     {
       id: 'contact',
-      header: 'Contact',
+      header: 'Kontak',
       hideBelow: 'md',
       cell: (facility) => (
         <StackedCell primary={facility.phone} secondary={facility.operatingHours || undefined} />
@@ -170,33 +170,33 @@ export function AdminFacilitiesPage() {
     },
     {
       id: 'info',
-      header: 'Record',
+      header: 'Rekam',
       hideBelow: 'md',
       cell: (facility) => (
         <StackedCell
           primary={<FacilityInfoBadge status={facility.infoStatus} size="sm" />}
-          secondary={`Updated ${formatDate(facility.infoUpdatedAt)}`}
+          secondary={`Diperbarui ${formatDate(facility.infoUpdatedAt)}`}
         />
       ),
     },
     {
       id: 'published',
-      header: 'Directory',
+      header: 'Direktori',
       cell: (facility) =>
         facility.published ? (
           <Badge tone="complete" size="sm" icon={<Eye />}>
-            Public
+            Publik
           </Badge>
         ) : (
           <Badge tone="inert" size="sm" icon={<EyeOff />}>
-            Hidden
+            Disembunyikan
           </Badge>
         ),
     },
     {
       id: 'actions',
       header: '',
-      srHeader: 'Actions',
+      srHeader: 'Aksi',
       align: 'right',
       cell: (facility) => (
         <div className="flex justify-end gap-1">
@@ -206,10 +206,10 @@ export function AdminFacilitiesPage() {
             leadingIcon={<Pencil className="size-3.5" />}
             onClick={() => openEdit(facility)}
           >
-            Edit
+            Ubah
           </Button>
           <Button variant="ghost" size="sm" onClick={() => togglePublished(facility)}>
-            {facility.published ? 'Unpublish' : 'Publish'}
+            {facility.published ? 'Batalkan publikasi' : 'Publikasikan'}
           </Button>
         </div>
       ),
@@ -221,44 +221,45 @@ export function AdminFacilitiesPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Facilities"
-        description="Hospitals, puskesmas and labs. Published entries appear in the public directory."
+        title="Fasilitas"
+        description="Rumah sakit, puskesmas, dan lab. Entri yang dipublikasikan tampil di direktori publik."
         actions={
           <Button variant="primary" leadingIcon={<Plus className="size-4" />} onClick={openCreate}>
-            Add facility
+            Tambah fasilitas
           </Button>
         }
       />
 
       <Notice tone="info" compact>
-        New entries start hidden. Check the address, phone number and services, then publish, so
-        nobody is sent to a facility that cannot run the test they need.
+        Entri baru otomatis disembunyikan. Cek alamat, nomor telepon, dan layanan, lalu
+        publikasikan, supaya tidak ada yang diarahkan ke fasilitas yang tidak bisa menjalankan tes
+        yang dibutuhkan.
       </Notice>
 
       <Card>
         <CardHeader
-          title={`${rows.length} of ${facilities.length} facilities`}
+          title={`${rows.length} dari ${facilities.length} fasilitas`}
           icon={<Building2 />}
           actions={
             <SearchInput
-              label="Search facilities"
+              label="Cari fasilitas"
               value={query}
               onChange={setQuery}
-              placeholder="Name or district"
+              placeholder="Nama atau kabupaten/kota"
             />
           }
         />
         <CardBody padded={false}>
           {rows.length === 0 ? (
             <div className="p-4">
-              <NoMatchesState entity="facilities" onClear={() => setQuery('')} />
+              <NoMatchesState entity="fasilitas" onClear={() => setQuery('')} />
             </div>
           ) : (
             <DataTable
               rows={rows}
               columns={columns}
               rowKey={(facility) => facility.id}
-              caption="Healthcare facilities in the directory"
+              caption="Fasilitas kesehatan di direktori"
               renderMobileCard={(facility) => (
                 <div className="space-y-2">
                   <StackedCell
@@ -268,11 +269,11 @@ export function AdminFacilitiesPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     {facility.published ? (
                       <Badge tone="complete" size="sm" icon={<Eye />}>
-                        Public
+                        Publik
                       </Badge>
                     ) : (
                       <Badge tone="inert" size="sm" icon={<EyeOff />}>
-                        Hidden
+                        Disembunyikan
                       </Badge>
                     )}
                     <FacilityInfoBadge status={facility.infoStatus} size="sm" />
@@ -290,11 +291,11 @@ export function AdminFacilitiesPage() {
           setCreating(false);
           setEditing(null);
         }}
-        title={editing ? 'Edit facility' : 'Add facility'}
+        title={editing ? 'Ubah fasilitas' : 'Tambah fasilitas'}
         description={
           editing
-            ? 'Saving marks the record as needing review again.'
-            : 'The entry is created hidden until you publish it.'
+            ? 'Menyimpan akan menandai rekam ini perlu review lagi.'
+            : 'Entri dibuat dalam keadaan tersembunyi sampai kamu publikasikan.'
         }
         footer={
           <>
@@ -305,16 +306,16 @@ export function AdminFacilitiesPage() {
                 setEditing(null);
               }}
             >
-              Cancel
+              Batal
             </Button>
             <Button variant="primary" onClick={save}>
-              {editing ? 'Save changes' : 'Add facility'}
+              {editing ? 'Simpan perubahan' : 'Tambah fasilitas'}
             </Button>
           </>
         }
       >
         <div className="space-y-4">
-          <Field label="Facility name" error={errors.name ?? null} required>
+          <Field label="Nama fasilitas" error={errors.name ?? null} required>
             {({ id, describedBy, invalid }) => (
               <TextInput
                 id={id}
@@ -327,7 +328,7 @@ export function AdminFacilitiesPage() {
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Type" required>
+            <Field label="Tipe" required>
               {({ id }) => (
                 <Select
                   id={id}
@@ -345,7 +346,7 @@ export function AdminFacilitiesPage() {
               )}
             </Field>
 
-            <Field label="District" error={errors.region ?? null} required>
+            <Field label="Kabupaten/kota" error={errors.region ?? null} required>
               {({ id, describedBy, invalid }) => (
                 <Select
                   id={id}
@@ -354,7 +355,7 @@ export function AdminFacilitiesPage() {
                   describedBy={describedBy}
                   invalid={invalid}
                 >
-                  <option value="">Choose a district</option>
+                  <option value="">Pilih kabupaten/kota</option>
                   {DISTRICTS.map((district) => (
                     <option key={district} value={district}>
                       {district}
@@ -365,7 +366,7 @@ export function AdminFacilitiesPage() {
             </Field>
           </div>
 
-          <Field label="Address" error={errors.address ?? null} required>
+          <Field label="Alamat" error={errors.address ?? null} required>
             {({ id, describedBy, invalid }) => (
               <TextArea
                 id={id}
@@ -379,7 +380,7 @@ export function AdminFacilitiesPage() {
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Phone" error={errors.phone ?? null} required>
+            <Field label="Telepon" error={errors.phone ?? null} required>
               {({ id, describedBy, invalid }) => (
                 <TextInput
                   id={id}
@@ -392,7 +393,7 @@ export function AdminFacilitiesPage() {
               )}
             </Field>
 
-            <Field label="Opening hours" hint="For example: Mon to Fri, 08:00 to 14:00">
+            <Field label="Jam operasional" hint="Contoh: Senin sampai Jumat, 08:00 sampai 14:00">
               {({ id }) => (
                 <TextInput
                   id={id}
@@ -406,8 +407,8 @@ export function AdminFacilitiesPage() {
           </div>
 
           <Field
-            label="Services available"
-            hint="What this facility can actually do. Patients use this to decide where to go."
+            label="Layanan tersedia"
+            hint="Apa saja yang benar-benar bisa dilakukan fasilitas ini. Pasien memakai info ini untuk memilih tujuan."
             error={errors.services ?? null}
             required
           >
@@ -432,7 +433,7 @@ export function AdminFacilitiesPage() {
             )}
           </Field>
 
-          <Field label="TB programme contact" hint="Optional. Leave blank if there is no TB programme.">
+          <Field label="Kontak program TB" hint="Opsional. Kosongkan jika tidak ada program TB.">
             {({ id }) => (
               <TextInput
                 id={id}
