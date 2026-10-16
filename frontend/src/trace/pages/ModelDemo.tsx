@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { ArrowRight, BookOpen, FileImage, Microscope, RotateCcw, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, FileImage, Microscope, RotateCcw, Shuffle } from 'lucide-react';
 import { Container, SectionBand } from '@/trace/components/ui/Container';
 import { Eyebrow, SectionHeading } from '@/trace/components/ui/SectionHeading';
 import { TraceButton, TraceLinkButton } from '@/trace/components/ui/TraceButton';
@@ -10,11 +10,10 @@ import { InferenceStatus } from '@/trace/components/demo/InferenceStatus';
 import { SimulatedResultPanel } from '@/trace/components/demo/SimulatedResultPanel';
 import { ModelResultPanel } from '@/trace/components/demo/ModelResultPanel';
 import { OutputGlossary } from '@/trace/components/demo/OutputGlossary';
-import { SampleRadiograph } from '@/components/screening/SampleRadiograph';
 import { Mascot } from '@/trace/components/visuals/Mascot';
 import { MAX_BYTES, MIN_EDGE_PX, useImageUpload } from '@/trace/hooks/useImageUpload';
 import { useDemoInference } from '@/trace/hooks/useDemoInference';
-import { useSyntheticSample } from '@/trace/hooks/useSyntheticSample';
+import { SAMPLE_COUNT, useSampleImage } from '@/trace/hooks/useSampleImage';
 import { localModelSupported, preloadLocalModel } from '@/services/localModel';
 
 /**
@@ -66,7 +65,7 @@ export function TraceModelDemo() {
     clear();
   }, [reset, clear]);
 
-  const sample = useSyntheticSample(selectAndReset);
+  const sample = useSampleImage(selectAndReset);
 
   const canAnalyse = Boolean(upload.image) && inference.state !== 'running';
 
@@ -85,7 +84,7 @@ export function TraceModelDemo() {
             yang dihasilkan, dan kata-kata yang harus menyertainya. Cuma butuh sekitar satu menit.
           </p>
 
-          <div className="mt-8 grid gap-3 lg:max-w-4xl lg:grid-cols-2">
+          <div data-tour="demo-disclaimers" className="mt-8 grid gap-3 lg:max-w-4xl lg:grid-cols-2">
             <DisclaimerBanner tone="caution" title="Ini tidak bisa memberitahumu apakah kamu menderita TB">
               {live
                 ? 'Model terlatih membaca gambar dan memberi tiga score serta satu risk point, tetapi belum divalidasi secara klinis di sini dan tidak ada angka akurasi yang diklaim. Ini alat bantu screening, bukan penilaian tentang seseorang. Kalau kamu khawatir soal tuberkulosis, temui tenaga kesehatan.'
@@ -130,40 +129,29 @@ export function TraceModelDemo() {
                   'File asli, bukan foto layar',
                 ]}
               />
-              <div className="relative rounded-2xl border border-trace-line bg-trace-card p-5 sm:col-span-2">
+              <div className="rounded-2xl border border-trace-line bg-trace-card p-5 sm:col-span-2">
                 <p className="trace-label text-trace-dim">Tidak punya X-ray?</p>
                 <p className="mt-2.5 text-[13.5px] leading-6 text-trace-muted">
-                  Pakai yang digambar saja. Gambar ini dibuat lewat kode, diberi label sebagai
-                  ilustrasi, dan melewati pengecekan yang persis sama dengan file milikmu. Tidak ada
-                  X-ray pasien sungguhan di mana pun di situs ini.
-                  {live
-                    ? ' Model tetap akan memberinya score, tetapi gambar bukan paru-paru, jadi score itu tidak berarti apa-apa.'
-                    : ''}
+                  Pakai contoh gambar. Satu chest X-ray dipilih acak dari {SAMPLE_COUNT} contoh yang
+                  disertakan di situs ini, dan melewati pengecekan yang persis sama dengan file
+                  milikmu. Tekan lagi untuk mendapat gambar yang lain.
                 </p>
                 <TraceButton
                   variant="secondary"
                   size="sm"
                   className="mt-4"
+                  data-tour="demo-sample"
                   onClick={sample.load}
-                  disabled={sample.isBuilding}
+                  disabled={sample.isLoading}
                 >
-                  <Sparkles aria-hidden className="size-3.5" />
-                  {sample.isBuilding ? 'Menyiapkan…' : 'Pakai contoh gambar'}
+                  <Shuffle aria-hidden className="size-3.5" />
+                  {sample.isLoading ? 'Memuat…' : 'Pakai contoh gambar'}
                 </TraceButton>
                 {sample.error ? (
                   <p role="alert" className="mt-2 text-[12.5px] text-trace-flag">
                     {sample.error}
                   </p>
                 ) : null}
-
-                {/* Off-screen source for the rasteriser. Not shown to anyone. */}
-                <div
-                  ref={sample.containerRef}
-                  aria-hidden
-                  className="pointer-events-none absolute size-px overflow-hidden opacity-0"
-                >
-                  <SampleRadiograph variant="sample-a" />
-                </div>
               </div>
             </div>
           </div>
@@ -177,19 +165,24 @@ export function TraceModelDemo() {
             {/* Left column: input */}
             <div className="space-y-5">
               {upload.image ? (
-                <ImagePreview image={upload.image} onRemove={removeAndReset} />
+                <div data-tour="demo-preview">
+                  <ImagePreview image={upload.image} onRemove={removeAndReset} />
+                </div>
               ) : null}
 
-              <UploadDropzone
-                onSelect={selectAndReset}
-                error={upload.error}
-                isReading={upload.isReading}
-                hasImage={Boolean(upload.image)}
-              />
+              <div data-tour="demo-upload">
+                <UploadDropzone
+                  onSelect={selectAndReset}
+                  error={upload.error}
+                  isReading={upload.isReading}
+                  hasImage={Boolean(upload.image)}
+                />
+              </div>
 
               <div className="flex flex-wrap items-center gap-3">
                 <TraceButton
                   disabled={!canAnalyse}
+                  data-tour="demo-run"
                   onClick={() => upload.image && inference.run(upload.image)}
                 >
                   Periksa X-ray ini
@@ -214,15 +207,20 @@ export function TraceModelDemo() {
 
             {/* Right column: run state */}
             <div className="space-y-5 lg:sticky lg:top-20 lg:self-start">
-              <InferenceStatus
-                state={inference.state}
-                hasImage={Boolean(upload.image)}
-                stageIndex={inference.stageIndex}
-                progress={inference.progress}
-                errorMessage={inference.errorMessage}
-                stages={inference.stages}
-                live={inference.mode === 'live'}
-              />
+              <div
+                data-tour="demo-status"
+                data-tour-failed={inference.state === 'error' ? '' : undefined}
+              >
+                <InferenceStatus
+                  state={inference.state}
+                  hasImage={Boolean(upload.image)}
+                  stageIndex={inference.stageIndex}
+                  progress={inference.progress}
+                  errorMessage={inference.errorMessage}
+                  stages={inference.stages}
+                  live={inference.mode === 'live'}
+                />
+              </div>
 
               {/* Waiting state only. Once there is an image, and certainly once
                   there is a result, a cartoon face is the wrong note. */}
@@ -240,19 +238,17 @@ export function TraceModelDemo() {
 
           {/* Result */}
           {inference.state === 'done' && upload.image ? (
-            inference.analysis ? (
-              <ModelResultPanel
-                analysis={inference.analysis}
-                image={upload.image}
-                className="mt-6"
-              />
-            ) : inference.scenario ? (
-              <SimulatedResultPanel
-                scenario={inference.scenario}
-                image={upload.image}
-                className="mt-6"
-              />
-            ) : null
+            <div data-tour="demo-result" className="mt-6">
+              {inference.analysis ? (
+                <ModelResultPanel
+                  analysis={inference.analysis}
+                  image={upload.image}
+                  heatmapUrl={inference.heatmapUrl}
+                />
+              ) : inference.scenario ? (
+                <SimulatedResultPanel scenario={inference.scenario} image={upload.image} />
+              ) : null}
+            </div>
           ) : null}
         </Container>
       </SectionBand>
@@ -266,7 +262,7 @@ export function TraceModelDemo() {
             title="Sebenarnya apa arti output ini?"
             standfirst="Tiga istilah yang sering dipakai seolah-olah sama."
           />
-          <div className="mt-9">
+          <div data-tour="demo-glossary" className="mt-9">
             <OutputGlossary />
           </div>
         </Container>

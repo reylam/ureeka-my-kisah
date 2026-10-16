@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { Container } from '@/trace/components/ui/Container';
+import { PatientTour, TourInvite } from '@/trace/components/tour/PatientTour';
 
 /**
  * Shell for the research site.
@@ -63,6 +64,9 @@ export function TraceLayout() {
       </main>
 
       <Footer />
+
+      <PatientTour />
+      <TourInvite />
     </div>
   );
 }

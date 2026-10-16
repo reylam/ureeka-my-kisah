@@ -1,8 +1,8 @@
 {
   "name": "PARUPINTAS · Skrining TB Berbantuan AI",
   "short_name": "PARUPINTAS",
-  "description": "Research prototype for AI-assisted tuberculosis screening from chest X-rays. Research and educational use only, not for clinical diagnosis. All data is synthetic.",
-  "start_url": "/dashboard",
+  "description": "Research prototype for AI-assisted tuberculosis screening from chest X-rays. Research and educational use only, not for clinical diagnosis.",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",

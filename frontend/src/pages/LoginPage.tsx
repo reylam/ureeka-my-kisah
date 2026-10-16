@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Lock, Mail, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound, Lock, Mail, ScanSearch, ShieldAlert } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/forms/Field';
@@ -10,27 +10,31 @@ import { ROLE_HOME } from '@/lib/permissions';
 import { toast } from '@/stores/toastStore';
 
 /**
- * Sign-in.
+ * Sign-in, for clinic staff only.
  *
- * The fields start empty; the form exercises its own validation rather than
- * arriving pre-filled. The sample accounts that used to be listed down the
- * side are in `docs/accounts.md` now, which is the right home for credentials
- * nobody needs to see mid-task.
+ * Two kinds of staff sign in here: the administrator (front desk) and the
+ * radiologist. Patients do not have accounts: they register on the request
+ * form and follow it with the access code it gives them, which is what the
+ * panel on the left points to.
  *
- * On success the destination comes from the role, not from a constant, so a
- * patient does not land on the clinical dashboard.
+ * On success the destination comes from the role, not from a constant.
+ */
+
+/**
+ * The staff accounts seeded by `backend/supabase/seed.sql`, offered on the
+ * left so a demo visitor can sign in with one press. Pressing one only fills
+ * the form; signing in is still the visitor's own click.
  */
 const DEMO_ACCOUNTS = [
-  { role: 'Pasien', email: 'patient@parupintas.test', password: 'Patient123!' },
-  { role: 'Tenaga kesehatan', email: 'doctor@parupintas.test', password: 'Doctor123!' },
-  { role: 'Administrator', email: 'admin@parupintas.test', password: 'Admin123!' },
+  { label: 'Admin', name: 'Rina Hartati', email: 'admin@parupintas.test', password: 'Admin123!' },
+  { label: 'Dokter radiologi', name: 'dr. Hanif Ramadhan, Sp.Rad', email: 'radiolog@parupintas.test', password: 'Radiolog123!' },
+  { label: 'Dokter radiologi', name: 'dr. Sri Wulandari, Sp.Rad', email: 'radiolog2@parupintas.test', password: 'Radiolog123!' },
 ] as const;
-
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const signIn = useAuthStore((state) => state.signIn);
-  const alreadySignedIn = useAuthStore((state) => Boolean(state.accountId));
+  const alreadySignedIn = useAuthStore((state) => Boolean(state.account));
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,6 +58,12 @@ export function LoginPage() {
     return Object.keys(next).length === 0;
   };
 
+  const fillDemoAccount = (account: (typeof DEMO_ACCOUNTS)[number]) => {
+    setEmail(account.email);
+    setPassword(account.password);
+    setErrors({});
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validate()) return;
@@ -69,15 +79,14 @@ export function LoginPage() {
       return;
     }
 
-    toast.success(`Selamat datang kembali, ${result.account.name.split(' ')[0]}.`);
+    toast.success(`Selamat datang, ${result.account.name.split(' ')[0]}.`);
     navigate(from ?? ROLE_HOME[result.account.role], { replace: true });
   };
 
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
       {/* Brand panel. Logo pinned top-left; the pitch sits centred in the
-          remaining space, since the disclaimer that used to balance the
-          bottom is gone. */}
+          remaining space. */}
       <div className="relative flex shrink-0 flex-col border-b border-obsidian-200 bg-white px-6 py-7 sm:px-10 lg:w-[26rem] lg:border-r lg:border-b-0 lg:py-10">
         <Link to="/" className="inline-flex w-fit">
           <Logo tone="dark" />
@@ -85,59 +94,78 @@ export function LoginPage() {
 
         <div className="mt-8 flex flex-col items-center text-center lg:mt-0 lg:flex-1 lg:justify-center">
           <h1 className="text-xl leading-snug font-semibold text-obsidian-950 lg:text-2xl">
-            Masuk ke PARUPINTAS
+            Masuk untuk petugas klinik
           </h1>
           <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-obsidian-600">
-            Pasien, petugas kesehatan, dan administrator masing-masing punya tampilan workspace
-            yang berbeda.
+            Admin menyimpan data pasien, melihat riwayat rontgen, dan memantau antrean. Dokter
+            Sp. Radiologi memeriksa rontgen, menentukan prioritas, lalu mengirimnya ke sistem.
           </p>
 
-          <ul className="mt-6 space-y-2.5 text-[13px] text-obsidian-600">
-            {[
-              'Baca informasi TB dan direktori fasilitas tanpa perlu akun',
-              'Daftar akan membuat akun pasien',
-              'Datamu hanya bisa dilihat oleh kamu dan tim perawatmu',
-            ].map((item) => (
-              <li key={item} className="flex items-start gap-2.5 text-left">
-                <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ct-600" />
-                {item}
-              </li>
-            ))}
-          </ul>
-
           <div className="mt-8 w-full max-w-sm rounded-xl border border-obsidian-200 bg-cloud p-4 text-left">
-            <p className="text-[12px] font-semibold tracking-wide text-obsidian-500 uppercase">
-              Akun demo
+            <p className="flex items-center gap-2 text-[13px] font-semibold text-obsidian-950">
+              <ScanSearch aria-hidden className="size-4 text-ct-700" />
+              Kamu pasien?
+            </p>
+            <p className="mt-1.5 text-[12.5px] leading-relaxed text-obsidian-600">
+              Pasien tidak perlu akun. Isi formulir pendaftaran untuk mendapat kode akses, lalu
+              pakai kode itu untuk melihat status, hasil awal, dan nomor antreanmu.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+              <Link
+                to="/daftar"
+                className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ct-700 underline underline-offset-2 hover:text-ct-800"
+              >
+                Daftar periksa
+                <ArrowRight aria-hidden className="size-3.5" />
+              </Link>
+              <Link
+                to="/hasil"
+                className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ct-700 underline underline-offset-2 hover:text-ct-800"
+              >
+                Cek hasil
+                <ArrowRight aria-hidden className="size-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-4 w-full max-w-sm rounded-xl border border-obsidian-200 bg-white p-4 text-left">
+            <p className="flex items-center gap-2 text-[13px] font-semibold text-obsidian-950">
+              <KeyRound aria-hidden className="size-4 text-ct-700" />
+              Akun demo petugas
+            </p>
+            <p className="mt-1.5 text-[12.5px] leading-relaxed text-obsidian-600">
+              Pilih salah satu untuk mengisi formulir, lalu tekan Masuk.
             </p>
             <ul className="mt-3 space-y-2">
-              {DEMO_ACCOUNTS.map((account) => (
-                <li key={account.email}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail(account.email);
-                      setPassword(account.password);
-                      setErrors({});
-                    }}
-                    className="w-full rounded-lg border border-obsidian-200 bg-white px-3 py-2 text-left transition-colors hover:border-ct-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ct-600"
-                  >
-                    <span className="block text-[12px] font-medium text-obsidian-950">
-                      {account.role}
-                    </span>
-                    <span className="block font-mono text-[11.5px] text-obsidian-600">
-                      {account.email}
-                    </span>
-                    <span className="block font-mono text-[11.5px] text-obsidian-600">
-                      {account.password}
-                    </span>
-                  </button>
-                </li>
-              ))}
+              {DEMO_ACCOUNTS.map((account) => {
+                const selected = email === account.email;
+                return (
+                  <li key={account.email}>
+                    <button
+                      type="button"
+                      onClick={() => fillDemoAccount(account)}
+                      aria-pressed={selected}
+                      className={
+                        'w-full rounded-lg border px-3 py-2.5 text-left transition-colors ' +
+                        (selected
+                          ? 'border-ct-700 bg-cloud'
+                          : 'border-obsidian-200 hover:border-obsidian-400 hover:bg-cloud')
+                      }
+                    >
+                      <span className="flex items-baseline justify-between gap-2">
+                        <span className="text-[13px] font-medium text-obsidian-950">{account.name}</span>
+                        <span className="shrink-0 text-[11.5px] text-ct-700">{account.label}</span>
+                      </span>
+                      <span className="mt-0.5 block font-mono text-[11.5px] text-obsidian-500">
+                        {account.email} · {account.password}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
-            <p className="mt-3 text-[11.5px] leading-relaxed text-obsidian-500">
-              Klik salah satu untuk mengisi formulir.
-            </p>
-          </div>        </div>
+          </div>
+        </div>
       </div>
 
       {/* Form panel */}
@@ -153,13 +181,7 @@ export function LoginPage() {
 
           <h2 className="mt-5 text-lg font-semibold text-obsidian-950">Masuk</h2>
           <p className="mt-1 text-[13px] text-obsidian-500">
-            Belum punya akun?{' '}
-            <Link
-              to="/register"
-              className="font-medium text-ct-700 underline underline-offset-2 hover:text-ct-800"
-            >
-              Buat akun pasien
-            </Link>
+            Akun petugas dibuat oleh pengelola sistem.
           </p>
 
           {state?.suspended ? (
@@ -168,7 +190,7 @@ export function LoginPage() {
               className="mt-4 flex items-start gap-2.5 rounded-xl border border-attention-300 bg-attention-50 px-3 py-2.5 text-[13px] text-attention-800"
             >
               <ShieldAlert aria-hidden className="mt-px size-4 shrink-0" />
-              <span>Akun ini sedang ditangguhkan. Administrator perlu mengaktifkannya kembali.</span>
+              <span>Akun ini sedang ditangguhkan. Hubungi pengelola sistem.</span>
             </div>
           ) : null}
 

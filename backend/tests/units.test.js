@@ -84,8 +84,8 @@ describe('model response mapping', () => {
   });
 
   test('zones follow radiograph convention (patient right is picture left)', () => {
-    assert.equal(zoneFor({ x: 0.05, y: 0.05, width: 0.2, height: 0.2 }), 'right upper zone');
-    assert.equal(zoneFor({ x: 0.7, y: 0.7, width: 0.2, height: 0.2 }), 'left lower zone');
+    assert.equal(zoneFor({ x: 0.05, y: 0.05, width: 0.2, height: 0.2 }), 'zona kanan atas');
+    assert.equal(zoneFor({ x: 0.7, y: 0.7, width: 0.2, height: 0.2 }), 'zona kiri bawah');
   });
 
   test('the client answers "not connected" without a URL, and never calls out', async () => {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { analyseImageLocally } from '@/services/localModel';
+import { screenImageLocally } from '@/services/localModel';
 import type { ScreeningAnalysis } from '@/types/domain';
 import type { DemoScenario } from '@/trace/data/demoResults';
 import type { SelectedImage } from './useImageUpload';
@@ -36,11 +36,19 @@ export const LIVE_STAGES: InferenceStage[] = [
       'Model berjalan di browser kamu, gambar tidak dikirim ke mana pun. Pertama kali dipakai, file model (sekitar 6 MB) diunduh dulu',
   },
   {
+    id: 'localise',
+    label: 'Mencari area yang dipakai model',
+    detail:
+      'Hanya bila kelas teratas bukan Sehat. Tiap bagian gambar ditutup bergantian dan model dijalankan ulang; area yang paling menurunkan score diberi kotak',
+  },
+  {
     id: 'report',
     label: 'Menyusun hasil',
-    detail: 'Tiga score kelas, satu risk point, dan peringatan yang menyertainya',
+    detail: 'Tiga score kelas, satu risk point, kotak beserta labelnya, dan peringatan yang menyertainya',
   },
 ];
+
+const STAGE_INDEX = { analyse: 1, localise: 2 } as const;
 
 export interface DemoInference {
   mode: 'live' | 'simulated';
@@ -51,6 +59,8 @@ export interface DemoInference {
   stages: InferenceStage[];
   /** Set when the model produced the answer. */
   analysis: ScreeningAnalysis | null;
+  /** Occlusion heat map behind the analysis's regions, when it has any. */
+  heatmapUrl: string | null;
   /** Set when the stand-in produced the answer. */
   scenario: DemoScenario | null;
   errorMessage: string | null;
@@ -68,8 +78,12 @@ export function useDemoInference(live: boolean): DemoInference {
 
   const [liveState, setLiveState] = useState<InferenceState>('idle');
   const [liveStage, setLiveStage] = useState(0);
+  const [stageShare, setStageShare] = useState(0);
   const [analysis, setAnalysis] = useState<ScreeningAnalysis | null>(null);
+  const [heatmapUrl, setHeatmapUrl] = useState<string | null>(null);
   const [liveError, setLiveError] = useState<string | null>(null);
+  // Localisation runs the network about a hundred times; a reset stops it.
+  const controller = useRef<AbortController | null>(null);
   // Bumped on reset and on every new run. A run that finishes after that must
   // not write its answer under a different picture.
   const generation = useRef(0);
@@ -77,6 +91,7 @@ export function useDemoInference(live: boolean): DemoInference {
   useEffect(
     () => () => {
       generation.current += 1;
+      controller.current?.abort();
     },
     [],
   );
@@ -85,10 +100,14 @@ export function useDemoInference(live: boolean): DemoInference {
 
   const reset = useCallback(() => {
     generation.current += 1;
+    controller.current?.abort();
+    controller.current = null;
     resetSimulated();
     setLiveState('idle');
     setLiveStage(0);
+    setStageShare(0);
     setAnalysis(null);
+    setHeatmapUrl(null);
     setLiveError(null);
   }, [resetSimulated]);
 
@@ -101,16 +120,32 @@ export function useDemoInference(live: boolean): DemoInference {
 
       generation.current += 1;
       const mine = generation.current;
+      controller.current?.abort();
+      const abort = new AbortController();
+      controller.current = abort;
 
       setAnalysis(null);
+      setHeatmapUrl(null);
       setLiveError(null);
       setLiveStage(1);
+      setStageShare(0);
       setLiveState('running');
 
-      analyseImageLocally(image.file)
+      screenImageLocally(image.file, {
+        signal: abort.signal,
+        onStage: (stage) => {
+          if (generation.current !== mine) return;
+          setLiveStage(STAGE_INDEX[stage]);
+          setStageShare(0);
+        },
+        onProgress: (share) => {
+          if (generation.current === mine) setStageShare(share);
+        },
+      })
         .then((result) => {
           if (generation.current !== mine) return;
-          setAnalysis(result);
+          setAnalysis(result.analysis);
+          setHeatmapUrl(result.heatmapUrl);
           setLiveStage(LIVE_STAGES.length);
           setLiveState('done');
         })
@@ -131,6 +166,7 @@ export function useDemoInference(live: boolean): DemoInference {
       stageIndex: simulated.stageIndex,
       stages: SIMULATED_STAGES,
       analysis: null,
+      heatmapUrl: null,
       scenario: simulated.result,
       errorMessage: simulated.errorMessage,
       run,
@@ -141,10 +177,16 @@ export function useDemoInference(live: boolean): DemoInference {
   return {
     mode: 'live',
     state: liveState,
-    progress: liveState === 'done' ? 1 : liveState === 'running' ? liveStage / LIVE_STAGES.length : 0,
+    progress:
+      liveState === 'done'
+        ? 1
+        : liveState === 'running'
+          ? (liveStage + stageShare) / LIVE_STAGES.length
+          : 0,
     stageIndex: liveStage,
     stages: LIVE_STAGES,
     analysis,
+    heatmapUrl,
     scenario: null,
     errorMessage: liveError,
     run,

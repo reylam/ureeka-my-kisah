@@ -1,320 +1,268 @@
-import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronRight, ScanLine, UserPlus, Users } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronRight, UserPlus, Users } from 'lucide-react';
 import { PageHeader, HeaderMeta } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Dialog } from '@/components/ui/Dialog';
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { SearchInput } from '@/components/forms/Inputs';
-import { FilterSelect, ResultCount, Toolbar } from '@/components/ui/Toolbar';
 import { DataTable, MonoCell, StackedCell, type Column } from '@/components/ui/DataTable';
-import { Pagination } from '@/components/ui/Pagination';
-import { EmptyState, NoMatchesState, ErrorState } from '@/components/ui/EmptyState';
-import { TableSkeleton } from '@/components/ui/Skeleton';
+import { PatientFields } from '@/components/patients/PatientFields';
 import {
-  FollowUpBucketBadge,
-  ReferralStatusBadge,
-  ScreeningStatusBadge,
-} from '@/components/ui/StatusBadge';
-import { useDataStore } from '@/stores/dataStore';
-import { buildPatientRows, type PatientRow } from '@/stores/selectors';
-import { useStoreQuery } from '@/hooks/useStoreQuery';
-import { useTableControls } from '@/hooks/useTableControls';
-import { recordsApi } from '@/services/recordsApi';
-import { formatDate } from '@/utils/date';
-import { sexLabel, screeningStatusLabel, followUpStatusLabel } from '@/utils/labels';
-import type { FollowUpStatus, ScreeningStatus } from '@/types/domain';
-import { DISTRICTS } from '@/data/geography';
+  EMPTY_PATIENT_DRAFT,
+  patientInputFromDraft,
+  validatePatientDraft,
+  type PatientDraft,
+  type PatientDraftErrors,
+} from '@/components/patients/patientDraft';
+import type { Patient } from '@/types/domain';
+import { createPatient, listPatients, type Page } from '@/services/recordsApi';
+import { errorMessage } from '@/lib/apiClient';
+import { toast } from '@/stores/toastStore';
+import { ageFromBirthDate, formatDate } from '@/utils/date';
+import { sexLabel } from '@/utils/labels';
+
+const PAGE_SIZE = 25;
 
 /**
- * Patient directory.
+ * Patients, for the administrator.
  *
- * The table joins each patient to their latest screening, referral and
- * follow-up state, so a health worker can see who needs chasing without
- * opening records one at a time.
+ * Two jobs: save a patient's data, and open a patient to check their X-ray
+ * history. Everything else a patient list usually carries is deliberately not
+ * here.
  */
-
-type FilterKey = 'screening' | 'followup' | 'district';
-
-const SCREENING_OPTIONS: { value: ScreeningStatus; label: string }[] = (
-  [
-    'draft',
-    'queued',
-    'awaiting-review',
-    'reviewed',
-    'referred',
-    'closed',
-  ] as ScreeningStatus[]
-).map((value) => ({ value, label: screeningStatusLabel[value] }));
-
-const FOLLOWUP_OPTIONS: { value: FollowUpStatus; label: string }[] = (
-  ['scheduled', 'in-progress', 'completed', 'unresolved'] as FollowUpStatus[]
-).map((value) => ({ value, label: followUpStatusLabel[value] }));
-
 export function PatientsPage() {
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
 
-  const { data: rows, loading, error, refetch } = useStoreQuery<PatientRow[]>(
-    () => recordsApi.getPatientRows(),
-    () => {
-      const state = useDataStore.getState();
-      return buildPatientRows(state.patients, state.screenings, state.referrals, state.followUps);
+  const [query, setQuery] = useState('');
+  const [debounced, setDebounced] = useState('');
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState<Page<Patient> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [creating, setCreating] = useState(params.get('tambah') === '1');
+  const [draft, setDraft] = useState<PatientDraft>(EMPTY_PATIENT_DRAFT);
+  const [errors, setErrors] = useState<PatientDraftErrors>({});
+  const [saving, setSaving] = useState(false);
+
+  // Wait for a pause in typing before asking the server.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebounced(query.trim());
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setResult(await listPatients({ q: debounced || undefined, page, pageSize: PAGE_SIZE }));
+    } catch (cause) {
+      setError(errorMessage(cause, 'Data pasien gagal dimuat.'));
+    } finally {
+      setLoading(false);
+    }
+  }, [debounced, page]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const openCreate = () => {
+    setDraft(EMPTY_PATIENT_DRAFT);
+    setErrors({});
+    setCreating(true);
+  };
+
+  const closeCreate = () => {
+    setCreating(false);
+    if (params.has('tambah')) {
+      params.delete('tambah');
+      setParams(params, { replace: true });
+    }
+  };
+
+  const save = async () => {
+    const found = validatePatientDraft(draft);
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
+    setSaving(true);
+    try {
+      const patient = await createPatient(patientInputFromDraft(draft));
+      toast.success('Data pasien tersimpan.', `${patient.name} · ${patient.mrn}`);
+      closeCreate();
+      navigate(`/patients/${patient.id}`);
+    } catch (cause) {
+      toast.error('Data pasien belum tersimpan.', errorMessage(cause));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const columns: Column<Patient>[] = [
+    {
+      id: 'name',
+      header: 'Pasien',
+      cell: (patient) => <StackedCell primary={patient.name} secondary={<MonoCell>{patient.mrn}</MonoCell>} />,
     },
-  );
-
-  const allRows = rows ?? [];
-
-  const controls = useTableControls<PatientRow, FilterKey>({
-    rows: allRows,
-    initialSort: { columnId: 'lastScreening', direction: 'desc' },
-    search: (row, term) =>
-      row.patient.name.toLowerCase().includes(term) ||
-      row.patient.mrn.toLowerCase().includes(term) ||
-      row.patient.village.toLowerCase().includes(term),
-    filters: {
-      screening: (row, value) => row.lastScreeningStatus === value,
-      followup: (row, value) => row.followUpStatus === value,
-      district: (row, value) => row.patient.district === value,
+    {
+      id: 'person',
+      header: 'Usia · jenis kelamin',
+      hideBelow: 'sm',
+      cell: (patient) => (
+        <span className="text-[13px] text-obsidian-700">
+          {ageFromBirthDate(patient.birthDate)} th · {sexLabel[patient.sex]}
+        </span>
+      ),
     },
-    comparators: {
-      name: (a, b) => a.patient.name.localeCompare(b.patient.name),
-      age: (a, b) => a.age - b.age,
-      lastScreening: (a, b) =>
-        (a.lastScreeningAt ?? '').localeCompare(b.lastScreeningAt ?? ''),
-      screenings: (a, b) => a.screeningCount - b.screeningCount,
+    {
+      id: 'place',
+      header: 'Alamat',
+      hideBelow: 'lg',
+      cell: (patient) => (
+        <span className="line-clamp-1 text-[13px] text-obsidian-600">{patient.address || '-'}</span>
+      ),
     },
-  });
+    {
+      id: 'registered',
+      header: 'Terdaftar',
+      hideBelow: 'md',
+      cell: (patient) => (
+        <span className="text-[13px] text-obsidian-600 tabular">{formatDate(patient.createdAt)}</span>
+      ),
+    },
+    {
+      id: 'open',
+      header: '',
+      srHeader: 'Buka riwayat rontgen',
+      align: 'right',
+      width: 'w-10',
+      cell: () => <ChevronRight aria-hidden className="size-4 text-obsidian-400" />,
+    },
+  ];
 
-  const columns = useMemo<Column<PatientRow>[]>(
-    () => [
-      {
-        id: 'name',
-        header: 'Pasien',
-        sortable: true,
-        cell: (row) => (
-          <StackedCell
-            primary={row.patient.name}
-            secondary={`${row.patient.village}, ${row.patient.district}`}
-          />
-        ),
-      },
-      {
-        id: 'mrn',
-        header: 'No. rekam medis',
-        width: 'w-36',
-        hideBelow: 'lg',
-        cell: (row) => <MonoCell>{row.patient.mrn}</MonoCell>,
-      },
-      {
-        id: 'age',
-        header: 'Usia',
-        sortable: true,
-        align: 'right',
-        width: 'w-20',
-        cell: (row) => (
-          <span className="tabular">
-            {row.age}
-            <span className="ml-1 text-obsidian-400">{sexLabel[row.patient.sex][0]}</span>
-          </span>
-        ),
-      },
-      {
-        id: 'lastScreening',
-        header: 'Screening terakhir',
-        sortable: true,
-        width: 'w-32',
-        cell: (row) =>
-          row.lastScreeningAt ? (
-            <span className="tabular">{formatDate(row.lastScreeningAt)}</span>
-          ) : (
-            <span className="text-obsidian-400">Belum pernah</span>
-          ),
-      },
-      {
-        id: 'screeningStatus',
-        header: 'Screening',
-        width: 'w-44',
-        cell: (row) =>
-          row.lastScreeningStatus ? (
-            <ScreeningStatusBadge status={row.lastScreeningStatus} size="sm" />
-          ) : (
-            <span className="text-obsidian-400">Belum ada</span>
-          ),
-      },
-      {
-        id: 'referral',
-        header: 'Referral',
-        width: 'w-44',
-        hideBelow: 'xl',
-        cell: (row) =>
-          row.referralStatus ? (
-            <ReferralStatusBadge status={row.referralStatus} size="sm" />
-          ) : (
-            <span className="text-obsidian-400">Belum ada</span>
-          ),
-      },
-      {
-        id: 'followup',
-        header: 'Follow-up',
-        width: 'w-32',
-        cell: (row) =>
-          row.followUpBucket ? (
-            <FollowUpBucketBadge bucket={row.followUpBucket} size="sm" />
-          ) : (
-            <span className="text-obsidian-400">Belum ada</span>
-          ),
-      },
-      {
-        id: 'open',
-        header: '',
-        srHeader: 'Buka rekam medis',
-        align: 'right',
-        width: 'w-10',
-        cell: () => (
-          <ChevronRight
-            aria-hidden
-            className="ml-auto size-4 text-obsidian-300 transition-colors group-hover:text-obsidian-500"
-          />
-        ),
-      },
-    ],
-    [],
-  );
+  const total = result?.meta?.total ?? 0;
+  const pageCount = result?.meta?.pageCount ?? 1;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <PageHeader
         title="Pasien"
-        description="Semua pasien yang terdaftar di fasilitas ini, lengkap dengan status screening dan follow-up terbaru."
-        meta={
-          <>
-            <HeaderMeta label="Terdaftar" value={allRows.length} />
-            <HeaderMeta
-              label="Follow-up terlambat"
-              value={allRows.filter((row) => row.hasOverdueFollowUp).length}
-            />
-          </>
-        }
+        description="Simpan data pasien, lalu buka salah satunya untuk melihat riwayat rontgennya."
+        meta={<HeaderMeta label="Terdaftar" value={total} />}
         actions={
-          <Button
-            variant="primary"
-            leadingIcon={<UserPlus className="size-4" />}
-            onClick={() => navigate('/screenings/new')}
-          >
-            Daftar &amp; screening
+          <Button variant="primary" leadingIcon={<UserPlus className="mr-1.5 size-4" />} onClick={openCreate}>
+            Tambah pasien
           </Button>
         }
       />
 
-      <Card className="overflow-hidden">
-        <Toolbar
-          activeFilterCount={controls.activeFilterCount}
-          onClearFilters={controls.clearAll}
-          search={
-            <SearchInput
-              label="Cari pasien berdasarkan nama, nomor rekam medis, atau desa"
-              placeholder="Nama, no. rekam medis, atau desa"
-              value={controls.term}
-              onChange={controls.setTerm}
-            />
-          }
-          filters={
-            <>
-              <FilterSelect
-                label="Screening"
-                allLabel="Semua status screening"
-                value={controls.filterValues.screening as ScreeningStatus | 'all'}
-                options={SCREENING_OPTIONS}
-                onChange={(value) => controls.setFilter('screening', value)}
-              />
-              <FilterSelect
-                label="Follow-up"
-                allLabel="Semua follow-up"
-                value={controls.filterValues.followup as FollowUpStatus | 'all'}
-                options={FOLLOWUP_OPTIONS}
-                onChange={(value) => controls.setFilter('followup', value)}
-              />
-              <FilterSelect
-                label="Kecamatan"
-                allLabel="Semua kecamatan"
-                value={controls.filterValues.district}
-                options={DISTRICTS.map((district) => ({ value: district, label: district }))}
-                onChange={(value) => controls.setFilter('district', value)}
-              />
-            </>
-          }
-          trailing={
-            <ResultCount shown={controls.filtered.length} total={allRows.length} noun="pasien" />
-          }
-        />
+      <SearchInput
+        label="Cari pasien"
+        placeholder="Cari nama, nomor rekam medis, atau telepon"
+        value={query}
+        onChange={setQuery}
+        className="max-w-md"
+      />
 
+      <Card>
         {error ? (
-          <ErrorState description={error} onRetry={refetch} />
-        ) : loading ? (
-          <TableSkeleton rows={8} columns={6} />
-        ) : allRows.length === 0 ? (
+          <ErrorState description={error} onRetry={() => void load()} />
+        ) : loading && !result ? (
+          <div className="space-y-2 p-4">
+            {Array.from({ length: 6 }, (_, index) => (
+              <Skeleton key={index} className="h-11" />
+            ))}
+          </div>
+        ) : result && result.items.length === 0 ? (
           <EmptyState
             icon={<Users />}
-            title="Belum ada pasien terdaftar"
-            description="Data pasien dibuat saat mencatat screening."
+            title={debounced ? 'Tidak ada pasien yang cocok' : 'Belum ada pasien'}
+            description={
+              debounced
+                ? 'Coba nama lain atau nomor rekam medisnya.'
+                : 'Tambahkan pasien pertama. Datanya dipakai dokter saat screening.'
+            }
             action={
-              <Button
-                variant="primary"
-                leadingIcon={<ScanLine className="size-4" />}
-                onClick={() => navigate('/screenings/new')}
-              >
-                Mulai screening
-              </Button>
+              debounced ? undefined : (
+                <Button variant="primary" onClick={openCreate}>
+                  Tambah pasien
+                </Button>
+              )
             }
           />
-        ) : controls.filtered.length === 0 ? (
-          <NoMatchesState entity="pasien" onClear={controls.clearAll} />
         ) : (
-          <>
-            <DataTable
-              caption="Direktori pasien"
-              rows={controls.visible}
-              columns={columns}
-              rowKey={(row) => row.patient.id}
-              sort={controls.sort}
-              onSortChange={controls.toggleSort}
-              onRowClick={(row) => navigate(`/patients/${row.patient.id}`)}
-              rowAccent={(row) => (row.hasOverdueFollowUp ? 'urgent' : null)}
-              renderMobileCard={(row) => (
-                <div className="flex items-start gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-obsidian-900">
-                      {row.patient.name}
-                    </p>
-                    <p className="mt-0.5 truncate font-mono text-[11px] text-obsidian-500">
-                      {row.patient.mrn}
-                    </p>
-                    <p className="mt-1 text-xs text-obsidian-500">
-                      {row.age} thn · {sexLabel[row.patient.sex]} · {row.patient.village}
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {row.lastScreeningStatus ? (
-                        <ScreeningStatusBadge status={row.lastScreeningStatus} size="sm" />
-                      ) : null}
-                      {row.followUpBucket ? (
-                        <FollowUpBucketBadge bucket={row.followUpBucket} size="sm" />
-                      ) : null}
-                    </div>
-                  </div>
-                  <ChevronRight aria-hidden className="mt-1 size-4 shrink-0 text-obsidian-300" />
-                </div>
-              )}
-            />
-            <Pagination
-              page={controls.page}
-              pageCount={controls.pageCount}
-              pageSize={controls.pageSize}
-              totalItems={controls.filtered.length}
-              onPageChange={controls.setPage}
-              onPageSizeChange={controls.setPageSize}
-            />
-          </>
+          <DataTable
+            caption="Daftar pasien"
+            rows={result?.items ?? []}
+            columns={columns}
+            rowKey={(patient) => patient.id}
+            onRowClick={(patient) => navigate(`/patients/${patient.id}`)}
+            renderMobileCard={(patient) => (
+              <div className="flex items-center justify-between gap-3">
+                <StackedCell
+                  primary={patient.name}
+                  secondary={
+                    <span className="text-xs text-obsidian-500">
+                      {patient.mrn} · {sexLabel[patient.sex]}
+                    </span>
+                  }
+                />
+                <ChevronRight aria-hidden className="size-4 shrink-0 text-obsidian-400" />
+              </div>
+            )}
+          />
         )}
       </Card>
+
+      {pageCount > 1 ? (
+        <div className="flex items-center justify-between text-[13px] text-obsidian-600">
+          <span className="tabular">
+            Halaman {page} dari {pageCount}
+          </span>
+          <div className="flex gap-2">
+            <Button size="sm" disabled={page <= 1 || loading} onClick={() => setPage((value) => value - 1)}>
+              Sebelumnya
+            </Button>
+            <Button size="sm" disabled={page >= pageCount || loading} onClick={() => setPage((value) => value + 1)}>
+              Berikutnya
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      <Dialog
+        open={creating}
+        onClose={closeCreate}
+        title="Tambah pasien"
+        description="Data ini disimpan dan dipakai dokter saat screening."
+        size="lg"
+        dismissOnOverlayClick={!saving}
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeCreate} disabled={saving}>
+              Batal
+            </Button>
+            <Button variant="primary" loading={saving} onClick={() => void save()}>
+              Simpan pasien
+            </Button>
+          </>
+        }
+      >
+        <PatientFields
+          draft={draft}
+          errors={errors}
+          disabled={saving}
+          onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
+        />
+      </Dialog>
     </div>
   );
 }

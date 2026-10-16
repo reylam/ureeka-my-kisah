@@ -1,161 +1,123 @@
 /**
- * Records API.
+ * Records API: every call the pages make, one function each.
  *
- * The seam between the pages and the backend. Reads ask the API for the
- * current data, put it in the data store and return it, so a page that calls
- * `getReferrals()` gets what the server holds right now and keeps receiving
- * live updates through `useStoreQuery`. Writes delegate to the data store,
- * whose actions call the API and then update the cache with the response.
- *
- * Nothing here is simulated: there is no artificial delay and no invented
- * data. A failed request rejects, and the page's error state shows it.
+ * There is no client-side cache. A page asks for what it shows when it opens
+ * (and, for the request list, the queue and the patient's status page, again
+ * every few seconds), so what is on screen is what the server holds.
  */
 
-import type { Facility, FollowUp, Patient, Referral, Screening } from '@/types/domain';
-import { ApiError, api } from '@/lib/apiClient';
-import { useDataStore } from '@/stores/dataStore';
 import type {
-  NewFollowUpInput,
-  NewPatientInput,
-  NewReferralInput,
-  NewScreeningInput,
-} from '@/stores/dataStore';
-import { useAuthStore } from '@/stores/authStore';
-import { fetchFacilities } from '@/services/referenceData';
-import { buildPatientRows, type DashboardSummary, type PatientRow } from '@/stores/selectors';
+  ClassLabel,
+  ImageQuality,
+  LesionRegion,
+  Patient,
+  PublicStatus,
+  QueueDay,
+  QueuePriority,
+  RequestReceipt,
+  Screening,
+  ScreeningStatus,
+  ScreeningVitals,
+  Sex,
+  StaffMember,
+  SymptomSet,
+} from '@/types/domain';
+import { api, type PageMeta } from '@/lib/apiClient';
 
-const store = () => useDataStore.getState();
-
-/** Re-read the signed-in person's records from the server. */
-async function refresh(): Promise<void> {
-  const account = useAuthStore.getState().account;
-  if (!account) return;
-  await store().hydrate(account);
+export interface Page<T> {
+  items: T[];
+  meta: PageMeta | undefined;
 }
 
-const isNotFound = (cause: unknown) => cause instanceof ApiError && cause.status === 404;
-
-/* ── Reads ─────────────────────────────────────────────────────────────────── */
-
-export async function getPatients(): Promise<Patient[]> {
-  await refresh();
-  return store().patients;
+export interface PatientInput {
+  name: string;
+  sex: Sex;
+  birthDate: string;
+  phone: string | null;
+  address: string;
 }
 
-export async function getPatientRows(): Promise<PatientRow[]> {
-  await refresh();
-  const { patients, screenings, referrals, followUps } = store();
-  return buildPatientRows(patients, screenings, referrals, followUps);
+export interface ExaminationInput {
+  symptoms: SymptomSet;
+  vitals: ScreeningVitals;
+  imageQuality: ImageQuality;
 }
 
-export async function getPatientById(id: string): Promise<Patient | null> {
-  try {
-    return await store().loadPatient(id);
-  } catch (cause) {
-    if (isNotFound(cause)) return null;
-    throw cause;
-  }
+export interface BrowserAnalysis {
+  probabilities: Record<ClassLabel, number>;
+  model: { name: string; version: string; backbone: string };
+  regions: LesionRegion[];
 }
 
-export async function getScreenings(): Promise<Screening[]> {
-  await refresh();
-  return store().screenings;
+/* ── Public (no account) ──────────────────────────────────────────────────── */
+
+export const sendRequest = (input: PatientInput & { complaint: string }) =>
+  api.post<RequestReceipt>('/public/requests', input);
+
+/** POST, so the code stays out of URLs and server logs. */
+export const lookupStatus = (code: string) => api.post<PublicStatus>('/public/result', { code });
+
+/* ── Staff ────────────────────────────────────────────────────────────────── */
+
+export const listStaff = () => api.get<StaffMember[]>('/staff');
+
+export async function listPatients(params: { q?: string; page?: number; pageSize?: number } = {}): Promise<Page<Patient>> {
+  const result = await api.getPage<Patient>('/patients', params);
+  return { items: result.data, meta: result.meta };
 }
 
-export async function getScreeningById(id: string): Promise<Screening | null> {
-  try {
-    return await store().loadScreening(id);
-  } catch (cause) {
-    if (isNotFound(cause)) return null;
-    throw cause;
-  }
+export const getPatient = (id: string) => api.get<Patient>(`/patients/${id}`);
+export const createPatient = (input: PatientInput) => api.post<Patient>('/patients', input);
+export const updatePatient = (id: string, input: PatientInput) => api.patch<Patient>(`/patients/${id}`, input);
+
+export async function listScreenings(
+  params: { status?: ScreeningStatus[]; patientId?: string; date?: string; page?: number; pageSize?: number } = {},
+): Promise<Page<Screening>> {
+  const { status, ...rest } = params;
+  const result = await api.getPage<Screening>('/screenings', { ...rest, status: status?.join(',') });
+  return { items: result.data, meta: result.meta };
 }
 
-export async function getReferrals(): Promise<Referral[]> {
-  await refresh();
-  return store().referrals;
+export const getScreening = (id: string) => api.get<Screening>(`/screenings/${id}`);
+
+/** A visit registered at the desk for a saved patient. Returns it with its access code. */
+export const createRequest = (patientId: string, complaint: string) =>
+  api.post<Screening>('/screenings', { patientId, complaint });
+
+export const setRequestPatient = (id: string, patientId: string) =>
+  api.put<Screening>(`/screenings/${id}/patient`, { patientId });
+
+export const cancelRequest = (id: string) => api.delete(`/screenings/${id}`);
+
+export const startExamination = (id: string) => api.post<Screening>(`/screenings/${id}/start`);
+
+export const saveExamination = (id: string, input: ExaminationInput) =>
+  api.patch<Screening>(`/screenings/${id}`, input);
+
+export function uploadImage(id: string, file: File): Promise<Screening> {
+  const form = new FormData();
+  form.append('image', file, file.name);
+  form.append('fileName', file.name);
+  return api.upload<Screening>(`/screenings/${id}/image`, form);
 }
 
-export async function getFollowUps(): Promise<FollowUp[]> {
-  await refresh();
-  return store().followUps;
-}
+export const recordAnalysis = (id: string, analysis: BrowserAnalysis) =>
+  api.post<Screening>(`/screenings/${id}/analysis`, {
+    probabilities: analysis.probabilities,
+    model: analysis.model,
+    // The server names the zones itself; it is sent the boxes only.
+    regions: analysis.regions.map(({ box, score, label }) => ({ box, score, label: label ?? 'TB' })),
+  });
 
-export async function getFacilities(): Promise<Facility[]> {
-  return fetchFacilities();
-}
+export const submitScreening = (id: string, priority: QueuePriority) =>
+  api.post<Screening>(`/screenings/${id}/submit`, { priority });
 
-/**
- * Dashboard figures, computed by the database (`dashboard_summary`) over the
- * records the caller may see. Only the offline-outbox counts come from this
- * device, because the outbox exists only here.
- */
-export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const [summary] = await Promise.all([
-    api.get<Omit<DashboardSummary, 'pendingSyncRecords' | 'failedSyncRecords' | 'conflictRecords'>>(
-      '/dashboard/summary',
-      // Bucket days the way this browser's user sees them.
-      { tz: Intl.DateTimeFormat().resolvedOptions().timeZone },
-    ),
-    refresh(),
-  ]);
-  const { syncQueue } = store();
-  return {
-    ...summary,
-    pendingSyncRecords: syncQueue.filter((i) => i.state === 'pending').length,
-    failedSyncRecords: syncQueue.filter((i) => i.state === 'failed').length,
-    conflictRecords: 0,
-  };
-}
+export const markServed = (id: string) => api.post<Screening>(`/screenings/${id}/served`);
 
-/** Short-lived signed URL for a screening's radiograph (treating team only). */
+/** Short-lived signed URL for the X-ray. */
 export async function getScreeningImageUrl(id: string): Promise<string> {
   const result = await api.get<{ url: string; expiresInSeconds: number }>(`/screenings/${id}/image`);
   return result.url;
 }
 
-/* ── Writes ────────────────────────────────────────────────────────────────── */
-
-export const createPatient = (input: NewPatientInput): Promise<Patient> =>
-  store().createPatient(input);
-
-export const createScreening = (input: NewScreeningInput): Promise<Screening> =>
-  store().createScreening(input);
-
-export const createReferral = (input: NewReferralInput): Promise<Referral> =>
-  store().createReferral(input);
-
-export const updateReferral = (
-  id: string,
-  patch: Parameters<ReturnType<typeof store>['updateReferral']>[1],
-): Promise<void> => store().updateReferral(id, patch);
-
-export const createFollowUp = (input: NewFollowUpInput): Promise<FollowUp> =>
-  store().createFollowUp(input);
-
-export async function updateFollowUp(
-  id: string,
-  patch: { dueDate?: string; assignedWorkerId?: string },
-): Promise<void> {
-  if (patch.dueDate) await store().rescheduleFollowUp(id, patch.dueDate);
-  if (patch.assignedWorkerId) await store().reassignFollowUp(id, patch.assignedWorkerId);
-}
-
-export const recordsApi = {
-  getPatients,
-  getPatientRows,
-  getPatientById,
-  getScreenings,
-  getScreeningById,
-  getReferrals,
-  getFollowUps,
-  getFacilities,
-  getDashboardSummary,
-  getScreeningImageUrl,
-  createPatient,
-  createScreening,
-  createReferral,
-  updateReferral,
-  createFollowUp,
-  updateFollowUp,
-};
+export const getQueue = (date?: string) => api.get<QueueDay>('/queue', { date });

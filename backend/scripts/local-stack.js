@@ -57,9 +57,12 @@ Put this in frontend/.env, then run \`npm run dev\` in frontend/:
   VITE_SUPABASE_URL=${stack.url}
   VITE_SUPABASE_ANON_KEY=${ANON_KEY}
 
-Sample sign-ins (frontend/docs/accounts.md):
-  patient@parupintas.test / Patient123!    doctor@parupintas.test / Doctor123!
-  chw@parupintas.test / Worker123!         admin@parupintas.test / Admin123!
+Staff sign-ins (frontend/docs/accounts.md):
+  admin@parupintas.test / Admin123!
+  radiolog@parupintas.test / Radiolog123!    radiolog2@parupintas.test / Radiolog123!
+
+Patients need no account. Sample access codes for the "Cek Hasil" page:
+  BARU-2345 (menunggu)   PRKS-2345 (diperiksa)   ANTR-2345 (antrean)   SLSE-2345 (dipanggil)
 
 Ctrl+C to stop.
 `);

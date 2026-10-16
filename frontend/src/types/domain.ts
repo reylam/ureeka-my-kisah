@@ -1,140 +1,54 @@
 /**
- * Core domain entities for the TB screening prototype.
+ * Domain types: one clinic, its patients, and their visits.
  *
- * All records in this application are synthetic. The shapes here intentionally
- * mirror the response contract of the sibling Python screening service
- * (`tb-train/tb_ai/infer.py`) so a real model can be connected later without
- * reshaping the frontend. See `types/inference.ts`.
+ * These are exactly the shapes the API sends (backend/src/services/
+ * serializers.js). The end-to-end test checks the field lists against them.
  */
 
 export type ISODate = string; // YYYY-MM-DD
 export type ISODateTime = string; // full ISO-8601 timestamp
 
-/* ── People ─────────────────────────────────────────────────────────────── */
-
 export type Sex = 'male' | 'female';
 
+/* ── Patients ───────────────────────────────────────────────────────────── */
+
 export interface Patient {
-  id: string; // internal id, e.g. "pat_014"
-  /** Human-facing medical record number shown in tables and reports. */
-  mrn: string; // e.g. "TB-2411-0142"
+  id: string;
+  /** Medical record number, e.g. "RM-2601-0004". */
+  mrn: string;
   name: string;
   sex: Sex;
   birthDate: ISODate;
   phone: string | null;
-  village: string;
-  district: string;
-  province: string;
-  /** Facility that owns this patient record. */
-  homeFacilityId: string;
-  /** Epidemiological context a screener would actually record. */
-  riskFactors: RiskFactor[];
-  householdContacts: number;
-  registeredAt: ISODateTime;
-  notes: PatientNote[];
-}
-
-export type RiskFactor =
-  | 'household-tb-contact'
-  | 'diabetes'
-  | 'hiv'
-  | 'smoker'
-  | 'malnutrition'
-  | 'prior-tb-treatment'
-  | 'crowded-housing'
-  | 'elderly'
-  | 'pregnant';
-
-export interface PatientNote {
-  id: string;
-  patientId: string;
-  authorId: string;
-  createdAt: ISODateTime;
-  body: string;
-  /** Where the note came from, so the timeline can group sensibly. */
-  context: 'general' | 'screening' | 'referral' | 'followup';
-  contextId?: string;
-}
-
-/* ── Users ──────────────────────────────────────────────────────────────── */
-
-export type UserRole = 'chw' | 'nurse' | 'physician' | 'coordinator';
-
-export interface User {
-  id: string;
-  name: string;
-  role: UserRole;
-  /** Only physicians/nurses can sign off a clinical review in this prototype. */
-  canReview: boolean;
-  facilityId: string;
-  email: string;
-  phone: string | null;
-}
-
-/* ── Facilities ─────────────────────────────────────────────────────────── */
-
-export type FacilityType =
-  | 'posyandu'
-  | 'puskesmas'
-  | 'clinic'
-  | 'district-hospital'
-  | 'referral-hospital'
-  | 'lab';
-
-export type FacilityService =
-  | 'cxr'
-  | 'sputum-microscopy'
-  | 'tcm-genexpert'
-  | 'tb-treatment'
-  | 'mdr-tb-treatment'
-  | 'pediatric-tb'
-  | 'general-outpatient'
-  | 'inpatient';
-
-export interface Facility {
-  id: string;
-  name: string;
-  type: FacilityType;
-  /** Fictional but plausible Indonesian administrative naming. */
-  region: string; // district / kabupaten
-  province: string;
   address: string;
-  phone: string;
-  /** Null until a real geocoding lookup has placed the entry. Never a guess. */
-  coordinates: { lat: number; lng: number } | null;
-  services: FacilityService[];
-  /** Sample travel estimates from the operating facility. Not verified. */
-  distanceKm: number;
-  travelTimeMinutes: number;
-  /** Whether the directory entry has been checked by a coordinator. */
-  infoStatus: 'verified-sample' | 'needs-review' | 'unconfirmed';
-  infoUpdatedAt: ISODate;
-  operatingHours: string;
-  /** Null when the facility does not run a TB programme. */
-  tbProgrammeContact: string | null;
+  createdAt: ISODateTime;
 }
 
-/* ── Screening ──────────────────────────────────────────────────────────── */
+/** What a patient typed into the public request form, before staff saved them. */
+export interface Applicant {
+  name: string;
+  sex: Sex | null;
+  birthDate: ISODate | null;
+  phone: string | null;
+  address: string;
+}
+
+/* ── Visits ─────────────────────────────────────────────────────────────── */
 
 /**
- * Workflow status of a screening record. This describes where the *record* is
- * in the human workflow, not a clinical conclusion.
+ * Where a visit is:
+ *   waiting    the request is in and has its access code; no one has started
+ *   examining  a radiologist has taken it
+ *   queued     submitted with a priority and a queue number; the result is out
+ *   served     the patient has been called from the queue
  */
-export type ScreeningStatus =
-  | 'draft' // started offline / incomplete
-  | 'queued' // complete, waiting for the demo analysis step
-  | 'awaiting-review' // analysis produced output, needs a human reviewer
-  | 'reviewed' // a reviewer has signed off
-  | 'referred' // escalated into a referral
-  | 'closed'; // no further action needed
+export type ScreeningStatus = 'waiting' | 'examining' | 'queued' | 'served';
 
-/** Outcome category of the demo analysis. Deliberately non-diagnostic wording. */
-export type ScreeningOutcome =
-  | 'flagged-for-review' // model highlighted findings a clinician should see
-  | 'no-alert' // model produced no screening alert
-  | 'inconclusive'; // low confidence or unusable image
+export type QueuePriority = 'high' | 'medium' | 'low';
 
 export type ImageQuality = 'adequate' | 'borderline' | 'inadequate';
+
+export type ModelStatus = 'not-run' | 'pending' | 'completed' | 'failed' | 'unavailable';
 
 export interface SymptomSet {
   coughWeeks: number;
@@ -154,89 +68,120 @@ export interface ScreeningVitals {
   respiratoryRate: number | null;
 }
 
-export interface Screening {
-  id: string;
-  patientId: string;
-  facilityId: string;
-  /** Health worker who performed the screening. */
-  operatorId: string;
-  performedAt: ISODateTime;
-  status: ScreeningStatus;
-
-  symptoms: SymptomSet;
-  vitals: ScreeningVitals;
-
-  /** Key into the IndexedDB image store. Images are never put in localStorage. */
-  imageKey: string | null;
-  /** Bundled sample radiograph used when the record is part of the seed data. */
-  sampleImage: SampleRadiograph | null;
-  imageMeta: ImageMeta | null;
-  imageQuality: ImageQuality;
-
-  /**
-   * What the model step did, kept apart from the record's workflow `status`
-   * and from the clinician's `review`. Absent on records held only on this
-   * device.
-   */
-  modelStatus?: ModelStatus;
-  /** Null until a model has produced output for this record. */
-  analysis: ScreeningAnalysis | null;
-  review: ClinicalReview | null;
-
-  referralId: string | null;
-  /** Records created offline carry their sync state here. */
-  sync: SyncState;
-  createdOffline: boolean;
-}
-
-export type ModelStatus = 'not-run' | 'pending' | 'completed' | 'failed' | 'unavailable';
-
 export interface ImageMeta {
   fileName: string;
   sizeBytes: number;
   mimeType: string;
-  width: number;
-  height: number;
+  width: number | null;
+  height: number | null;
 }
 
-/** Identifier for one of the bundled, procedurally drawn sample radiographs. */
-export type SampleRadiograph = 'sample-a' | 'sample-b' | 'sample-c';
+export interface Screening {
+  id: string;
+  /** Null while a request from the public form has not been saved as a patient. */
+  patientId: string | null;
+  patient: Patient | null;
+  applicant: Applicant | null;
+  complaint: string;
+  /** The patient's voucher. Eight characters, shown grouped as XXXX-XXXX. */
+  accessCode: string;
+  requestDate: ISODate;
+  requestedAt: ISODateTime;
+  /** Null when the patient sent the request themselves. */
+  createdBy: string | null;
 
-export interface ScreeningAnalysis {
-  outcome: ScreeningOutcome;
-  /** Winning class label from the model's label set. */
-  predictedLabel: ClassLabel;
-  /** Full probability distribution, mirrors `probabilities` from infer.py. */
-  probabilities: Record<ClassLabel, number>;
-  /**
-   * Risk point, 0 to 100: the model's TB probability restated on a round scale.
-   * Not the chance that a person has TB. Absent on analyses stored before it
-   * existed; `riskOf` in `lib/risk.ts` derives it from `probabilities` then.
-   */
-  riskPoint?: number;
-  /** Presentation band for `riskPoint`, not a clinical threshold. */
-  riskLevel?: RiskLevel;
-  /** Regions the demo model marked. Mirrors detection boxes from infer.py. */
-  regions: LesionRegion[];
-  model: ModelDescriptor;
-  analysedAt: ISODateTime;
-  /** True only for output from the built-in simulator. A real model run is false. */
-  simulated: boolean;
-  /** Why detection was skipped, when applicable. */
-  detectionNote: string | null;
+  status: ScreeningStatus;
+  operatorId: string | null;
+  startedAt: ISODateTime | null;
+  symptoms: SymptomSet | null;
+  vitals: ScreeningVitals | null;
+  imageQuality: ImageQuality;
+  hasImage: boolean;
+  imageMeta: ImageMeta | null;
+  modelStatus: ModelStatus;
+  analysis: ScreeningAnalysis | null;
+
+  queuePriority: QueuePriority | null;
+  queueNumber: string | null;
+  queueDate: ISODate | null;
+  submittedAt: ISODateTime | null;
+  servedAt: ISODateTime | null;
 }
+
+/** GET /queue: still to be called (most urgent first), and already called. */
+export interface QueueDay {
+  date: ISODate;
+  items: Screening[];
+  served: Screening[];
+}
+
+/** What the access code opens. Deliberately small. */
+export interface PublicStatus {
+  status: ScreeningStatus;
+  /** "Fransiskus J." */
+  name: string;
+  requestDate: ISODate;
+  requestedAt: ISODateTime;
+  /** People ahead: in the line for the X-ray, or in the queue after it. Null once served. */
+  ahead: number | null;
+  queueNumber: string | null;
+  priority: QueuePriority | null;
+  outcome: ScreeningOutcome | null;
+  submittedAt: ISODateTime | null;
+  servedAt: ISODateTime | null;
+}
+
+export interface RequestReceipt {
+  code: string;
+  requestDate: ISODate;
+  requestedAt: ISODateTime;
+}
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  role: 'admin' | 'radiologist';
+}
+
+/* ── The model ──────────────────────────────────────────────────────────── */
+
+/** Outcome category of the model's reading. Deliberately non-diagnostic wording. */
+export type ScreeningOutcome = 'flagged-for-review' | 'no-alert' | 'inconclusive';
 
 export type ClassLabel = 'Healthy' | 'Sick-non-TB' | 'TB';
 
 export type RiskLevel = 'low' | 'moderate' | 'high';
+
+export interface ScreeningAnalysis {
+  outcome: ScreeningOutcome;
+  predictedLabel: ClassLabel;
+  probabilities: Record<ClassLabel, number>;
+  /**
+   * Risk point, 0 to 100: the model's TB probability restated on a round scale.
+   * Not the chance that a person has TB.
+   */
+  riskPoint?: number;
+  /** Presentation band for `riskPoint`, not a clinical threshold. */
+  riskLevel?: RiskLevel;
+  /** Areas the model leaned on, each grounded to a class. */
+  regions: LesionRegion[];
+  model: ModelDescriptor;
+  analysedAt: ISODateTime;
+  /** True only for output from the demo's stand-in. A real model run is false. */
+  simulated: boolean;
+  /** Why no areas were marked, when none were. */
+  detectionNote: string | null;
+}
 
 export interface LesionRegion {
   id: string;
   /** Normalised 0..1 box so it scales with any rendered image size. */
   box: { x: number; y: number; width: number; height: number };
   score: number;
-  /** Plain-language anatomical hint, e.g. "right upper zone". */
+  /** Plain-language position, e.g. "zona kanan atas". */
   zone: string;
+  /** The class this box grounds: the score that fell when the area was covered. */
+  label?: ClassLabel;
 }
 
 export interface ModelDescriptor {
@@ -244,148 +189,9 @@ export interface ModelDescriptor {
   version: string;
   backbone: string;
   labels: ClassLabel[];
-  /** Null in demo mode, since we do not fabricate performance figures. */
+  /** Null: no performance figure is claimed. */
   validation: null | { dataset: string; note: string };
 }
 
-export interface ClinicalReview {
-  reviewerId: string;
-  reviewedAt: ISODateTime;
-  agreement: 'agrees' | 'disagrees' | 'needs-more-data';
-  notes: string;
-  /** Reviewer's operational decision after looking at the image. */
-  decision: 'refer' | 'repeat-image' | 'observe' | 'no-action';
-}
-
-/* ── Referrals ──────────────────────────────────────────────────────────── */
-
-export type ReferralStatus =
-  | 'draft'
-  | 'pending'
-  | 'referred'
-  | 'appointment-scheduled'
-  | 'attended'
-  | 'followup-required'
-  | 'closed';
-
-export type ReferralPriority = 'routine' | 'soon' | 'urgent';
-
-export interface Referral {
-  id: string;
-  code: string; // e.g. "REF-0231"
-  patientId: string;
-  screeningId: string | null;
-  fromFacilityId: string;
-  toFacilityId: string;
-  reason: string;
-  /** What the destination facility is being asked to do. */
-  requestedService: FacilityService;
-  priority: ReferralPriority;
-  status: ReferralStatus;
-  createdAt: ISODateTime;
-  appointmentDate: ISODate | null;
-  assignedWorkerId: string;
-  history: ReferralEvent[];
-  sync: SyncState;
-}
-
-export interface ReferralEvent {
-  id: string;
-  at: ISODateTime;
-  actorId: string;
-  from: ReferralStatus | null;
-  to: ReferralStatus;
-  note: string | null;
-}
-
-/* ── Follow-ups ─────────────────────────────────────────────────────────── */
-
-export type FollowUpStatus = 'scheduled' | 'in-progress' | 'completed' | 'unresolved';
-
-export type FollowUpReason =
-  | 'referral-attendance'
-  | 'sputum-result'
-  | 'repeat-imaging'
-  | 'treatment-adherence'
-  | 'contact-tracing'
-  | 'symptom-recheck';
-
-export type ContactChannel = 'phone' | 'home-visit' | 'village-cadre' | 'sms';
-
-export interface FollowUp {
-  id: string;
-  code: string; // e.g. "FU-0117"
-  patientId: string;
-  referralId: string | null;
-  screeningId: string | null;
-  reason: FollowUpReason;
-  dueDate: ISODate;
-  status: FollowUpStatus;
-  assignedWorkerId: string;
-  createdAt: ISODateTime;
-  completedAt: ISODateTime | null;
-  /** Populated when status is 'unresolved': why it could not be closed. */
-  unresolvedReason: string | null;
-  attempts: ContactAttempt[];
-  sync: SyncState;
-}
-
-export interface ContactAttempt {
-  id: string;
-  at: ISODateTime;
-  actorId: string;
-  channel: ContactChannel;
-  outcome: 'reached' | 'no-answer' | 'wrong-number' | 'moved-away' | 'rescheduled';
-  note: string | null;
-}
-
-/** Derived bucket, computed against today's date rather than stored. */
-export type FollowUpBucket = 'overdue' | 'due-today' | 'upcoming' | 'completed' | 'unresolved';
-
-/* ── Offline sync ───────────────────────────────────────────────────────── */
-
-export type SyncState = 'local-draft' | 'pending' | 'synced' | 'failed' | 'conflict';
-
-export type SyncEntityKind = 'screening' | 'referral' | 'followup' | 'patient';
-
-export interface SyncQueueItem {
-  id: string;
-  kind: SyncEntityKind;
-  entityId: string;
-  /** Short human-readable description, e.g. "Screening · TB-2411-0142". */
-  label: string;
-  state: SyncState;
-  queuedAt: ISODateTime;
-  lastAttemptAt: ISODateTime | null;
-  attempts: number;
-  sizeBytes: number;
-  /** Set when state is 'failed'. */
-  error: string | null;
-  /** Set when state is 'conflict': describes the competing change. */
-  conflict: SyncConflict | null;
-  /**
-   * What will be sent to the server when this item syncs. Only screenings
-   * captured without a connection are queued; everything else is written to
-   * the API immediately.
-   */
-  payload?: QueuedScreening;
-}
-
-export interface QueuedScreening {
-  patientId: string;
-  symptoms: SymptomSet;
-  vitals: ScreeningVitals;
-  imageQuality: ImageQuality;
-  /** Key of the radiograph held in IndexedDB until the upload succeeds. */
-  imageKey: string | null;
-  asDraft: boolean;
-  capturedAt: ISODateTime;
-}
-
-export interface SyncConflict {
-  field: string;
-  localValue: string;
-  remoteValue: string;
-  remoteUpdatedAt: ISODateTime;
-  remoteActor: string;
-}
+/** One of the procedurally drawn illustrations used on the public site. */
+export type SampleRadiograph = 'sample-a' | 'sample-b' | 'sample-c';

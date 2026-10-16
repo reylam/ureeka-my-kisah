@@ -1,8 +1,9 @@
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Compass, Play } from 'lucide-react';
 import { PROJECT } from '@/trace/data/content';
 import { Container } from '@/trace/components/ui/Container';
 import { Eyebrow } from '@/trace/components/ui/SectionHeading';
-import { TraceLinkButton } from '@/trace/components/ui/TraceButton';
+import { TraceButton, TraceLinkButton } from '@/trace/components/ui/TraceButton';
+import { useTourStore } from '@/trace/components/tour/tourStore';
 import { RadiographFigure } from '@/trace/components/visuals/RadiographFigure';
 
 /**
@@ -19,6 +20,8 @@ import { RadiographFigure } from '@/trace/components/visuals/RadiographFigure';
  * animation off for anyone who asked for that.
  */
 export function Hero() {
+  const startTour = useTourStore((state) => state.start);
+
   return (
     <section className="relative overflow-hidden border-b border-trace-line">
       <div aria-hidden className="trace-grid trace-grid-mask absolute inset-0" />
@@ -48,6 +51,10 @@ export function Hero() {
                 Cara kerja
                 <ArrowRight aria-hidden className="size-4" />
               </TraceLinkButton>
+              <TraceButton variant="ghost" onClick={startTour}>
+                <Compass aria-hidden className="size-4" />
+                Panduan pasien
+              </TraceButton>
             </div>
 
           </div>

@@ -31,6 +31,9 @@ export class ApiError extends Error {
   static validation(details, message = 'Validation failed.') {
     return new ApiError(422, 'VALIDATION_ERROR', message, details);
   }
+  static tooManyRequests(message = 'Terlalu banyak permintaan. Coba lagi sebentar lagi.') {
+    return new ApiError(429, 'RATE_LIMITED', message);
+  }
   static unavailable(code, message) {
     return new ApiError(503, code, message);
   }
@@ -51,12 +54,7 @@ export function fromDbError(error) {
   const message = String(error.message ?? '');
 
   if (code === 'PGRST116' || code === 'P0002') return ApiError.notFound();
-  if (code === '42501') {
-    if (/administrator|own role|own status|Forbidden|Illegal|Immutable/i.test(message)) {
-      return ApiError.forbidden(safeMessage(message));
-    }
-    return ApiError.forbidden();
-  }
+  if (code === '42501') return ApiError.forbidden();
   if (code === '23505') return ApiError.conflict('That record already exists.');
   if (code === '23503') return ApiError.conflict('The record refers to something that does not exist or is still in use.');
   if (code === '23514') return ApiError.conflict(safeMessage(message));
@@ -66,21 +64,18 @@ export function fromDbError(error) {
   return null;
 }
 
-// Messages raised by our own SQL functions are written to be shown. Anything
-// else is replaced rather than echoed.
+// Messages raised by our own SQL functions (errcode 23514) are written to be
+// shown. Anything else is replaced rather than echoed.
 function safeMessage(message) {
   const known = [
-    /The last active administrator cannot be (demoted|suspended)/i,
-    /You cannot change your own (role|status)/i,
-    /Only an administrator can change the home facility/i,
-    /Consent to data use is required/i,
-    /Personal and address details are required before completing/i,
-    /Screening is not open for review/i,
-    /Screening does not belong to this patient/i,
-    /Referral does not belong to this patient/i,
-    /Illegal screening status change/i,
-    /Immutable (patient|screening) fields cannot be changed/i,
+    /Isi data pasien terlebih dahulu\./,
+    /Simpan data pasien terlebih dahulu\./,
+    /Unggah rontgen terlebih dahulu\./,
+    /Data pasien tidak bisa diganti setelah screening dikirim\./,
+    /Permintaan ini sedang diperiksa radiolog lain\./,
+    /Screening ini sudah dikirim ke antrean\./,
+    /Hanya pasien di antrean yang bisa dipanggil\./,
   ];
   const hit = known.find((pattern) => pattern.test(message));
-  return hit ? message.match(hit)[0] : 'The request conflicts with the current state.';
+  return hit ? message.match(hit)[0] : 'Permintaan bertentangan dengan keadaan data saat ini.';
 }

@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import * as serialize from './serializers.js';
-import * as audit from './auditService.js';
-import { LABELS, toAnalysis } from './inferenceService.js';
+import { LABELS, toAnalysis, zoneFor } from './inferenceService.js';
 import { readImageSize } from './imageInfo.js';
 import { unwrap, unwrapOne } from './db.js';
 import { sniffImage } from '../middleware/upload.js';
@@ -9,134 +8,117 @@ import { ApiError } from '../utils/ApiError.js';
 import { pageMeta, toRange } from '../utils/pagination.js';
 
 /**
- * Screenings.
+ * Screenings: one row per visit, from the request to the queue.
  *
- * Three statuses are deliberately separate (see the schema comments):
- *   status          workflow state of the record
- *   modelStatus     what the model step did: not-run | pending | completed |
- *                   failed | unavailable
- *   review          present once a clinician has signed off
+ *   waiting -> examining -> queued -> served
+ *
+ * Every step that moves a visit forward is a database function that checks
+ * the caller itself (create_request, start_screening, submit_screening,
+ * mark_served), so no client can set a status, a queue number or a code.
  *
  * Image bytes and model output are written with the service role, because no
- * client holds a grant on those columns. Every such write happens only after
+ * client holds a grant on those columns. Each such write happens only after
  * the same request has loaded the screening through the caller's own
- * RLS-scoped client, so "can this person touch this screening" is answered by
- * the database first.
+ * RLS-scoped client and checked that it is theirs to change.
  */
 
-const FULL = '*, screening_reports(*), screening_reviews(*), referrals(id)';
-const WITH_REVIEW = '*, screening_reviews(*), referrals(id)';
+const SELECT = serialize.SCREENING_SELECT;
+
+/** Today in the clinic's time zone, as YYYY-MM-DD. Matches the SQL functions. */
+export function clinicToday(now = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(now);
+}
+
+export const PRIORITY_RANK = { high: 0, medium: 1, low: 2 };
+
+/** Most urgent first; within a priority, whoever was submitted first. */
+export const byQueueOrder = (a, b) =>
+  PRIORITY_RANK[a.queue_priority] - PRIORITY_RANK[b.queue_priority] ||
+  String(a.submitted_at).localeCompare(String(b.submitted_at));
 
 /* ── Reads ──────────────────────────────────────────────────────────────── */
 
-export async function list(ctx, { page, pageSize, status, patientId }) {
+export async function list(ctx, { page, pageSize, status, patientId, date }) {
   const { from, to } = toRange({ page, pageSize });
-
-  if (ctx.role === 'admin') {
-    // Metadata only. The clinical tables are not even selected.
-    let query = ctx.db
-      .from('screenings')
-      .select('id,patient_id,facility_id,operator_id,performed_at,status,image_quality,created_offline', {
-        count: 'exact',
-      })
-      .order('performed_at', { ascending: false });
-    if (status) query = query.eq('status', status);
-    if (patientId) query = query.eq('patient_id', patientId);
-    const result = await query.range(from, to);
-    return { items: unwrap(result).map(serialize.adminScreening), meta: pageMeta({ page, pageSize }, result.count) };
-  }
-
-  let query = ctx.db.from('screenings').select(FULL, { count: 'exact' }).order('performed_at', { ascending: false });
-  if (status) query = query.eq('status', status);
+  let query = ctx.db.from('screenings').select(SELECT, { count: 'exact' }).order('requested_at', { ascending: false });
+  if (status?.length) query = query.in('status', status);
   if (patientId) query = query.eq('patient_id', patientId);
+  if (date) query = query.eq('request_date', date);
   const result = await query.range(from, to);
   return { items: unwrap(result).map(serialize.screening), meta: pageMeta({ page, pageSize }, result.count) };
 }
 
+async function loadRow(ctx, id) {
+  return unwrapOne(await ctx.db.from('screenings').select(SELECT).eq('id', id).maybeSingle());
+}
+
 export async function get(ctx, id) {
-  if (ctx.role === 'admin') {
-    const row = unwrapOne(
-      await ctx.db
-        .from('screenings')
-        .select('id,patient_id,facility_id,operator_id,performed_at,status,image_quality,created_offline')
-        .eq('id', id)
-        .maybeSingle(),
-    );
-    return serialize.adminScreening(row);
-  }
-  const row = unwrapOne(await ctx.db.from('screenings').select(FULL).eq('id', id).maybeSingle());
-  return serialize.screening(row);
+  return serialize.screening(await loadRow(ctx, id));
 }
 
-/** A patient's own screenings: state and the clinician's review, nothing more. */
-export async function listOwn(ctx) {
+/** The queue for one day: still waiting to be called, and already called. */
+export async function queue(ctx, { date }) {
+  const day = date ?? clinicToday();
   const rows = unwrap(
-    await ctx.db.from('screenings').select(WITH_REVIEW).order('performed_at', { ascending: false }),
+    await ctx.db.from('screenings').select(SELECT).eq('queue_date', day).in('status', ['queued', 'served']),
   );
-  return rows.map(serialize.patientScreening);
+  const waiting = rows.filter((row) => row.status === 'queued').sort(byQueueOrder);
+  const served = rows
+    .filter((row) => row.status === 'served')
+    .sort((a, b) => String(b.served_at).localeCompare(String(a.served_at)));
+  return { date: day, items: waiting.map(serialize.screening), served: served.map(serialize.screening) };
 }
 
-export async function getOwn(ctx, id) {
-  const row = unwrapOne(await ctx.db.from('screenings').select(WITH_REVIEW).eq('id', id).maybeSingle());
-  return serialize.patientScreening(row);
+/* ── The request ────────────────────────────────────────────────────────── */
+
+/** A visit registered at the desk for a saved patient. Returns it with its code. */
+export async function createRequest(ctx, { patientId, complaint }) {
+  const row = unwrap(
+    await ctx.db.rpc('create_request', { p_patient_id: patientId, p_applicant: null, p_complaint: complaint }),
+  );
+  return get(ctx, row.id);
 }
 
-/* ── Create and edit ────────────────────────────────────────────────────── */
+/** Save which patient a request belongs to (a new record, or an existing one). */
+export async function setPatient(ctx, id, patientId) {
+  unwrap(await ctx.db.rpc('set_screening_patient', { p_screening_id: id, p_patient_id: patientId }));
+  return get(ctx, id);
+}
 
-export async function create(ctx, input) {
-  const screening = unwrap(
-    await ctx.db
-      .from('screenings')
-      .insert({
-        patient_id: input.patientId,
-        facility_id: ctx.staff.facilityId,
-        operator_id: ctx.userId,
-        status: input.asDraft ? 'draft' : 'queued',
-        image_quality: input.imageQuality,
-        created_offline: input.createdOffline,
-        ...(input.performedAt ? { performed_at: input.performedAt } : {}),
-      })
-      .select('id')
-      .single(),
-  );
-
-  const { error } = await ctx.db
-    .from('screening_reports')
-    .insert({ screening_id: screening.id, symptoms: input.symptoms, vitals: input.vitals });
-  if (error) {
-    // Do not leave a screening with no clinical content behind.
-    await ctx.db.from('screenings').delete().eq('id', screening.id);
-    throw error;
+/** Cancel a request no one has started. Administrator only (route and RLS). */
+export async function cancel(ctx, id) {
+  const current = unwrapOne(await ctx.db.from('screenings').select('id,status').eq('id', id).maybeSingle());
+  if (current.status !== 'waiting') {
+    throw ApiError.conflict('Hanya permintaan yang belum diperiksa yang bisa dibatalkan.');
   }
-
-  await audit.recordAfter(ctx, {
-    action: 'screening.created',
-    subject: screening.id,
-    metadata: { patientId: input.patientId, asDraft: input.asDraft },
-  });
-  return get(ctx, screening.id);
+  const deleted = unwrap(await ctx.db.from('screenings').delete().eq('id', id).select('id'));
+  if (!deleted.length) throw ApiError.notFound();
 }
 
-/** Edit a draft, and optionally submit it. Only the operator, only while it is a draft. */
-export async function finalize(ctx, id, input) {
-  const current = unwrapOne(
-    await ctx.db.from('screenings').select('id,operator_id,status').eq('id', id).maybeSingle(),
-  );
-  if (current.operator_id !== ctx.userId) throw ApiError.forbidden('Only the person who started this screening can edit it.');
-  if (current.status !== 'draft') throw ApiError.conflict('Only a draft can be edited.');
+/* ── The examination ────────────────────────────────────────────────────── */
 
-  unwrapOne(
-    await ctx.db
-      .from('screening_reports')
-      .update({ symptoms: input.symptoms, vitals: input.vitals })
-      .eq('screening_id', id)
-      .select('screening_id')
-      .maybeSingle(),
-  );
+export async function start(ctx, id) {
+  unwrap(await ctx.db.rpc('start_screening', { p_screening_id: id }));
+  return get(ctx, id);
+}
+
+/** A screening this radiologist has taken and not yet submitted, or an error saying why not. */
+async function loadOwnExamination(ctx, id) {
+  const row = await loadRow(ctx, id);
+  if (row.status === 'waiting') throw ApiError.conflict('Mulai pemeriksaan terlebih dahulu.');
+  if (row.status !== 'examining') throw ApiError.conflict('Screening ini sudah dikirim ke antrean.');
+  if (row.operator_id !== ctx.userId) {
+    throw ApiError.forbidden('Permintaan ini sedang diperiksa radiolog lain.');
+  }
+  return row;
+}
+
+export async function saveExamination(ctx, id, input) {
+  await loadOwnExamination(ctx, id);
   unwrapOne(
     await ctx.db
       .from('screenings')
-      .update({ image_quality: input.imageQuality, ...(input.submit ? { status: 'queued' } : {}) })
+      .update({ symptoms: input.symptoms, vitals: input.vitals, image_quality: input.imageQuality })
       .eq('id', id)
       .select('id')
       .maybeSingle(),
@@ -144,59 +126,27 @@ export async function finalize(ctx, id, input) {
   return get(ctx, id);
 }
 
-export async function removeDraft(ctx, id, { bucket }) {
-  const report = unwrap(
-    await ctx.db.from('screening_reports').select('image_path').eq('screening_id', id).maybeSingle(),
-  );
-  const deleted = unwrap(await ctx.db.from('screenings').delete().eq('id', id).select('id'));
-  if (!deleted.length) {
-    // Either it does not exist for this caller, or it is not a draft of theirs.
-    throw ApiError.notFound();
-  }
-  if (report?.image_path) {
-    await ctx.admin.storage.from(bucket).remove([report.image_path]).catch(() => {});
-  }
-  await audit.recordAfter(ctx, { action: 'screening.deleted', subject: id });
-}
-
-/* ── Image ──────────────────────────────────────────────────────────────── */
-
 /**
  * A storage failure the caller can be told about. The raw error is logged for
- * whoever runs the deployment; the response says what failed without echoing
- * the storage service's own wording.
+ * whoever runs the deployment; the response does not echo the storage
+ * service's own wording.
  */
 function storageFailure(error, logger = console) {
   logger.error({ message: 'storage request failed', status: error?.statusCode ?? error?.status, detail: error?.message });
-  if (/not found/i.test(error?.message ?? '')) return ApiError.notFound('The image file is missing from storage.');
-  return new ApiError(502, 'STORAGE_ERROR', 'The image store could not complete that request.');
+  if (/not found/i.test(error?.message ?? '')) return ApiError.notFound('File rontgen tidak ada di penyimpanan.');
+  return new ApiError(502, 'STORAGE_ERROR', 'Penyimpanan gambar tidak bisa menyelesaikan permintaan itu.');
 }
 
 export async function uploadImage(ctx, id, file, fields, { bucket }) {
-  const screening = unwrapOne(
-    await ctx.db.from('screenings').select('id,patient_id,operator_id,status').eq('id', id).maybeSingle(),
-  );
-  if (screening.operator_id !== ctx.userId) {
-    throw ApiError.forbidden('Only the person who recorded this screening can attach its image.');
-  }
-  if (!['draft', 'queued'].includes(screening.status)) {
-    throw ApiError.conflict('The image can no longer be changed.');
-  }
+  const row = await loadOwnExamination(ctx, id);
 
   const kind = sniffImage(file.buffer);
-  if (!kind) throw ApiError.validation({ image: ['Only JPEG and PNG images are accepted.'] });
+  if (!kind) throw ApiError.validation({ image: ['Hanya gambar JPEG dan PNG yang diterima.'] });
   const size = readImageSize(file.buffer);
 
-  const path = `${screening.patient_id}/${screening.id}/${randomUUID()}.${kind.ext}`;
-  const upload = await ctx.admin.storage.from(bucket).upload(path, file.buffer, {
-    contentType: kind.mime,
-    upsert: false,
-  });
+  const path = `${row.patient_id}/${row.id}/${randomUUID()}.${kind.ext}`;
+  const upload = await ctx.admin.storage.from(bucket).upload(path, file.buffer, { contentType: kind.mime, upsert: false });
   if (upload.error) throw storageFailure(upload.error);
-
-  const previous = unwrap(
-    await ctx.admin.from('screening_reports').select('image_path').eq('screening_id', id).maybeSingle(),
-  );
 
   const meta = {
     fileName: (fields.fileName || file.originalname || 'image').replace(/[^\w.\- ]/g, '_').slice(0, 120),
@@ -208,7 +158,7 @@ export async function uploadImage(ctx, id, file, fields, { bucket }) {
   };
 
   const { error } = await ctx.admin
-    .from('screening_reports')
+    .from('screenings')
     .update({
       image_path: path,
       image_meta: meta,
@@ -217,153 +167,114 @@ export async function uploadImage(ctx, id, file, fields, { bucket }) {
       analysis: null,
       analysed_at: null,
     })
-    .eq('screening_id', id);
+    .eq('id', id);
   if (error) {
     await ctx.admin.storage.from(bucket).remove([path]).catch(() => {});
     throw error;
   }
-  if (previous?.image_path) {
-    await ctx.admin.storage.from(bucket).remove([previous.image_path]).catch(() => {});
-  }
+  if (row.image_path) await ctx.admin.storage.from(bucket).remove([row.image_path]).catch(() => {});
 
-  await audit.recordAfter(ctx, { action: 'screening.image-attached', subject: id });
   return get(ctx, id);
 }
 
 /**
- * Short-lived signed URL for the screening's image.
- *
- * Professionals assigned to the patient only. The route also rejects
- * administrators outright, and the database would return no report row for
- * them anyway: the answer is a 403 for roles that must never see images and a
- * 404 for a professional with no access to this particular screening.
+ * Short-lived signed URL for the X-ray. Staff only (route); a screening the
+ * caller cannot read is a 404 because the database returns no row.
  */
 export async function signedImageUrl(ctx, id, { bucket, ttlSeconds }) {
-  if (ctx.role !== 'professional') throw ApiError.forbidden('Images are only available to the treating team.');
-
-  const report = unwrapOne(
-    await ctx.db.from('screening_reports').select('image_path').eq('screening_id', id).maybeSingle(),
-  );
-  if (!report.image_path) throw ApiError.notFound('This screening has no image.');
-
-  // Fails closed: no audit entry, no URL.
-  await audit.record(ctx, { action: 'screening.image-viewed', subject: id });
-
-  const { data, error } = await ctx.admin.storage.from(bucket).createSignedUrl(report.image_path, ttlSeconds);
+  const row = unwrapOne(await ctx.db.from('screenings').select('image_path').eq('id', id).maybeSingle());
+  if (!row.image_path) throw ApiError.notFound('Screening ini belum punya rontgen.');
+  const { data, error } = await ctx.admin.storage.from(bucket).createSignedUrl(row.image_path, ttlSeconds);
   if (error || !data?.signedUrl) throw storageFailure(error ?? new Error('Could not sign image URL'));
   return { url: data.signedUrl, expiresInSeconds: ttlSeconds };
 }
 
-/* ── Model ──────────────────────────────────────────────────────────────── */
+/* ── The model ──────────────────────────────────────────────────────────── */
 
+async function loadForAnalysis(ctx, id) {
+  const row = await loadOwnExamination(ctx, id);
+  if (!row.image_path) throw ApiError.conflict('Unggah rontgen terlebih dahulu.');
+  return row;
+}
+
+const setModelState = async (ctx, id, patch) => {
+  const { error } = await ctx.admin.from('screenings').update(patch).eq('id', id);
+  if (error) throw error;
+};
+
+/** Have the model service read the stored image (when one is configured). */
 export async function analyze(ctx, id, { inference, bucket, logger = console }) {
-  const row = unwrapOne(await ctx.db.from('screenings').select(FULL).eq('id', id).maybeSingle());
-  const report = Array.isArray(row.screening_reports) ? row.screening_reports[0] : row.screening_reports;
-  if (!report?.image_path) throw ApiError.conflict('Attach an image before running the model.');
-  if (report.model_status === 'completed') throw ApiError.conflict('This screening has already been analysed.');
-  if (report.model_status === 'pending') throw ApiError.conflict('Analysis is already running.');
-  if (!['queued', 'awaiting-review'].includes(row.status)) {
-    throw ApiError.conflict('Only a submitted screening can be analysed.');
-  }
-
-  const setModelState = async (patch) => {
-    const { error } = await ctx.admin.from('screening_reports').update(patch).eq('screening_id', id);
-    if (error) throw error;
-  };
+  const row = await loadForAnalysis(ctx, id);
+  if (row.model_status === 'pending') throw ApiError.conflict('Model sedang membaca rontgen ini.');
 
   if (!inference.configured) {
-    await setModelState({ model_status: 'unavailable' });
-    throw ApiError.unavailable(
-      'MODEL_NOT_CONNECTED',
-      'The screening model is not connected to this server. The record is saved and can be reviewed without it.',
-    );
+    await setModelState(ctx, id, { model_status: 'unavailable' });
+    throw ApiError.unavailable('MODEL_NOT_CONNECTED', 'Model screening tidak terhubung ke server ini.');
   }
 
-  await setModelState({ model_status: 'pending' });
+  await setModelState(ctx, id, { model_status: 'pending' });
   try {
-    const download = await ctx.admin.storage.from(bucket).download(report.image_path);
+    const download = await ctx.admin.storage.from(bucket).download(row.image_path);
     if (download.error) throw download.error;
     const bytes = Buffer.from(await download.data.arrayBuffer());
     const kind = sniffImage(bytes);
-
     const raw = await inference.analyze({ bytes, mime: kind?.mime ?? 'image/png', fileName: `${id}.${kind?.ext ?? 'png'}` });
     const analysis = toAnalysis(raw, readImageSize(bytes));
-
-    await setModelState({ model_status: 'completed', analysis, analysed_at: analysis.analysedAt });
+    await setModelState(ctx, id, { model_status: 'completed', analysis, analysed_at: analysis.analysedAt });
   } catch (error) {
-    await setModelState({ model_status: 'failed' }).catch((inner) =>
+    await setModelState(ctx, id, { model_status: 'failed' }).catch((inner) =>
       logger.error({ message: 'could not record model failure', code: inner?.code }),
     );
     throw error;
   }
-
-  await audit.recordAfter(ctx, { action: 'screening.analysed', subject: id });
   return get(ctx, id);
 }
 
 /**
- * Record an analysis that the clinician's browser computed.
+ * Record an analysis the radiologist's browser computed.
  *
- * With no model service on the server (a serverless deployment has no room for
- * one) the model runs in the browser, and the browser reports the three class
- * probabilities it got. This is the one place the server stores model output it
- * did not compute itself, so it is held to what it can check: the scores must be
- * a valid distribution, the caller must be the clinician allowed to analyse this
- * record, and everything derived (leading class, outcome, risk point) is worked
- * out here from those scores and never taken from the request. The audit entry
- * says the model ran in the browser.
+ * A serverless deployment has no room for the model, so it runs in the
+ * browser and reports the three class probabilities and the areas it leaned
+ * on. This is the one place the server stores model output it did not compute
+ * itself, so it is held to what it can check: the scores form a distribution
+ * (validator), the caller is the radiologist examining this visit, and
+ * everything derived (leading class, outcome, risk point, zone names) is
+ * worked out here and never taken from the request.
  */
-export async function recordBrowserAnalysis(ctx, id, { probabilities, model }) {
-  const row = unwrapOne(await ctx.db.from('screenings').select(FULL).eq('id', id).maybeSingle());
-  const report = Array.isArray(row.screening_reports) ? row.screening_reports[0] : row.screening_reports;
-  if (!report?.image_path) throw ApiError.conflict('Attach an image before running the model.');
-  if (report.model_status === 'completed') throw ApiError.conflict('This screening has already been analysed.');
-  if (!['queued', 'awaiting-review'].includes(row.status)) {
-    throw ApiError.conflict('Only a submitted screening can be analysed.');
-  }
+export async function recordBrowserAnalysis(ctx, id, { probabilities, model, regions }) {
+  await loadForAnalysis(ctx, id);
 
   const prediction = LABELS.reduce((best, label) => (probabilities[label] > probabilities[best] ? label : best));
   const analysis = toAnalysis(
-    {
-      prediction,
-      probabilities,
-      model: { classifier: model.name, backbone: model.backbone, version: model.version },
-    },
+    { prediction, probabilities, model: { classifier: model.name, backbone: model.backbone, version: model.version } },
     null,
   );
+  analysis.regions = regions.map((region, index) => ({
+    id: `occ-${index + 1}`,
+    box: region.box,
+    score: region.score,
+    zone: zoneFor(region.box),
+    label: region.label,
+  }));
+  analysis.detectionNote =
+    prediction === 'Healthy'
+      ? 'Kelas teratas adalah Sehat, jadi tidak ada area yang ditandai.'
+      : regions.length
+        ? null
+        : 'Model tidak bertumpu pada satu area tertentu, jadi tidak ada kotak yang digambar.';
 
-  const { error } = await ctx.admin
-    .from('screening_reports')
-    .update({ model_status: 'completed', analysis, analysed_at: analysis.analysedAt })
-    .eq('screening_id', id);
-  if (error) throw error;
-
-  await audit.recordAfter(ctx, { action: 'screening.analysed', subject: id, detail: 'Model run in the browser' });
+  await setModelState(ctx, id, { model_status: 'completed', analysis, analysed_at: analysis.analysedAt });
   return get(ctx, id);
 }
 
-/* ── Review ─────────────────────────────────────────────────────────────── */
+/* ── The queue ──────────────────────────────────────────────────────────── */
 
-export async function review(ctx, id, { agreement, decision, notes }) {
-  // The trigger moves the status; RLS demands an assigned reviewer with
-  // can_review, so a CHW or an administrator is refused by the database too.
-  unwrap(
-    await ctx.db
-      .from('screening_reviews')
-      .insert({ screening_id: id, reviewer_id: ctx.userId, agreement, decision, notes })
-      .select('screening_id')
-      .single(),
-  );
+export async function submit(ctx, id, { priority }) {
+  unwrap(await ctx.db.rpc('submit_screening', { p_screening_id: id, p_priority: priority }));
+  return get(ctx, id);
+}
 
-  if (notes) {
-    const patientId = unwrap(await ctx.db.from('screenings').select('patient_id').eq('id', id).maybeSingle())?.patient_id;
-    if (patientId) {
-      await ctx.db
-        .from('patient_notes')
-        .insert({ patient_id: patientId, author_id: ctx.userId, body: notes, context: 'screening', context_id: id });
-    }
-  }
-
-  await audit.recordAfter(ctx, { action: 'screening.reviewed', subject: id, detail: decision });
+export async function markServed(ctx, id) {
+  unwrap(await ctx.db.rpc('mark_served', { p_screening_id: id }));
   return get(ctx, id);
 }

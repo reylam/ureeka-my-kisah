@@ -7,6 +7,8 @@ import { RESULT_DISCLOSURES } from '@/trace/data/demoResults';
 import { RISK_BANDS, RISK_LABEL, riskOf } from '@/lib/risk';
 import { formatBytes } from '@/trace/lib/format';
 import { cn } from '@/utils/cn';
+import { GroundedRegions } from './GroundedRegions';
+import { isSampleFile } from '@/trace/hooks/useSampleImage';
 
 /**
  * The result report for a real model run.
@@ -58,15 +60,16 @@ const LIMITATIONS = [
   'Model ini belum divalidasi secara klinis di sini, dan tidak ada angka akurasi yang diklaim. Risk point bukan persentase peluang sakit.',
 ];
 
-const SYNTHETIC_SAMPLE_NAME = 'parupintas-synthetic-sample.png';
-
 export function ModelResultPanel({
   analysis,
   image,
+  heatmapUrl = null,
   className,
 }: {
   analysis: ScreeningAnalysis;
   image: SelectedImage;
+  /** Occlusion heat map behind `analysis.regions`. */
+  heatmapUrl?: string | null;
   className?: string;
 }) {
   const outcome = OUTCOME[analysis.outcome];
@@ -74,7 +77,7 @@ export function ModelResultPanel({
   const entries = (Object.entries(analysis.probabilities) as [ClassLabel, number][]).sort(
     (a, b) => b[1] - a[1],
   );
-  const drawnExample = image.file.name === SYNTHETIC_SAMPLE_NAME;
+  const sampleImage = isSampleFile(image.file.name);
 
   return (
     <section
@@ -107,6 +110,20 @@ export function ModelResultPanel({
             <span className="text-trace-muted">{LABEL_NAME[analysis.predictedLabel]}</span>
           </p>
         </div>
+
+        {/* 1b. Where the score came from on the film. Only for a result that
+            points at something: a "Healthy" top class has nothing to box. */}
+        {analysis.predictedLabel !== 'Healthy' ? (
+          <div className="border-b border-trace-line px-4 py-5 sm:px-5">
+            <GroundedRegions
+              imageUrl={image.url}
+              imageName={image.file.name}
+              regions={analysis.regions}
+              heatmapUrl={heatmapUrl}
+              note={analysis.detectionNote}
+            />
+          </div>
+        ) : null}
 
         {/* 2. Risk point */}
         <div className="border-b border-trace-line px-4 py-5 sm:px-5">
@@ -228,12 +245,11 @@ export function ModelResultPanel({
               {image.width} × {image.height} px · {formatBytes(image.file.size)}
             </dd>
           </div>
-          {drawnExample ? (
+          {sampleImage ? (
             <div className="sm:col-span-2">
               <p className="rounded-xl border border-trace-accent-edge bg-trace-accent-surface px-3.5 py-2.5 text-[12.5px] leading-5 text-trace-accent-soft">
-                Ini gambar ilustrasi yang digambar lewat kode, bukan foto rontgen sungguhan. Model
-                tetap memberi angka, tetapi angka itu tidak berarti apa-apa tentang paru-paru
-                siapa pun.
+                Ini salah satu contoh gambar bawaan situs, dipilih acak. Hasilnya tetap keluaran
+                model apa adanya, bukan jawaban yang sudah disiapkan untuk gambar ini.
               </p>
             </div>
           ) : null}

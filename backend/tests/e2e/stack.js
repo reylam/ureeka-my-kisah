@@ -78,19 +78,14 @@ const json = (response, status, body) => {
 };
 
 const SEED_PASSWORDS = {
-  'patient@parupintas.test': 'Patient123!',
-  'doctor@parupintas.test': 'Doctor123!',
-  'chw@parupintas.test': 'Worker123!',
   'admin@parupintas.test': 'Admin123!',
-  // Only present when the sample records part of the seed is loaded.
-  'nurse@parupintas.test': 'Nurse123!',
-  'patient2@parupintas.test': 'Patient123!',
-  'newpatient@parupintas.test': 'Patient123!',
+  'radiolog@parupintas.test': 'Radiolog123!',
+  'radiolog2@parupintas.test': 'Radiolog123!',
 };
 
 /**
  * seed: true loads the base seed (what the tests expect), 'full' also loads the
- * sample clinical records (what `npm run dev:local` uses), false loads nothing.
+ * sample visits (what `npm run dev:local` uses), false loads nothing.
  */
 export async function startStack({ seed = true, gatewayPort = 0 } = {}) {
   // 1. Postgres

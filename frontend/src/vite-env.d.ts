@@ -11,3 +11,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** URLs of the sample X-rays in `public/test/`. See `vite.config.ts`. */
+declare module 'virtual:sample-images' {
+  const urls: string[];
+  export default urls;
+}

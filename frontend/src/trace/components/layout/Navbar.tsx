@@ -1,17 +1,18 @@
 import { useEffect, useId, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { LogIn, Menu, X } from 'lucide-react';
+import { Compass, LogIn, Menu, X } from 'lucide-react';
 import { TraceWordmark } from './TraceMark';
 import { TraceLinkButton } from '@/trace/components/ui/TraceButton';
 import { Container } from '@/trace/components/ui/Container';
 import { useScrolled } from '@/trace/hooks/useScrolled';
 import { useAuthStore } from '@/stores/authStore';
+import { useTourStore } from '@/trace/components/tour/tourStore';
 import { cn } from '@/utils/cn';
 
 /**
  * Persistent navigation.
  *
- * Three routes, one call to action, no theme switcher: the site has one
+ * Five routes, one call to action, no theme switcher: the site has one
  * treatment, and a toggle that changes nothing useful is a control that lies.
  *
  * The header reacts to scroll. At the top it is tall and the brand lockup
@@ -32,7 +33,9 @@ import { cn } from '@/utils/cn';
 export const NAV_ITEMS = [
   { to: '/', label: 'Beranda' },
   { to: '/how-it-works', label: 'Cara kerja' },
-  { to: '/demo', label: 'Demo Screening' },
+  { to: '/demo', label: 'Demo' },
+  { to: '/daftar', label: 'Daftar' },
+  { to: '/hasil', label: 'Cek Hasil' },
 ] as const;
 
 export function Navbar() {
@@ -40,7 +43,8 @@ export function Navbar() {
   const panelId = useId();
   const location = useLocation();
   const scrolled = useScrolled(8);
-  const signedIn = useAuthStore((state) => Boolean(state.accountId));
+  const signedIn = useAuthStore((state) => Boolean(state.account));
+  const startTour = useTourStore((state) => state.start);
 
   // Close on navigation.
   useEffect(() => setOpen(false), [location.pathname]);
@@ -86,7 +90,7 @@ export function Navbar() {
             <TraceWordmark compact={collapsed} />
           </Link>
 
-          <nav aria-label="Utama" className="hidden justify-self-center md:block">
+          <nav aria-label="Utama" data-tour="nav" className="hidden justify-self-center md:block">
             <ul className="flex items-center gap-1">
               {NAV_ITEMS.map((item) => (
                 <li key={item.to}>
@@ -110,19 +114,29 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-1.5 justify-self-end sm:gap-2">
-            <TraceLinkButton to="/demo" size="sm" className="hidden sm:inline-flex">
-              Coba demo
+            <button
+              type="button"
+              onClick={startTour}
+              className="hidden h-9 items-center gap-1.5 rounded-full px-3.5 text-[13px] text-trace-muted transition-colors hover:bg-trace-card hover:text-trace-text lg:inline-flex"
+            >
+              <Compass aria-hidden className="size-3.5" />
+              Panduan
+            </button>
+
+            <TraceLinkButton to="/daftar" size="sm" className="hidden sm:inline-flex">
+              Daftar periksa
             </TraceLinkButton>
 
             {/* Way into the clinical workflow prototype. It is a separate
                 application behind a sign-in, so it gets a quiet link rather
                 than competing with the demo for the primary button. */}
             <Link
-              to={signedIn ? '/dashboard' : '/login'}
+              to={signedIn ? '/app' : '/login'}
+              data-tour="staff-login"
               className="hidden h-9 items-center gap-1.5 rounded-full px-3.5 text-[13px] text-trace-muted transition-colors hover:bg-trace-card hover:text-trace-text md:inline-flex"
             >
               <LogIn aria-hidden className="size-3.5" />
-              {signedIn ? 'Dashboard' : 'Masuk'}
+              {signedIn ? 'Ruang kerja' : 'Masuk petugas'}
             </Link>
 
             <button
@@ -168,15 +182,26 @@ export function Navbar() {
               ))}
             </ul>
           </nav>
-          <TraceLinkButton to="/demo" className="mt-4 w-full">
-            Coba demo
+          <TraceLinkButton to="/daftar" className="mt-4 w-full">
+            Daftar periksa
           </TraceLinkButton>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              startTour();
+            }}
+            className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-trace-line text-[14px] text-trace-muted"
+          >
+            <Compass aria-hidden className="size-4" />
+            Panduan pasien
+          </button>
           <Link
-            to={signedIn ? '/dashboard' : '/login'}
+            to={signedIn ? '/app' : '/login'}
             className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-trace-line text-[14px] text-trace-muted"
           >
             <LogIn aria-hidden className="size-4" />
-            {signedIn ? 'Buka dashboard' : 'Masuk'}
+            {signedIn ? 'Buka ruang kerja' : 'Masuk petugas'}
           </Link>
         </Container>
       </div>

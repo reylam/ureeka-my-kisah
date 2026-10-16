@@ -80,14 +80,15 @@ const baseName = (value) => (value ? String(value).split(/[\\/]/).pop() || undef
 /**
  * Where a box sits on the film, in words a reader can check against the image.
  * Radiographs are viewed as if facing the patient, so the patient's right is
- * the left of the picture.
+ * the left of the picture. The same words as `zoneFor` in the frontend's
+ * localModel.ts, which names the boxes the browser model draws.
  */
 export function zoneFor(box) {
   const cx = box.x + box.width / 2;
   const cy = box.y + box.height / 2;
-  const side = cx < 0.5 ? 'right' : 'left';
-  const level = cy < 1 / 3 ? 'upper' : cy < 2 / 3 ? 'mid' : 'lower';
-  return `${side} ${level} zone`;
+  const side = cx < 0.5 ? 'kanan' : 'kiri';
+  const level = cy < 1 / 3 ? 'atas' : cy < 2 / 3 ? 'tengah' : 'bawah';
+  return `zona ${side} ${level}`;
 }
 
 /**

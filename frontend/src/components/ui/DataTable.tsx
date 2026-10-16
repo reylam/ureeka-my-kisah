@@ -171,13 +171,23 @@ export function DataTable<T>({
             >
               {renderMobileCard ? (
                 onRowClick ? (
-                  <button
-                    type="button"
+                  // Not a <button>: a card may hold its own buttons (e.g. "Panggil"),
+                  // and a button cannot contain another.
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onRowClick(row)}
-                    className="w-full px-4 py-3 text-left transition-colors active:bg-ct-50"
+                    onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget) return;
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onRowClick(row);
+                      }
+                    }}
+                    className="w-full cursor-pointer px-4 py-3 text-left transition-colors active:bg-ct-50"
                   >
                     {renderMobileCard(row)}
-                  </button>
+                  </div>
                 ) : (
                   <div className="px-4 py-3">{renderMobileCard(row)}</div>
                 )
