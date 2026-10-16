@@ -1,4 +1,6 @@
 node_modules
+.env
+.env.*
 dist
 dist-ssr
 *.local
@@ -6,5 +8,4 @@ dist-ssr
 .DS_Store
 *.log
 node_modules/.tmp
-.env
-.env.*
+
