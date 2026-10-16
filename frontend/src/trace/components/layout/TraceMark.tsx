@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { cn } from '@/utils/cn';
+import { PROJECT } from '@/trace/data/content';
 
 /**
  * Product mark: a "P" monogram with a pair of lungs and a trachea cut out of
@@ -117,7 +118,7 @@ export function TraceFooterMark({ className }: { className?: string }) {
           PARU
           <span className="text-trace-dim">PINTAS</span>
         </span>
-        <span className="mt-1 text-[11.5px] tracking-[0.02em] text-trace-dim">
+        <span className="mt-1 max-w-xs text-[11.5px] leading-snug tracking-[0.02em] text-trace-dim">
           {PROJECT.subtitle}
         </span>
       </span>

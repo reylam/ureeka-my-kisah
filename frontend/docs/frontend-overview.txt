@@ -15,7 +15,7 @@ not a plan. Where something is a sample or not yet wired, it says so.
 PULMO is a web app for AI-assisted tuberculosis screening from chest X-rays,
 aimed at remote Indonesian community health settings. The frontend is a single
 React application that serves two things at once: a public, marketing-and-
-education site (brand name PULMO-TRACE) that anyone can browse, and a private,
+education site (brand name PARUPINTAS) that anyone can browse, and a private,
 role-gated clinical application behind sign-in. Identity is handled by Supabase
 Auth; records come from a PULMO backend through one HTTP client. Four roles
 (visitor, patient, healthcare professional, administrator) each see a different
@@ -87,7 +87,7 @@ The codebase has two clearly separated parts under src/:
 A. The public site - everything under src/trace/
    A dark, editorial, research-style marketing and education site. Its own
    layout, navbar, footer, typography and components, namespaced so it never
-   clashes with the clinical app. Brand: PULMO-TRACE, "See Beyond the Scan".
+   clashes with the clinical app. Brand: PARUPINTAS, "Percepatan Skrining Tuberkulosis Berbantuan AI untuk Mengatasi Antrean Pembacaan Citra Rontgen".
 
 B. The clinical application - the rest of src/
    The light, dense, operational interface used after sign-in. Shared UI kit,
@@ -103,7 +103,7 @@ not the same chrome.
 --------------------------------------------------------------------------------
 
 PUBLIC (no account)
-  /                 Home (PULMO-TRACE marketing site)
+  /                 Home (PARUPINTAS marketing site)
   /how-it-works     Plain-language explainer of the screening idea + FAQ
   /demo             Interactive screening demo (sample output, clearly labelled)
   /platform         The clinical app's own public landing/overview page
@@ -497,7 +497,7 @@ Tokens and helpers
   routes/               router.tsx (route table), RequireAuth (guards),
                         RouteError
   pages/                clinical app pages; pages/patient/* and pages/admin/*
-  trace/                the entire public PULMO-TRACE site (pages, sections,
+  trace/                the entire public PARUPINTAS site (pages, sections,
                         components, data, hooks)
   components/           clinical UI: layout, ui kit, forms, and feature groups
                         (dashboard, patients, screening, referrals, followups,
@@ -519,7 +519,7 @@ Tokens and helpers
 16. FEATURE CHECKLIST (quick reference)
 --------------------------------------------------------------------------------
 
-  [x] Public marketing + education site (PULMO-TRACE)
+  [x] Public marketing + education site (PARUPINTAS)
   [x] Plain-language "how it works" explainer + FAQ
   [x] Interactive screening demo with labelled sample output
   [x] Supabase Auth sign-in / sign-up (sign-up always creates a patient)

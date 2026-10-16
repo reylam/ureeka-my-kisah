@@ -1,4 +1,5 @@
 import { ArrowRight, Play } from 'lucide-react';
+import { PROJECT } from '@/trace/data/content';
 import { Container } from '@/trace/components/ui/Container';
 import { Eyebrow } from '@/trace/components/ui/SectionHeading';
 import { TraceLinkButton } from '@/trace/components/ui/TraceButton';
@@ -27,11 +28,9 @@ export function Hero() {
           <div className="trace-rise">
             <Eyebrow>Screening TB berbantuan AI · Prototipe riset</Eyebrow>
 
-            <h1 className="mt-5 max-w-xl text-[36px] leading-[1.06] font-semibold tracking-[-0.03em] sm:text-[46px] lg:text-[54px]">
-              See beyond
-              <br />
-              the scan.
-            </h1>
+            <h1 className="mt-5 max-w-xl text-[36px] leading-[1.06] font-semibold tracking-[-0.03em] sm:text-[46px] lg:text-[54px]">PARUPINTAS</h1>
+
+            <p className="mt-4 max-w-xl text-[19px] leading-snug font-medium text-trace-text sm:text-[21px]">{PROJECT.subtitle}</p>
 
             <p className="mt-6 max-w-lg text-[16px] leading-7 text-trace-muted">
               Tuberculosis sering sudah terlihat di chest X-ray sebelum ada yang yakin soal itu.

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { PROJECT } from '@/trace/data/content';
 import { Hero } from '@/trace/sections/home/Hero';
 import { WhyItMatters } from '@/trace/sections/home/WhyItMatters';
 import { HowItWorksSection } from '@/trace/sections/home/HowItWorksSection';

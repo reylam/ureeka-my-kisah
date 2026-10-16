@@ -1,5 +1,5 @@
 ================================================================================
-PULMO-TRACE
+PARUPINTAS
 Research notes for the written paper
 
 AI-assisted screening for pulmonary tuberculosis from chest radiographs
@@ -26,7 +26,7 @@ Every external claim carries a citation key that resolves in section 11.
 1. PROJECT METADATA
 ================================================================================
 
-Project              PULMO-TRACE
+Project              PARUPINTAS
 Domain               Chest X-ray based screening for pulmonary tuberculosis
 System type          Image classification research prototype
 Current stage        Frontend demonstration: interface, input contract,

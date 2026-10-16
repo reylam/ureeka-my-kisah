@@ -3,7 +3,7 @@
 Antarmuka web PULMO: skrining TB berbantuan AI dari rontgen dada untuk layanan kesehatan di daerah
 terpencil Indonesia. Satu aplikasi React melayani dua hal sekaligus:
 
-- **Situs publik (PULMO-TRACE)** di `/`, `/how-it-works`, dan `/demo`. Bisa dibuka siapa saja tanpa akun.
+- **Situs publik (PARUPINTAS)** di `/`, `/how-it-works`, dan `/demo`. Bisa dibuka siapa saja tanpa akun.
 - **Aplikasi klinis** di balik login, dengan ruang kerja berbeda untuk pasien, tenaga kesehatan, dan administrator.
 
 > **Skrining, bukan diagnosis.** Keluaran model hanyalah sinyal untuk tes lanjutan. Keputusan klinis
@@ -87,7 +87,7 @@ dengan mempromosikan akun yang ada dari halaman Akun admin, atau dengan `npm run
 
 | Kelompok | Rute |
 | --- | --- |
-| Publik (PULMO-TRACE) | `/`, `/how-it-works`, `/demo` |
+| Publik (PARUPINTAS) | `/`, `/how-it-works`, `/demo` |
 | Publik (platform) | `/platform`, `/login`, `/register`, `/app` |
 | Onboarding pasien | `/onboarding` |
 | Pasien | `/me`, `/me/screenings`, `/me/followup`, `/me/learn`, `/me/facilities`, `/me/profile` |
@@ -111,7 +111,7 @@ src/
 ├── routes/       tabel rute, RequireAuth, RouteError
 ├── services/     recordsApi, onboardingApi, referenceData, syncService, imageStore
 ├── stores/       Zustand: auth, data, facility, account, model, koneksi, toast
-├── trace/        situs publik PULMO-TRACE (halaman, section, komponen, hook demo)
+├── trace/        situs publik PARUPINTAS (halaman, section, komponen, hook demo)
 ├── types/        model domain dan kontrak inferensi
 └── utils/        tanggal, format, label, service worker
 public/           manifest, service worker, ikon
