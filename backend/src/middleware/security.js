@@ -22,13 +22,18 @@ export function securityHeaders() {
   });
 }
 
-/** CORS limited to the configured frontend origin(s). */
+/**
+ * CORS limited to the configured frontend origin(s). A "*" entry allows every
+ * origin. That is safe here because the API authenticates with a Bearer token
+ * and never with cookies, so a foreign page cannot ride on a visitor's session.
+ */
 export function corsPolicy(origins) {
   const allowed = new Set(origins);
+  const allowAll = allowed.has('*');
   return cors({
     origin(origin, callback) {
       // Non-browser callers (curl, health checks, server-to-server) send no Origin.
-      if (!origin || allowed.has(origin)) return callback(null, true);
+      if (!origin || allowAll || allowed.has(origin)) return callback(null, true);
       const error = new Error('Origin not allowed');
       error.code = 'CORS_ORIGIN_DENIED';
       return callback(error);

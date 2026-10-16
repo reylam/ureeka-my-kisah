@@ -147,7 +147,7 @@ export const FAQ: { question: string; answer: string; sourceId?: string }[] = [
   {
     question: 'Sebenarnya score di demo itu artinya apa?',
     answer:
-      'Model menghitung tiga score, satu untuk tiap kelas (sehat, sakit bukan TB, dan TB), langsung dari pikselmu gambar. File yang sama selalu menghasilkan angka yang sama. Risk point hanyalah score TB itu ditulis ulang pada skala 0 sampai 100. Itu ukuran seberapa mirip gambar dengan pola TB yang dipelajari model, bukan peluang seseorang menderita TB, dan belum dikalibrasi terhadap populasi mana pun.',
+      'Model menghitung tiga score, satu untuk tiap kelas (sehat, sakit bukan TB, dan TB), langsung dari piksel gambarmu. File yang sama selalu menghasilkan angka yang sama. Risk point hanyalah score TB itu ditulis ulang pada skala 0 sampai 100. Itu ukuran seberapa mirip gambar dengan pola TB yang dipelajari model, bukan peluang seseorang menderita TB, dan belum dikalibrasi terhadap populasi mana pun.',
   },
   {
     question: 'Kenapa score tidak sama dengan persentase peluang?',

@@ -15,6 +15,8 @@ try {
   const config = loadConfig();
   // Vercel always sits behind a proxy.
   config.trustProxy = true;
+  // Any origin may call this deployment (Bearer-token auth, no cookies).
+  config.frontendOrigins = ['*'];
   const api = createApp({ config });
 
   app = express();
@@ -26,15 +28,10 @@ try {
   console.error(error.message);
   app = express();
   // Without CORS headers the browser hides this message behind a generic
-  // "blocked by CORS policy" error. FRONTEND_ORIGIN is read raw here because
-  // the validated config is exactly what failed to load.
-  const origins = (process.env.FRONTEND_ORIGIN ?? '')
-    .split(',')
-    .map((o) => o.trim().replace(/\/$/, ''))
-    .filter(Boolean);
+  // "blocked by CORS policy" error.
   app.use((req, res) => {
     const origin = req.headers.origin;
-    if (origin && origins.includes(origin)) {
+    if (origin) {
       res.setHeader('Access-Control-Allow-Origin', origin);
       res.setHeader('Vary', 'Origin');
       res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
